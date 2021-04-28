@@ -54,7 +54,8 @@ async function setUserData(_file, _username) {
 }
 
 async function fetchParaswapTokens() {
-  fetch('https://apiv4.paraswap.io/v2/tokens/3')
-    .then(response => response.json())
-    .then(data => console.log(data.tokens));
+  const response = await fetch('https://apiv4.paraswap.io/v2/tokens/3');
+  const responsetokens = await response.json();
+  const tokens = responsetokens.tokens; 
+  return JSON.stringify(tokens);
 }
