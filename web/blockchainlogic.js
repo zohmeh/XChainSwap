@@ -1,7 +1,6 @@
 Moralis.initialize("7f8EaHQAku0a5aDkxXaVbgVIfskAP3QqddLmpHIL")
 Moralis.serverURL = "https://x3f87iwahifo.moralis.io:2053/server";
 
-
 async function init() {
     window.web3 = await Moralis.Web3.enable();
     window.NFTAuctioncontractInstance = new web3.eth.Contract(marketplaceAbi, addresses["marketplace"]);
@@ -58,4 +57,16 @@ async function fetchParaswapTokens() {
   const responsetokens = await response.json();
   const tokens = responsetokens.tokens; 
   return JSON.stringify(tokens);
+}
+
+async function getTokenPairRate(_fromToken, _toToken, _amount) {
+  try {
+    const response = await fetch(`https://apiv4.paraswap.io/v2/prices/?from=${_fromToken}&to=${_toToken}&amount=${_amount}&network=3`);
+    const responserate = await response.json();
+    const bestrate = responserate["priceRoute"]["others"][0]; 
+    return JSON.stringify(bestrate);
+
+  } catch (error) { alert(error); }
+  
+  
 }

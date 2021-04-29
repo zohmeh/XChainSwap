@@ -10,3 +10,5 @@ external dynamic loggedIn();
 external dynamic logout();
 external dynamic setUserData(var _file, String _username);
 external dynamic fetchParaswapTokens();
+external dynamic getTokenPairRate(
+    String fromToken, String toToken, String amount);

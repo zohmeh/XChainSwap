@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:web_app_template/functions/functions.dart';
 import 'package:web_app_template/provider/contractinteraction.dart';
 import 'package:web_app_template/views/myportfolioview/home_view.dart';
 import '../provider/loginprovider.dart';
@@ -21,6 +22,9 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider.value(
           value: LoginModel(),
+        ),
+        ChangeNotifierProvider.value(
+          value: Paraswap(),
         ),
         ChangeNotifierProvider.value(
           value: Contractinteraction(),
