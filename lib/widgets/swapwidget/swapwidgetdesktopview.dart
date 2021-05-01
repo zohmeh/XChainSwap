@@ -13,15 +13,18 @@ class SwapWidgetDesktopview extends StatefulWidget {
 class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
   String fromToken;
   String toToken;
+  String fromAmount;
   List<String> tokenSymbols = [];
 
   @override
   void initState() {
+    fromToken = "ETH";
+    toToken = "KNC";
     fetchTokens().then((result) {
       setState(() {
-        tokenSymbols = result;
-        fromToken = tokenSymbols[0];
-        toToken = tokenSymbols[1];
+        for (var i = 0; i < result.length; i++) {
+          tokenSymbols.add(result[i]["symbol"]);
+        }
       });
     });
     super.initState();
@@ -29,14 +32,14 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
 
   @override
   Widget build(BuildContext context) {
-    var amount = Provider.of<Paraswap>(context).amount;
+    var toAmount = Provider.of<Paraswap>(context).toAmount;
     var width = MediaQuery.of(context).size.width;
     return Card(
       elevation: 10,
       child: Container(
         padding: EdgeInsets.all(30),
-        height: width / 5,
-        width: width / 5,
+        height: width / 4,
+        width: width / 4,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -54,10 +57,18 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
                     rightMargin: 0,
                     bottomMargin: 0,
                     onChanged: (value) {
-                      setState(() {});
+                      setState(() {
+                        fromAmount = value;
+                        Provider.of<Paraswap>(context, listen: false)
+                            .getRate([fromToken, toToken, fromAmount]);
+                      });
                     },
                     onSubmitted: (value) {
-                      setState(() {});
+                      setState(() {
+                        fromAmount = value;
+                        Provider.of<Paraswap>(context, listen: false)
+                            .getRate([fromToken, toToken, fromAmount]);
+                      });
                     },
                   ),
                 ),
@@ -72,9 +83,15 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
                     color: Colors.deepPurpleAccent,
                   ),
                   onChanged: (value) {
-                    setState(() {
-                      fromToken = value;
-                    });
+                    fromAmount != null
+                        ? setState(() {
+                            fromToken = value;
+                            Provider.of<Paraswap>(context, listen: false)
+                                .getRate([fromToken, toToken, fromAmount]);
+                          })
+                        : setState(() {
+                            fromToken = value;
+                          });
                   },
                   items: tokenSymbols.map((String value) {
                     return DropdownMenuItem<String>(
@@ -89,14 +106,15 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
                 Theme.of(context).buttonColor,
                 Theme.of(context).highlightColor,
                 "Swap Tokens",
-                Provider.of<Paraswap>(context).getRate,
-                [fromToken, toToken, widget.swapamount.text]),
+                Provider.of<Paraswap>(context).swapTokens),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
                     width: width / 15,
-                    child: amount != null ? Text(amount) : Text("")),
+                    child: toAmount != null
+                        ? Text(toAmount.toString())
+                        : Text("")),
                 DropdownButton(
                   value: toToken,
                   icon: const Icon(Icons.arrow_downward),
@@ -108,9 +126,15 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
                     color: Colors.deepPurpleAccent,
                   ),
                   onChanged: (value) {
-                    setState(() {
-                      toToken = value;
-                    });
+                    fromAmount != null
+                        ? setState(() {
+                            toToken = value;
+                            Provider.of<Paraswap>(context, listen: false)
+                                .getRate([fromToken, toToken, fromAmount]);
+                          })
+                        : setState(() {
+                            toToken = value;
+                          });
                   },
                   items: tokenSymbols.map((String value) {
                     return DropdownMenuItem<String>(
