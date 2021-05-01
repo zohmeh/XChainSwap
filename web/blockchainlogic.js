@@ -83,7 +83,6 @@ async function getTokenPairRate(_fromToken, _toToken, _amount) {
 
 async function swap(_fromToken, _toToken, _amount, _mindestamount, _minRate) {
     try {
-
         //fetch swapdata from kyber ropsten
         const address = ethereum.selectedAddress;
         const response = await fetch(`https://ropsten-api.kyber.network/trade_data?user_address=${address}&src_id=${_fromToken}&dst_id=${_toToken}&src_qty=${_amount}&min_dst_qty=${_mindestamount}&gas_price=medium`);
@@ -101,13 +100,25 @@ async function swap(_fromToken, _toToken, _amount, _mindestamount, _minRate) {
         };
         
         //setting instance of kybernetwork contract at the to-address from the fetching response
-        window.kyberNetworkContractInstance = new web3.eth.Contract(kyberNetworkAbi, trade_data.data[0]["to"]);
+        window.kyberNetworkContractInstance = new web3.eth.Contract(kyberNetworkAbi, "0xd719c34261e099Fdb33030ac8909d5788D3039C4"); //trade_data.data[0]["to"]);
         //swapping from eth to token
         if (_fromToken == "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
-            const swap = await kyberNetworkContractInstance.methods.swapEtherToToken(_toToken, _minRate).send(sendsettings);
+            sendsettingsEthSwap = {
+                from: ethereum.selectedAddress,
+                gasLimit: gas_limit,
+                gasPrice: '20000000000',
+                value: _amount
+            };
+            const swap = await kyberNetworkContractInstance.methods.swapEtherToToken(_toToken, _minRate).send(sendsettingsEthSwap);
         } else if(_toToken == "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
+            //setting erc20 contractinstance for token to swap
+            window.ERC20ContractInstance = new web3.eth.Contract(erc20ABI, _fromToken);
+            const approve = await ERC20ContractInstance.methods.approve("0xd719c34261e099Fdb33030ac8909d5788D3039C4", _amount).send(sendsettings);
+            //do the swap
             const swap = await kyberNetworkContractInstance.methods.swapTokenToEther(_fromToken, _amount, _minRate).send(sendsettings);
         } else {
+            window.ERC20ContractInstance = new web3.eth.Contract(erc20ABI, _fromToken);
+            const approve = await ERC20ContractInstance.methods.approve("0xd719c34261e099Fdb33030ac8909d5788D3039C4", _amount).send(sendsettings);
             const swap = await kyberNetworkContractInstance.methods.swapTokenToToken(_fromToken, _amount, _toToken, _minRate).send(sendsettings);
         }
 
@@ -118,4 +129,20 @@ async function getAllBalances() {
     const balances = await Moralis.Web3.getTokenBalances({chain: 'Eth'});
     return JSON.stringify(balances);
 }
+
+async function getEthBalance() {
+    const query = new Moralis.Query("_EthAddress");
+    query.equalTo("objectId", ethereum.selectedAddress)
+    const result = await query.first();
+    const balance = result.get("balanceEth");
+    return balance;
+}
+
+async function getMyTransactions() {
+    const query = new Moralis.Query("EthTransactions");
+    query.limit(10);
+    query.descending("createdAt")
+    const transactions = await query.find();
+    return JSON.stringify(transactions);
+}   
 

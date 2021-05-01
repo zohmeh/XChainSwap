@@ -75,3 +75,18 @@ Future getBalances() async {
   var balancedecoded = json.decode(balance);
   return balancedecoded;
 }
+
+//get my EthBalance from Moralis
+Future getMyEthBalance() async {
+  var promise = getEthBalance();
+  var ethbalance = await promiseToFuture(promise);
+  return ethbalance;
+}
+
+//get my Transactions from Moralis
+Future getAllMyTransactions() async {
+  var promise = getMyTransactions();
+  var transactions = await promiseToFuture(promise);
+  var transactionsdecoded = json.decode(transactions);
+  return transactionsdecoded;
+}

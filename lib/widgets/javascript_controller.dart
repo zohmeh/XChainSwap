@@ -1,6 +1,8 @@
 @JS()
 library blockchainlogic.js;
 
+import 'dart:html';
+
 import 'package:js/js.dart';
 //import 'dart:js_util';
 
@@ -15,3 +17,5 @@ external dynamic getTokenPairRate(
 external dynamic swap(String fromToken, String toToken, String amount,
     String mindestamount, String minRate);
 external dynamic getAllBalances();
+external dynamic getEthBalance();
+external dynamic getMyTransactions();

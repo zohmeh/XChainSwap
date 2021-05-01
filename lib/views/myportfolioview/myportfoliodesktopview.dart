@@ -10,11 +10,19 @@ class MyPortfolioDesktopView extends StatefulWidget {
 
 class _MyPortfolioDesktopViewState extends State<MyPortfolioDesktopView> {
   List myBalances = [];
+  List myTransactions = [];
+  var myEthBalance;
   @override
   void initState() {
-    getBalances().then((result) {
-      setState(() {
-        myBalances = result;
+    getBalances().then((balances) {
+      getMyEthBalance().then((ethblance) {
+        getAllMyTransactions().then((transactions) {
+          setState(() {
+            myBalances = balances;
+            myEthBalance = ethblance;
+            myTransactions = transactions;
+          });
+        });
       });
     });
     super.initState();
@@ -22,16 +30,19 @@ class _MyPortfolioDesktopViewState extends State<MyPortfolioDesktopView> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        SidebarDesktop(1),
-        Container(
-          padding: EdgeInsets.all(10),
-          width: MediaQuery.of(context).size.width - 150,
-          height: MediaQuery.of(context).size.height,
-          child: MyBalancesDesktopView(myBalances),
-        ),
-      ],
+    return SingleChildScrollView(
+      child: Row(
+        children: [
+          SidebarDesktop(1),
+          Container(
+            padding: EdgeInsets.all(10),
+            width: MediaQuery.of(context).size.width - 150,
+            height: MediaQuery.of(context).size.height,
+            child:
+                MyBalancesDesktopView(myBalances, myEthBalance, myTransactions),
+          ),
+        ],
+      ),
     );
   }
 }

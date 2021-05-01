@@ -22,6 +22,7 @@ class _SidebarDesktopState extends State<SidebarDesktop> {
   Widget build(BuildContext context) {
     return Container(
       width: 150,
+      height: MediaQuery.of(context).size.height,
       padding: EdgeInsets.symmetric(horizontal: 5, vertical: 10),
       decoration: BoxDecoration(
         color: Theme.of(context).primaryColor,
