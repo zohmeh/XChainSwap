@@ -1,5 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:web_app_template/functions/functions.dart';
+import 'package:web_app_template/widgets/buttons/button.dart';
 
 class MyBalancesDesktopView extends StatefulWidget {
   final List myBalances;
@@ -32,9 +34,20 @@ class _MyBalancesDesktopViewState extends State<MyBalancesDesktopView> {
                   ],
                 ),
                 SizedBox(height: 20),
-                Text(
-                  "My ERC20 Tokenbalance: ",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                Row(
+                  children: [
+                    Text(
+                      "My ERC20 Tokenbalance: ",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(width: 50),
+                    button(
+                        Theme.of(context).buttonColor,
+                        Theme.of(context).highlightColor,
+                        "Deploy my Portfolio",
+                        deployMyPortfolio,
+                        [widget.myBalances]),
+                  ],
                 ),
                 DataTable(
                   columns: [

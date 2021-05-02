@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:js';
 import 'dart:js_util';
 import 'dart:math';
 import 'package:flutter/material.dart';
@@ -89,4 +90,32 @@ Future getAllMyTransactions() async {
   var transactions = await promiseToFuture(promise);
   var transactionsdecoded = json.decode(transactions);
   return transactionsdecoded;
+}
+
+//deploy my portfolio
+Future deployMyPortfolio(List _arguments) async {
+  var promise = deployPortfolio();
+  var deploy = await promiseToFuture(promise);
+}
+
+//get all deployed portfolios
+Future getAllDeployedPortfolios() async {
+  //List allPortfolios = [];
+  //Map portfolio;
+  var promise = getDeployedPortfolios();
+  var portfolios = await promiseToFuture(promise);
+  var portfoliosdecoded = json.decode(portfolios);
+  //for (var i = 0; i < portfoliosdecoded.length; i++) {
+  //  var userportfolio = json.decode(portfoliosdecoded[i]["portfolio"]);
+  //  print(userportfolio);
+  //  print(userportfolio.runtimeType);
+  //  portfolio = {
+  //    "user": portfoliosdecoded[i]["user"],
+  //    "portfolio": userportfolio,
+  //  };
+  //  allPortfolios.add(portfolio);
+  //}
+  //print(allPortfolios[0]["portfolio"].runtimeType);
+  //print(allPortfolios.runtimeType);
+  return portfoliosdecoded;
 }

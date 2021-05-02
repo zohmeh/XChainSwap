@@ -1,10 +1,9 @@
 @JS()
 library blockchainlogic.js;
 
-import 'dart:html';
+import 'dart:js';
 
 import 'package:js/js.dart';
-//import 'dart:js_util';
 
 @JS()
 external dynamic login();
@@ -19,3 +18,5 @@ external dynamic swap(String fromToken, String toToken, String amount,
 external dynamic getAllBalances();
 external dynamic getEthBalance();
 external dynamic getMyTransactions();
+external dynamic deployPortfolio();
+external dynamic getDeployedPortfolios();

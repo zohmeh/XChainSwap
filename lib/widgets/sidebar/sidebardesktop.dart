@@ -40,6 +40,16 @@ class _SidebarDesktopState extends State<SidebarDesktop> {
           ibutton(
               Icons.gavel_rounded,
               Theme.of(context).primaryColor,
+              widget.side == 0
+                  ? Theme.of(context).accentColor
+                  : Theme.of(context).highlightColor,
+              "All Portfolios",
+              _changeSide,
+              [AllPortfoliosRoute]),
+          SizedBox(height: 20),
+          ibutton(
+              Icons.gavel_rounded,
+              Theme.of(context).primaryColor,
               widget.side == 1
                   ? Theme.of(context).accentColor
                   : Theme.of(context).highlightColor,
