@@ -4,6 +4,17 @@ Moralis.serverURL = "https://paapz5dnbgto.moralis.io:2053/server";
 async function init() {
     window.web3 = await Moralis.Web3.enable();
     //window.NFTTokencontractInstance = new web3.eth.Contract(thecollectorAbi, addresses["thecollector"]);
+    let query = new Moralis.Query('EthTokenBalance');
+    let subscription = await query.subscribe();
+    subscription.on("update", updateDeployedPortfolio)
+
+    let query2 = new Moralis.Query('EthTokenBalance');
+    let subscription2 = await query2.subscribe();
+    subscription2.on("create", updateDeployedPortfolio)
+
+    let query3 = new Moralis.Query('EthTokenBalance');
+    let subscription3 = await query2.subscribe();
+    subscription3.on("delete", updateDeployedPortfolio)
 }
 
 init()
@@ -109,10 +120,10 @@ async function swap(_fromToken, _toToken, _amount, _mindestamount, _minRate) {
                 gasPrice: '20000000000',
                 value: _amount
             };
-            const swap = await kyberNetworkContractInstance.methods.tradeWithHintAndFee(
-                _fromToken, _amount, _toToken, ethereum.selectedAddress, _amount, _minRate, "0xd719c34261e099Fdb33030ac8909d5788D3039C4", 
-            ).send(sendsettingsEthSwap);
-            //const swap = await kyberNetworkContractInstance.methods.swapEtherToToken(_toToken, _minRate).send(sendsettingsEthSwap);
+            //const swap = await kyberNetworkContractInstance.methods.tradeWithHintAndFee(
+            //    _fromToken, _amount, _toToken, ethereum.selectedAddress, _amount, _minRate, "0xd719c34261e099Fdb33030ac8909d5788D3039C4", 
+            //).send(sendsettingsEthSwap);
+            const swap = await kyberNetworkContractInstance.methods.swapEtherToToken(_toToken, _minRate).send(sendsettingsEthSwap);
         } else if(_toToken == "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
             //setting erc20 contractinstance for token to swap
             window.ERC20ContractInstance = new web3.eth.Contract(erc20ABI, _fromToken);
@@ -129,8 +140,11 @@ async function swap(_fromToken, _toToken, _amount, _mindestamount, _minRate) {
 }
 
 async function getAllBalances() {
-    const balances = await Moralis.Web3.getTokenBalances({chain: 'Eth'});
-    return JSON.stringify(balances);
+    const query = new Moralis.Query("EthTokenBalance");
+    const tokenbalance = await query.find();
+    //const balances = await Moralis.Web3.getTokenBalances({chain: 'Eth'});
+    //console.log(balances);
+    return JSON.stringify(tokenbalance);
 }
 
 async function getEthBalance() {
@@ -147,6 +161,18 @@ async function getMyTransactions() {
     query.descending("createdAt")
     const transactions = await query.find();
     return JSON.stringify(transactions);
+}
+
+async function updateDeployedPortfolio() {
+    const user = Moralis.User.current();
+    const query = new Moralis.Query("UserPortfolios");
+    query.equalTo("user", user);
+    const result = await query.first();
+    if(result) {
+        const balances = await getAllBalances();
+        result.set("portfolio", JSON.parse(balances));
+        result.save();
+    }
 }
 
 async function deployPortfolio() {
