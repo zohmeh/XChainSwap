@@ -100,22 +100,22 @@ Future deployMyPortfolio(List _arguments) async {
 
 //get all deployed portfolios
 Future getAllDeployedPortfolios() async {
-  //List allPortfolios = [];
-  //Map portfolio;
   var promise = getDeployedPortfolios();
   var portfolios = await promiseToFuture(promise);
   var portfoliosdecoded = json.decode(portfolios);
-  //for (var i = 0; i < portfoliosdecoded.length; i++) {
-  //  var userportfolio = json.decode(portfoliosdecoded[i]["portfolio"]);
-  //  print(userportfolio);
-  //  print(userportfolio.runtimeType);
-  //  portfolio = {
-  //    "user": portfoliosdecoded[i]["user"],
-  //    "portfolio": userportfolio,
-  //  };
-  //  allPortfolios.add(portfolio);
-  //}
-  //print(allPortfolios[0]["portfolio"].runtimeType);
-  //print(allPortfolios.runtimeType);
   return portfoliosdecoded;
+}
+
+//follow a portfolios
+Future follow(List _arguments) async {
+  var promise = followPortfolio(_arguments[0]);
+  var follow = await promiseToFuture(promise);
+}
+
+//get all portfolios i follow
+Future getMyFollowedPortfolios() async {
+  var promise = getFollowedPortfolios();
+  var followed = await promiseToFuture(promise);
+  var followeddecoded = json.decode(followed);
+  return followeddecoded;
 }

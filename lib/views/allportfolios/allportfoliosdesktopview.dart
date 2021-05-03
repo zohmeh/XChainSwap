@@ -40,8 +40,10 @@ class _AllPortfoliosDesktopViewState extends State<AllPortfoliosDesktopView> {
                       itemCount: allPortfolios.length,
                       itemBuilder: (ctx, idx) {
                         return Portfolio(
+                          portfolioId: allPortfolios[idx]["portfolioId"],
                           username: allPortfolios[idx]["user"],
                           portfolio: allPortfolios[idx]["portfolio"],
+                          followed: false,
                         );
                       }),
                 ),

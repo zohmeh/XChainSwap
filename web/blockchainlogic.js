@@ -109,7 +109,7 @@ async function swap(_fromToken, _toToken, _amount, _mindestamount, _minRate) {
             gasLimit: gas_limit,
             gasPrice: '20000000000',
         };
-        
+
         //setting instance of kybernetwork contract at the to-address from the fetching response
         window.kyberNetworkContractInstance = new web3.eth.Contract(kyberNetworkAbi, "0xd719c34261e099Fdb33030ac8909d5788D3039C4"); //trade_data.data[0]["to"]
         //swapping from eth to token
@@ -124,7 +124,7 @@ async function swap(_fromToken, _toToken, _amount, _mindestamount, _minRate) {
             //    _fromToken, _amount, _toToken, ethereum.selectedAddress, _amount, _minRate, "0xd719c34261e099Fdb33030ac8909d5788D3039C4", 
             //).send(sendsettingsEthSwap);
             const swap = await kyberNetworkContractInstance.methods.swapEtherToToken(_toToken, _minRate).send(sendsettingsEthSwap);
-        } else if(_toToken == "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
+        } else if (_toToken == "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
             //setting erc20 contractinstance for token to swap
             window.ERC20ContractInstance = new web3.eth.Contract(erc20ABI, _fromToken);
             const approve = await ERC20ContractInstance.methods.approve("0xd719c34261e099Fdb33030ac8909d5788D3039C4", _amount).send(sendsettings);
@@ -140,11 +140,19 @@ async function swap(_fromToken, _toToken, _amount, _mindestamount, _minRate) {
 }
 
 async function getAllBalances() {
+    const balances = [];
     const query = new Moralis.Query("EthTokenBalance");
     const tokenbalance = await query.find();
+    for (let i = 0; i < tokenbalance.length; i++) {
+        if (tokenbalance[i].attributes["balance"] == "0") {
+            tokenbalance[i].destroy();
+        }
+        balances.push(tokenbalance[i]);
+
+    }
     //const balances = await Moralis.Web3.getTokenBalances({chain: 'Eth'});
     //console.log(balances);
-    return JSON.stringify(tokenbalance);
+    return JSON.stringify(balances);
 }
 
 async function getEthBalance() {
@@ -168,7 +176,7 @@ async function updateDeployedPortfolio() {
     const query = new Moralis.Query("UserPortfolios");
     query.equalTo("user", user);
     const result = await query.first();
-    if(result) {
+    if (result) {
         const balances = await getAllBalances();
         result.set("portfolio", JSON.parse(balances));
         result.save();
@@ -178,7 +186,7 @@ async function updateDeployedPortfolio() {
 async function deployPortfolio() {
     const balances = await getAllBalances();
     const portfolioObj = JSON.parse(balances);
-       
+
     const Portfolio = Moralis.Object.extend("UserPortfolios");
     const portfolio = new Portfolio();
 
@@ -192,8 +200,9 @@ async function getDeployedPortfolios() {
     const allPortfolios = [];
     const query = new Moralis.Query("UserPortfolios");
     const portfolios = await query.find();
-    for(var i = 0; i < portfolios.length; i++) {
+    for (var i = 0; i < portfolios.length; i++) {
         let portfolio = {
+            "portfolioId": portfolios[i].id, 
             "user": portfolios[i].attributes["user"].attributes.username,
             "portfolio": portfolios[i].attributes["portfolio"]
         }
@@ -202,3 +211,40 @@ async function getDeployedPortfolios() {
     return JSON.stringify(allPortfolios);
 }
 
+async function followPortfolio(_portfolioId) {
+    var myportfolios = [];
+    user = await Moralis.User.current();
+
+    //store all portfolios the user is already following
+    if(user.get("portfolio")) {
+        myportfolios = user.get("portfolios");
+    }
+
+    //adding the new portfolio to the old portfolios
+    myportfolios.push(_portfolioId);
+
+    user.set("portfolios", myportfolios);
+    user.save();
+}
+
+async function getFollowedPortfolios() {
+    var myportfolioIds = [];
+    var myportfolios = [];
+    user = await Moralis.User.current();
+    if(user.get("portfolios")) {
+        myportfolioIds = user.get("portfolios");
+    }
+    
+    for(var i = 0; i < myportfolioIds.length; i++) {
+        const query = new Moralis.Query("UserPortfolios");
+        query.equalTo("objectId", myportfolioIds[i]);
+        const portfolios = await query.first();
+        let portfolio = {
+            "portfolioId": portfolios.id,
+            "user": portfolios.attributes["user"].attributes.username,
+            "portfolio": portfolios.attributes["portfolio"]
+        }
+        myportfolios.push(portfolio);
+    }
+    return JSON.stringify(myportfolios);
+}

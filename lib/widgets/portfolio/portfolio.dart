@@ -2,12 +2,16 @@ import 'dart:math';
 
 import 'package:flip_card/flip_card.dart';
 import 'package:flutter/material.dart';
+import 'package:web_app_template/functions/functions.dart';
+import 'package:web_app_template/widgets/buttons/button.dart';
 
 class Portfolio extends StatefulWidget {
   final String username;
   final List portfolio;
+  final String portfolioId;
+  final bool followed;
 
-  Portfolio({this.username, this.portfolio});
+  Portfolio({this.username, this.portfolio, this.portfolioId, this.followed});
 
   @override
   _PortfolioState createState() => _PortfolioState();
@@ -27,7 +31,24 @@ class _PortfolioState extends State<Portfolio> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Username: " + widget.username),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("Username: " + widget.username),
+                  widget.followed == false
+                      ? button(
+                          Theme.of(context).buttonColor,
+                          Theme.of(context).highlightColor,
+                          "Follow this portfolio",
+                          follow,
+                          [widget.portfolioId])
+                      : button(
+                          Theme.of(context).buttonColor,
+                          Theme.of(context).highlightColor,
+                          "Stop following",
+                        )
+                ],
+              ),
               DataTable(
                 columns: [
                   DataColumn(label: Text("Name")),

@@ -20,3 +20,5 @@ external dynamic getEthBalance();
 external dynamic getMyTransactions();
 external dynamic deployPortfolio();
 external dynamic getDeployedPortfolios();
+external dynamic followPortfolio(String portfolioId);
+external dynamic getFollowedPortfolios();
