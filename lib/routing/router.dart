@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:web_app_template/views/allportfolios/allportfolios_view.dart';
 import 'package:web_app_template/views/swapview/swap_view.dart';
-import '../views/accountsettings.dart';
 import '../routing/route_names.dart';
 import '../views/myportfolioview/home_view.dart';
 import '../widgets/string_extensions.dart';
@@ -14,8 +13,6 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return _getPageRoute(HomeView(), settings.name);
     case SwapTokensRoute:
       return _getPageRoute(SwapView(), settings.name);
-    case SettingsRoute:
-      return _getPageRoute(AccountSettingsView(), settings.name);
     case AllPortfoliosRoute:
       return _getPageRoute(AllPortfoliosView(), settings.name);
     default:

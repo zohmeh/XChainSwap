@@ -22,3 +22,4 @@ external dynamic deployPortfolio();
 external dynamic getDeployedPortfolios();
 external dynamic followPortfolio(String portfolioId);
 external dynamic getFollowedPortfolios();
+external dynamic getMyNFT();

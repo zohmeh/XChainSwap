@@ -24,14 +24,13 @@ dependencies:
   intl: ^0.17.0
   http: ^0.13.1
   js: ^0.6.3
-  mime_type: ^1.0.0
-  image_picker_web: ^1.0.9
-  path: ^1.8.0
   get_it:
   responsive_builder: ^0.1.2
   vs_scrollbar: ^0.2.0
   provider: ^5.0.0
   flip_card: ^0.5.0
+  fl_chart: ^0.35.0
+  data_table_2: ^2.0.3
   flutter:
     sdk: flutter
 

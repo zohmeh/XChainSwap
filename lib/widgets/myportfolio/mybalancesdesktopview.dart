@@ -1,15 +1,13 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:web_app_template/functions/functions.dart';
-import 'package:web_app_template/widgets/buttons/button.dart';
+import 'package:web_app_template/widgets/charts/piechart.dart';
+import 'package:data_table_2/data_table_2.dart';
 
 class MyBalancesDesktopView extends StatefulWidget {
   final List myBalances;
-  final List myTransactions;
-  final myEthBalance;
+  final List myNFTS;
 
-  MyBalancesDesktopView(
-      this.myBalances, this.myEthBalance, this.myTransactions);
+  MyBalancesDesktopView(this.myBalances, this.myNFTS);
 
   @override
   _MyBalancesDesktopViewState createState() => _MyBalancesDesktopViewState();
@@ -18,79 +16,162 @@ class MyBalancesDesktopView extends StatefulWidget {
 class _MyBalancesDesktopViewState extends State<MyBalancesDesktopView> {
   @override
   Widget build(BuildContext context) {
-    return widget.myBalances != [] && widget.myEthBalance != null
+    return widget.myBalances != []
         ? SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                Row(
-                  children: [
-                    Text(
-                      "My Eth Balance: ",
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                Container(
+                  height: 500,
+                  width: MediaQuery.of(context).size.width / 3,
+                  child: Card(
+                    color: Theme.of(context).primaryColor,
+                    child: DataTable2(
+                      columns: [
+                        DataColumn(
+                            label: Text(
+                          "Name",
+                          style:
+                              TextStyle(color: Theme.of(context).accentColor),
+                        )),
+                        DataColumn(
+                            label: Text(
+                          "Symbol",
+                          style:
+                              TextStyle(color: Theme.of(context).accentColor),
+                        )),
+                        DataColumn(
+                            label: Text(
+                          "Balance",
+                          style:
+                              TextStyle(color: Theme.of(context).accentColor),
+                        )),
+                        DataColumn(
+                            label: Text(
+                          "Value in US Dollar",
+                          style:
+                              TextStyle(color: Theme.of(context).accentColor),
+                        )),
+                      ],
+                      rows: widget.myBalances
+                          .map(
+                            ((element) => DataRow(
+                                  cells: [
+                                    DataCell(Text(
+                                      element["name"],
+                                      style: TextStyle(
+                                          color:
+                                              Theme.of(context).highlightColor),
+                                    )),
+                                    DataCell(Text(
+                                      element["symbol"],
+                                      style: TextStyle(
+                                          color:
+                                              Theme.of(context).highlightColor),
+                                    )),
+                                    DataCell(Text(
+                                      (int.parse(element["balance"]) /
+                                              pow(
+                                                  10,
+                                                  int.parse(
+                                                      element["decimals"])))
+                                          .toStringAsFixed(5),
+                                      style: TextStyle(
+                                          color:
+                                              Theme.of(context).highlightColor),
+                                    )),
+                                    DataCell(Text(
+                                      (element["current_price"] *
+                                              (int.parse(element["balance"]) /
+                                                  pow(
+                                                      10,
+                                                      int.parse(element[
+                                                          "decimals"]))))
+                                          .toStringAsFixed(2),
+                                      style: TextStyle(
+                                          color:
+                                              Theme.of(context).highlightColor),
+                                    )),
+                                  ],
+                                )),
+                          )
+                          .toList(),
                     ),
-                    Text((int.parse(widget.myEthBalance) / 1000000000000000000)
-                        .toString())
-                  ],
+                  ),
                 ),
-                SizedBox(height: 20),
-                Row(
-                  children: [
-                    Text(
-                      "My ERC20 Tokenbalance: ",
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                Container(
+                  height: 500,
+                  width: MediaQuery.of(context).size.width / 4.5,
+                  child: Card(
+                    color: Theme.of(context).primaryColor,
+                    child: PieChartWidget(balances: widget.myBalances),
+                  ),
+                ),
+                Container(
+                  height: 500,
+                  width: MediaQuery.of(context).size.width / 3,
+                  child: Card(
+                    color: Theme.of(context).primaryColor,
+                    child: DataTable2(
+                      columns: [
+                        DataColumn(
+                            label: Text(
+                          "Name",
+                          style:
+                              TextStyle(color: Theme.of(context).accentColor),
+                        )),
+                        DataColumn(
+                            label: Text(
+                          "Symbol",
+                          style:
+                              TextStyle(color: Theme.of(context).accentColor),
+                        )),
+                        DataColumn(
+                            label: Text(
+                          "Token Id",
+                          style:
+                              TextStyle(color: Theme.of(context).accentColor),
+                        )),
+                        DataColumn(
+                            label: Text(
+                          "Amount",
+                          style:
+                              TextStyle(color: Theme.of(context).accentColor),
+                        )),
+                      ],
+                      rows: widget.myNFTS
+                          .map(
+                            ((element) => DataRow(
+                                  cells: [
+                                    DataCell(Text(
+                                      element["name"],
+                                      style: TextStyle(
+                                          color:
+                                              Theme.of(context).highlightColor),
+                                    )),
+                                    DataCell(Text(
+                                      element["symbol"],
+                                      style: TextStyle(
+                                          color:
+                                              Theme.of(context).highlightColor),
+                                    )),
+                                    DataCell(Text(
+                                      element["token_id"],
+                                      style: TextStyle(
+                                          color:
+                                              Theme.of(context).highlightColor),
+                                    )),
+                                    DataCell(Text(
+                                      element["amount"].toString(),
+                                      style: TextStyle(
+                                          color:
+                                              Theme.of(context).highlightColor),
+                                    )),
+                                  ],
+                                )),
+                          )
+                          .toList(),
                     ),
-                    SizedBox(width: 50),
-                    button(
-                        Theme.of(context).buttonColor,
-                        Theme.of(context).highlightColor,
-                        "Deploy my Portfolio",
-                        deployMyPortfolio,
-                        [widget.myBalances]),
-                  ],
-                ),
-                DataTable(
-                  columns: [
-                    DataColumn(label: Text("Name")),
-                    DataColumn(label: Text("Symbol")),
-                    DataColumn(label: Text("Balance")),
-                  ],
-                  rows: widget.myBalances
-                      .map(
-                        ((element) => DataRow(
-                              cells: [
-                                DataCell(Text(element["name"])),
-                                DataCell(Text(element["symbol"])),
-                                DataCell(Text((int.parse(element["balance"]) /
-                                        pow(10, int.parse(element["decimals"])))
-                                    .toString())),
-                              ],
-                            )),
-                      )
-                      .toList(),
-                ),
-                SizedBox(height: 20),
-                Text(
-                  "My latest Transactions: ",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                DataTable(
-                  columns: [
-                    DataColumn(label: Text("Tx Hash")),
-                    DataColumn(label: Text("To Address")),
-                    DataColumn(label: Text("Value")),
-                  ],
-                  rows: widget.myTransactions
-                      .map(
-                        ((element) => DataRow(
-                              cells: [
-                                DataCell(Text(element["hash"])),
-                                DataCell(Text(element["to_address"])),
-                                DataCell(Text(element["value"])),
-                              ],
-                            )),
-                      )
-                      .toList(),
+                  ),
                 ),
               ],
             ),

@@ -55,7 +55,7 @@ class _SidebarMobileState extends State<SidebarMobile> {
               [AllPortfoliosRoute]),
           SizedBox(height: 20),
           ibutton(
-              Icons.gavel_rounded,
+              Icons.account_balance_wallet_rounded,
               Theme.of(context).primaryColor,
               Theme.of(context).highlightColor,
               "My Portfolio",

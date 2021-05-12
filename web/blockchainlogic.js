@@ -142,6 +142,7 @@ async function swap(_fromToken, _toToken, _amount, _mindestamount, _minRate) {
 async function getAllBalances() {
     const balances = [];
     const query = new Moralis.Query("EthTokenBalance");
+    query.equalTo("address", ethereum.selectedAddress);
     const tokenbalance = await query.find();
     for (let i = 0; i < tokenbalance.length; i++) {
         if (tokenbalance[i].attributes["balance"] == "0") {
@@ -156,8 +157,10 @@ async function getAllBalances() {
 }
 
 async function getEthBalance() {
+    user = await Moralis.User.current();
+    const userAddress = user.get("ethAddress");
     const query = new Moralis.Query("_EthAddress");
-    query.equalTo("objectId", ethereum.selectedAddress)
+    query.equalTo("objectId", userAddress)
     const result = await query.first();
     const balance = result.get("balanceEth");
     return balance;
@@ -165,6 +168,7 @@ async function getEthBalance() {
 
 async function getMyTransactions() {
     const query = new Moralis.Query("EthTransactions");
+    query.equalTo("from_address", ethereum.selectedAddress.toLowerCase());
     query.limit(10);
     query.descending("createdAt")
     const transactions = await query.find();
@@ -202,7 +206,7 @@ async function getDeployedPortfolios() {
     const portfolios = await query.find();
     for (var i = 0; i < portfolios.length; i++) {
         let portfolio = {
-            "portfolioId": portfolios[i].id, 
+            "portfolioId": portfolios[i].id,
             "user": portfolios[i].attributes["user"].attributes.username,
             "portfolio": portfolios[i].attributes["portfolio"]
         }
@@ -216,7 +220,7 @@ async function followPortfolio(_portfolioId) {
     user = await Moralis.User.current();
 
     //store all portfolios the user is already following
-    if(user.get("portfolio")) {
+    if (user.get("portfolio")) {
         myportfolios = user.get("portfolios");
     }
 
@@ -231,20 +235,36 @@ async function getFollowedPortfolios() {
     var myportfolioIds = [];
     var myportfolios = [];
     user = await Moralis.User.current();
-    if(user.get("portfolios")) {
+    if (user.get("portfolios")) {
         myportfolioIds = user.get("portfolios");
-    }
-    
-    for(var i = 0; i < myportfolioIds.length; i++) {
-        const query = new Moralis.Query("UserPortfolios");
-        query.equalTo("objectId", myportfolioIds[i]);
-        const portfolios = await query.first();
-        let portfolio = {
-            "portfolioId": portfolios.id,
-            "user": portfolios.attributes["user"].attributes.username,
-            "portfolio": portfolios.attributes["portfolio"]
+        for (var i = 0; i < myportfolioIds.length; i++) {
+            const query = new Moralis.Query("UserPortfolios");
+            query.equalTo("objectId", myportfolioIds[i]);
+            const portfolios = await query.first();
+            if (portfolios) {
+                let portfolio = {
+                    "portfolioId": portfolios.id,
+                    "user": portfolios.attributes["user"].attributes.username,
+                    "portfolio": portfolios.attributes["portfolio"]
+                }
+                myportfolios.push(portfolio);
+            }
         }
-        myportfolios.push(portfolio);
     }
     return JSON.stringify(myportfolios);
+}
+
+async function getMyNFT() {
+    try {
+        user = await Moralis.User.current();
+        let userItems = [];
+        const query = new Moralis.Query("EthNFTTokenOwners");
+        query.equalTo("owner_of", user.attributes.ethAddress);
+        const ownedItems = await query.find();
+        for (var i = 0; i < ownedItems.length; i++) {
+            useritem = JSON.stringify(ownedItems[i]);
+            userItems.push(useritem);
+        }
+        return userItems;
+    } catch (error) { console.log(error); }
 }

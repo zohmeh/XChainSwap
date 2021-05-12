@@ -48,7 +48,7 @@ class _SidebarDesktopState extends State<SidebarDesktop> {
               [AllPortfoliosRoute]),
           SizedBox(height: 20),
           ibutton(
-              Icons.gavel_rounded,
+              Icons.account_balance_wallet_rounded,
               Theme.of(context).primaryColor,
               widget.side == 1
                   ? Theme.of(context).accentColor
@@ -58,7 +58,7 @@ class _SidebarDesktopState extends State<SidebarDesktop> {
               [HomeRoute]),
           SizedBox(height: 20),
           ibutton(
-              Icons.attach_money_rounded,
+              Icons.sync_alt_rounded,
               Theme.of(context).primaryColor,
               widget.side == 2
                   ? Theme.of(context).accentColor

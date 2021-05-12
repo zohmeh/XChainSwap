@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:web_app_template/widgets/portfolio/portfolio.dart';
+import 'package:fl_chart/fl_chart.dart';
+import '../../widgets/portfolio/portfolio.dart';
 import '../../widgets/myportfolio/mybalancesdesktopview.dart';
 import '../../functions/functions.dart';
 import '../../widgets/sidebar/sidebardesktop.dart';
@@ -10,26 +11,10 @@ class MyPortfolioDesktopView extends StatefulWidget {
 }
 
 class _MyPortfolioDesktopViewState extends State<MyPortfolioDesktopView> {
-  List myBalances = [];
-  List myTransactions = [];
-  List myFollowedPortfolios = [];
-  var myEthBalance;
+  Future myAssets;
   @override
   void initState() {
-    getBalances().then((balances) {
-      getMyEthBalance().then((ethblance) {
-        getAllMyTransactions().then((transactions) {
-          getMyFollowedPortfolios().then((followed) {
-            setState(() {
-              myBalances = balances;
-              myEthBalance = ethblance;
-              myTransactions = transactions;
-              myFollowedPortfolios = followed;
-            });
-          });
-        });
-      });
-    });
+    myAssets = getMyAssets();
     super.initState();
   }
 
@@ -40,34 +25,24 @@ class _MyPortfolioDesktopViewState extends State<MyPortfolioDesktopView> {
         children: [
           SidebarDesktop(1),
           Container(
-            padding: EdgeInsets.all(10),
-            width: (MediaQuery.of(context).size.width - 150) * (3 / 4),
-            height: MediaQuery.of(context).size.height,
-            child:
-                MyBalancesDesktopView(myBalances, myEthBalance, myTransactions),
-          ),
-          SingleChildScrollView(
-            child: Container(
-                padding: EdgeInsets.all(10),
-                width: (MediaQuery.of(context).size.width - 150) * (1 / 4),
-                height: MediaQuery.of(context).size.height,
-                child: myFollowedPortfolios != null
-                    ? GridView.builder(
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 1,
-                            crossAxisSpacing: 1,
-                            mainAxisExtent: 450),
-                        itemCount: (myFollowedPortfolios.length),
-                        itemBuilder: (ctx, idx) {
-                          return Portfolio(
-                            portfolioId: myFollowedPortfolios[idx]
-                                ["portfolioId"],
-                            username: myFollowedPortfolios[idx]["user"],
-                            portfolio: myFollowedPortfolios[idx]["portfolio"],
-                            followed: true,
-                          );
-                        })
-                    : Text("You follow no other Portfolios")),
+            width: MediaQuery.of(context).size.width - 150,
+            child: FutureBuilder(
+                future: myAssets,
+                builder: (ctx, balancesnapshot) {
+                  if (balancesnapshot.connectionState ==
+                      ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  } else {
+                    return Container(
+                      padding: EdgeInsets.all(10),
+                      width:
+                          (MediaQuery.of(context).size.width - 150) * (3 / 4),
+                      height: MediaQuery.of(context).size.height,
+                      child: MyBalancesDesktopView(
+                          balancesnapshot.data[0], balancesnapshot.data[1]),
+                    );
+                  }
+                }),
           ),
         ],
       ),

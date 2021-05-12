@@ -39,7 +39,7 @@ class _PortfolioState extends State<Portfolio> {
                       ? button(
                           Theme.of(context).buttonColor,
                           Theme.of(context).highlightColor,
-                          "Follow this portfolio",
+                          "Follow",
                           follow,
                           [widget.portfolioId])
                       : button(

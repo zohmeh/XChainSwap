@@ -3,7 +3,10 @@ import 'dart:js';
 import 'dart:js_util';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:web_app_template/helpers/coinGeckoTokenList.dart';
+import '../../helpers/coinGeckoTokenList.dart';
 import '../widgets/javascript_controller.dart';
+import 'package:http/http.dart' as http;
 
 class Paraswap with ChangeNotifier {
   var toAmount;
@@ -71,10 +74,34 @@ Future<List<dynamic>> fetchTokens() async {
 
 //get my Balances from Moralis
 Future getBalances() async {
+  var myBalances = [];
+  var ethbalance = await getMyEthBalance();
+  Map eth = {
+    "name": "Ether",
+    "symbol": "Eth",
+    "balance": ethbalance,
+    "decimals": "18"
+  };
+  myBalances.add(eth);
   var promise = getAllBalances();
   var balance = await promiseToFuture(promise);
   var balancedecoded = json.decode(balance);
-  return balancedecoded;
+  for (var i = 0; i < balancedecoded.length; i++) {
+    myBalances.add(balancedecoded[i]);
+  }
+  for (var i = 0; i < myBalances.length; i++) {
+    var coinGeckoId =
+        coinGeckoTokens[myBalances[i]["symbol"].toLowerCase()]["id"];
+    var response = await http.get(Uri.parse(
+        'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coinGeckoId}&order=market_cap_desc&per_page=100&page=1&sparkline=false'));
+    var jsonData = json.decode(response.body);
+    var currentPrice = jsonData[0]["current_price"];
+    currentPrice == null
+        ? myBalances[i]["current_price"] = 0
+        : myBalances[i]["current_price"] = jsonData[0]["current_price"];
+  }
+  //print(myBalances);
+  return myBalances;
 }
 
 //get my EthBalance from Moralis
@@ -82,6 +109,18 @@ Future getMyEthBalance() async {
   var promise = getEthBalance();
   var ethbalance = await promiseToFuture(promise);
   return ethbalance;
+}
+
+//get my EthBalance from Moralis
+Future getMyNFTBalance() async {
+  var myNFT = [];
+  var promise = getMyNFT();
+  var nftbalance = await promiseToFuture(promise);
+  for (var i = 0; i < nftbalance.length; i++) {
+    var nft = json.decode(nftbalance[i]);
+    myNFT.add(nft);
+  }
+  return myNFT;
 }
 
 //get my Transactions from Moralis
@@ -118,4 +157,11 @@ Future getMyFollowedPortfolios() async {
   var followed = await promiseToFuture(promise);
   var followeddecoded = json.decode(followed);
   return followeddecoded;
+}
+
+//get all my Assests
+Future getMyAssets() async {
+  var tokens = await getBalances();
+  var nfts = await getMyNFTBalance();
+  return ([tokens, nfts]);
 }
