@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../functions/functions.dart';
@@ -14,140 +15,216 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
   String fromToken;
   String toToken;
   String fromAmount;
-  List<String> tokenSymbols = [];
+  Future tokens;
+  var quote;
 
   @override
   void initState() {
-    fromToken = "ETH";
-    toToken = "KNC";
-    fetchTokens().then((result) {
-      setState(() {
-        for (var i = 0; i < result.length; i++) {
-          tokenSymbols.add(result[i]["symbol"]);
-        }
-      });
-    });
+    tokens = fetchTokens();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    var toAmount = Provider.of<Paraswap>(context).toAmount;
     var width = MediaQuery.of(context).size.width;
-    return Card(
-      elevation: 10,
-      child: Container(
-        padding: EdgeInsets.all(30),
-        height: width / 4,
-        width: width / 4,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: width / 15,
-                  child: inputField(
-                    ctx: context,
-                    controller: widget.swapamount,
-                    labelText: "Input the amount to swap",
-                    topMargin: 0,
-                    leftMargin: 0,
-                    rightMargin: 0,
-                    bottomMargin: 0,
-                    onChanged: (value) {
-                      setState(() {
-                        fromAmount = value;
-                        Provider.of<Paraswap>(context, listen: false)
-                            .getRate([fromToken, toToken, fromAmount]);
-                      });
-                    },
-                    onSubmitted: (value) {
-                      setState(() {
-                        fromAmount = value;
-                        Provider.of<Paraswap>(context, listen: false)
-                            .getRate([fromToken, toToken, fromAmount]);
-                      });
-                    },
+    return FutureBuilder(
+      future: tokens,
+      builder: (ctx, tokensnapshot) {
+        if (tokensnapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else {
+          List<Map> tokenList = tokensnapshot.data;
+          return Card(
+            color: Theme.of(context).primaryColor,
+            //elevation: 10,
+            child: Container(
+              padding: EdgeInsets.all(30),
+              height: width / 4,
+              width: width / 4,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Container(
+                        width: width / 15,
+                        child: inputField(
+                          ctx: context,
+                          controller: widget.swapamount,
+                          labelText: "Input the amount to swap",
+                          topMargin: 0,
+                          leftMargin: 0,
+                          rightMargin: 0,
+                          bottomMargin: 0,
+                          onChanged: (value) async {
+                            //search for decimal
+                            for (var i = 0; i < tokenList.length; i++) {
+                              if (tokenList[i]["address"] == fromToken) {
+                                setState(() {
+                                  fromAmount = (double.parse(value) *
+                                          pow(10, tokenList[i]["decimals"]))
+                                      .toString();
+                                });
+                              }
+                            }
+                            quote =
+                                await getRate([fromToken, toToken, fromAmount]);
+                          },
+                          onSubmitted: (value) async {
+                            //search for decimal
+                            for (var i = 0; i < tokenList.length; i++) {
+                              if (tokenList[i]["address"] == fromToken) {
+                                setState(() {
+                                  fromAmount = (double.parse(value) *
+                                          pow(10, tokenList[i]["decimals"]))
+                                      .toString();
+                                });
+                              }
+                            }
+                            quote =
+                                await getRate([fromToken, toToken, fromAmount]);
+                          },
+                        ),
+                      ),
+                      DropdownButtonHideUnderline(
+                        child: ButtonTheme(
+                          alignedDropdown: true,
+                          child: DropdownButton<String>(
+                            isDense: true,
+                            hint: new Text(
+                              "Select Token",
+                              style: TextStyle(
+                                  color: Theme.of(context).accentColor),
+                            ),
+                            value: fromToken,
+                            onChanged: (value) {
+                              setState(() {
+                                fromToken = value;
+                              });
+                            },
+                            items: tokenList.map((Map map) {
+                              return new DropdownMenuItem<String>(
+                                value: map["address"],
+                                child: Container(
+                                  width: 300,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: <Widget>[
+                                      Image.network(
+                                        map["logoURI"],
+                                        width: 25,
+                                      ),
+                                      Container(
+                                          margin: EdgeInsets.only(left: 10),
+                                          child: Text(
+                                            map["symbol"],
+                                            style: TextStyle(
+                                                color: Theme.of(context)
+                                                    .accentColor),
+                                          )),
+                                      Container(
+                                          margin: EdgeInsets.only(left: 20),
+                                          child: Text(
+                                            map["name"],
+                                            style: TextStyle(
+                                                color: Theme.of(context)
+                                                    .accentColor),
+                                          )),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      )
+                    ],
                   ),
-                ),
-                DropdownButton(
-                  value: fromToken,
-                  icon: const Icon(Icons.arrow_downward),
-                  iconSize: 24,
-                  elevation: 16,
-                  style: const TextStyle(color: Colors.deepPurple),
-                  underline: Container(
-                    height: 2,
-                    color: Colors.deepPurpleAccent,
-                  ),
-                  onChanged: (value) {
-                    fromAmount != null
-                        ? setState(() {
-                            fromToken = value;
-                            Provider.of<Paraswap>(context, listen: false)
-                                .getRate([fromToken, toToken, fromAmount]);
-                          })
-                        : setState(() {
-                            fromToken = value;
-                          });
-                  },
-                  items: tokenSymbols.map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                )
-              ],
+                  button(
+                      Theme.of(context).buttonColor,
+                      Theme.of(context).highlightColor,
+                      "Swap Tokens",
+                      swapTokens,
+                      [fromToken, toToken, fromAmount]),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Container(
+                          width: width / 15,
+                          child: quote != null
+                              ? Text(
+                                  (int.parse(quote["toTokenAmount"]) /
+                                          pow(10, quote["toToken"]["decimals"]))
+                                      .toString(),
+                                  style: TextStyle(
+                                      color: Theme.of(context).highlightColor),
+                                )
+                              : Text("")),
+                      DropdownButtonHideUnderline(
+                        child: ButtonTheme(
+                          alignedDropdown: true,
+                          child: DropdownButton<String>(
+                            isDense: true,
+                            hint: new Text(
+                              "Select Token",
+                              style: TextStyle(
+                                  color: Theme.of(context).accentColor),
+                            ),
+                            value: toToken,
+                            onChanged: (value) {
+                              setState(() {
+                                toToken = value;
+                              });
+                            },
+                            items: tokenList.map((Map map) {
+                              return new DropdownMenuItem<String>(
+                                value: map["address"],
+                                child: Container(
+                                  width: 300,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: <Widget>[
+                                      Image.network(
+                                        map["logoURI"],
+                                        width: 25,
+                                      ),
+                                      Container(
+                                          width: 123,
+                                          margin: EdgeInsets.only(left: 10),
+                                          child: Text(
+                                            map["symbol"],
+                                            style: TextStyle(
+                                                color: Theme.of(context)
+                                                    .accentColor),
+                                          )),
+                                      Flexible(
+                                        child: Container(
+                                            width: 122,
+                                            margin: EdgeInsets.only(left: 20),
+                                            child: Text(
+                                              map["name"],
+                                              style: TextStyle(
+                                                  color: Theme.of(context)
+                                                      .accentColor),
+                                            )),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      )
+                    ],
+                  )
+                ],
+              ),
             ),
-            button(
-                Theme.of(context).buttonColor,
-                Theme.of(context).highlightColor,
-                "Swap Tokens",
-                Provider.of<Paraswap>(context).swapTokens),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                    width: width / 15,
-                    child: toAmount != null
-                        ? Text(toAmount.toString())
-                        : Text("")),
-                DropdownButton(
-                  value: toToken,
-                  icon: const Icon(Icons.arrow_downward),
-                  iconSize: 24,
-                  elevation: 16,
-                  style: const TextStyle(color: Colors.deepPurple),
-                  underline: Container(
-                    height: 2,
-                    color: Colors.deepPurpleAccent,
-                  ),
-                  onChanged: (value) {
-                    fromAmount != null
-                        ? setState(() {
-                            toToken = value;
-                            Provider.of<Paraswap>(context, listen: false)
-                                .getRate([fromToken, toToken, fromAmount]);
-                          })
-                        : setState(() {
-                            toToken = value;
-                          });
-                  },
-                  items: tokenSymbols.map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                )
-              ],
-            )
-          ],
-        ),
-      ),
+          );
+        }
+      },
     );
   }
 }

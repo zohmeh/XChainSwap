@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:js';
 import 'dart:js_util';
 import 'dart:math';
 import 'package:flutter/material.dart';
@@ -9,67 +8,60 @@ import '../widgets/javascript_controller.dart';
 import 'package:http/http.dart' as http;
 
 class Paraswap with ChangeNotifier {
-  var toAmount;
-  var fromTokenAddress;
-  var toTokenAddress;
-  var fromAmount;
-  var fromTokenDecimal;
-  var toTokenDecimal;
-  var minRate;
+  var quote;
 
   //get rates for chosen pair from kyber api
   Future getRate(List _arguments) async {
-    if (_arguments[2] != "") {
-      //find from and to token addresses
-      fromAmount = _arguments[2];
-      List tokens = [];
-
-      tokens = await fetchTokens();
-
-      for (var i = 0; i < tokens.length; i++) {
-        if (tokens[i]["symbol"] == _arguments[0]) {
-          fromTokenAddress = tokens[i]["address"];
-          fromTokenDecimal = tokens[i]["decimals"];
-        }
-        if (tokens[i]["symbol"] == _arguments[1]) {
-          toTokenAddress = tokens[i]["address"];
-          toTokenDecimal = tokens[i]["decimals"];
-        }
-      }
-      var promise1 = getTokenPairRate(fromTokenAddress, toTokenAddress,
-          (int.parse(fromAmount) * pow(10, fromTokenDecimal)).toString());
-      var rates = await promiseToFuture(promise1);
-
-      var ratesdecoded = json.decode(rates);
-      minRate = int.parse(ratesdecoded["slippageRate"]);
-      toAmount =
-          (int.parse(ratesdecoded["expectedRate"]) / pow(10, toTokenDecimal)) *
-              int.parse(fromAmount);
-      notifyListeners();
-    } else {
-      return;
-    }
-  }
-
-  Future swapTokens() async {
-    var minToAmount = toAmount; // * 0.97;
-    var promise = swap(
-        fromTokenAddress,
-        toTokenAddress,
-        (int.parse(fromAmount) * pow(10, fromTokenDecimal)).toString(),
-        (minToAmount * pow(10, toTokenDecimal)).toString(),
-        minRate.toString());
+    //convert with decimals
+    var promise = fetch1InchTokens();
     var tokens = await promiseToFuture(promise);
-    //var tokensdecoded = json.decode(tokens);
+    var tokensdecoded = json.decode(tokens);
+    var decimals = tokensdecoded[_arguments[0]]["decimals"];
+
+    double _amount = double.parse(_arguments[2]) * pow(10, decimals);
+
+    var promise1 = getQuote(_arguments[0], _arguments[1], _amount.toString());
+    var quote = await promiseToFuture(promise1);
+    var quotedecoded = json.decode(quote);
+    quote = quotedecoded;
+    notifyListeners();
   }
 }
 
-Future<List<dynamic>> fetchTokens() async {
-  var promise = fetchParaswapTokens();
+Future getRate(List _arguments) async {
+  var fromAmount = BigInt.from(double.parse(_arguments[2]));
+  var promise1 = getQuote(_arguments[0], _arguments[1], fromAmount.toString());
+  var quote = await promiseToFuture(promise1);
+  var quotedecoded = json.decode(quote);
+  return quotedecoded;
+}
+
+Future<List<Map>> fetchTokens() async {
+  List<Map> tokenList = [];
+  var promise = fetch1InchTokens();
   var tokens = await promiseToFuture(promise);
   var tokensdecoded = json.decode(tokens);
+  var tokensdecodedList = tokensdecoded.values.toList();
 
-  return tokensdecoded["data"];
+  for (var i = 0; i < tokensdecodedList.length; i++) {
+    Map token = {
+      "symbol": tokensdecodedList[i]["symbol"],
+      "name": tokensdecodedList[i]["name"],
+      "address": tokensdecodedList[i]["address"],
+      "decimals": tokensdecodedList[i]["decimals"],
+      "logoURI": tokensdecodedList[i]["logoURI"]
+    };
+    tokenList.add(token);
+  }
+  tokenList.sort((a, b) => a["symbol"].compareTo(b["symbol"]));
+
+  return tokenList;
+}
+
+Future swapTokens(List _arguments) async {
+  var fromAmount = BigInt.from(double.parse(_arguments[2]));
+  var promise = swap(_arguments[0], _arguments[1], fromAmount.toString());
+  await promiseToFuture(promise);
 }
 
 //get my Balances from Moralis
@@ -83,11 +75,18 @@ Future getBalances() async {
     "decimals": "18"
   };
   myBalances.add(eth);
-  var promise = getAllBalances();
+  var bscbalance = await getMyBscBalance();
+  Map bsc = {
+    "name": "Binance Coin",
+    "symbol": "BNB",
+    "balance": bscbalance,
+    "decimals": "18"
+  };
+  myBalances.add(bsc);
+  var promise = getTokenBalances();
   var balance = await promiseToFuture(promise);
-  var balancedecoded = json.decode(balance);
-  for (var i = 0; i < balancedecoded.length; i++) {
-    myBalances.add(balancedecoded[i]);
+  for (var i = 0; i < balance.length; i++) {
+    myBalances.add(json.decode(balance[i]));
   }
   for (var i = 0; i < myBalances.length; i++) {
     var coinGeckoId =
@@ -100,7 +99,6 @@ Future getBalances() async {
         ? myBalances[i]["current_price"] = 0
         : myBalances[i]["current_price"] = jsonData[0]["current_price"];
   }
-  //print(myBalances);
   return myBalances;
 }
 
@@ -109,6 +107,13 @@ Future getMyEthBalance() async {
   var promise = getEthBalance();
   var ethbalance = await promiseToFuture(promise);
   return ethbalance;
+}
+
+//get my EthBalance from Moralis
+Future getMyBscBalance() async {
+  var promise = getBscBalance();
+  var bscbalance = await promiseToFuture(promise);
+  return bscbalance;
 }
 
 //get my EthBalance from Moralis

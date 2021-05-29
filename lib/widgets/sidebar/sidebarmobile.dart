@@ -63,7 +63,7 @@ class _SidebarMobileState extends State<SidebarMobile> {
               [HomeRoute]),
           SizedBox(height: 20),
           ibutton(
-              Icons.attach_money_rounded,
+              Icons.sync_alt_rounded,
               Theme.of(context).primaryColor,
               Theme.of(context).highlightColor,
               "Swap Tokens",
