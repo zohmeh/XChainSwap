@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:web_app_template/functions/functions.dart';
 import '../../widgets/useravatar.dart';
 import '../../provider/contractinteraction.dart';
 import '../../provider/loginprovider.dart';
@@ -102,7 +103,7 @@ class _NavbardesktopState extends State<Navbardesktop> {
                         Theme.of(context).buttonColor,
                         Theme.of(context).highlightColor,
                         "LogOut",
-                        Provider.of<LoginModel>(context).logOut)
+                        Provider.of<LoginModel>(context).logOut),
                   ],
                 )
               : button(

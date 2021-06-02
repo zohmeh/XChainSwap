@@ -23,4 +23,5 @@ external dynamic getDeployedPortfolios();
 external dynamic followPortfolio(String portfolioId);
 external dynamic getFollowedPortfolios();
 external dynamic getMyNFT();
+external dynamic getSwaps();
 external dynamic getQuote(String _fromToken, String _toToken, String _amount);

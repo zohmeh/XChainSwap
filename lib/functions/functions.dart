@@ -36,6 +36,16 @@ Future getRate(List _arguments) async {
   return quotedecoded;
 }
 
+Future getAllSwaps() async {
+  List allSwaps = [];
+  var promise = getSwaps();
+  var swaps = await promiseToFuture(promise);
+  for (var i = 0; i < swaps.length; i++) {
+    allSwaps.add(json.decode(swaps[i]));
+  }
+  return allSwaps;
+}
+
 Future<List<Map>> fetchTokens() async {
   List<Map> tokenList = [];
   var promise = fetch1InchTokens();
@@ -99,6 +109,11 @@ Future getBalances() async {
         ? myBalances[i]["current_price"] = 0
         : myBalances[i]["current_price"] = jsonData[0]["current_price"];
   }
+
+  var test = await http
+      .get(Uri.parse('https://api.coingecko.com/api/v3/asset_platforms'));
+  var testData = json.decode(test.body);
+  print(testData);
   return myBalances;
 }
 

@@ -3,8 +3,8 @@
 //Moralis.serverURL = "https://paapz5dnbgto.moralis.io:2053/server";
 
 //mainNet
-Moralis.initialize("WE03b0zdD7ZxXip7WUvPbpGCaWPP4ApNHHFGbXrQ")
-Moralis.serverURL = "https://paapz5dnbgto.moralis.io:2053/server";
+Moralis.initialize("ThhtsVE4amxBv91PmwzvbMsO63EOba1yPwa9Hcvm")
+Moralis.serverURL = "https://8qei4hdfzsnk.moralis.io:2053/server";
 
 async function init() {
     window.web3 = await Moralis.Web3.enable();
@@ -20,9 +20,33 @@ async function init() {
     //let query3 = new Moralis.Query('EthTokenBalance');
     //let subscription3 = await query2.subscribe();
     //subscription3.on("delete", updateDeployedPortfolio)
+
+
 }
 
 init()
+
+async function getSwaps() {
+    var test = new Object();
+    const swaps = await Moralis.Cloud.run("getLatestSwaps");
+    //fetch token infos 
+    const response = await fetch('https://api.1inch.exchange/v3.0/1/tokens');
+    const tokens = await response.json();
+    //console.log(tokens["tokens"]);
+    for (var i = 0; i < swaps.length; i++) {
+        //console.log(tokens["tokens"][swaps[i]["srcToken"].toLowerCase()]);
+        if (typeof tokens["tokens"][swaps[i]["srcToken"].toLowerCase()] == typeof test) {
+            console.log("Hallo");
+            //swaps[i]["srcTokenName"] = tokens["tokens"][swaps[i]["srcToken"].toLowerCase()]["name"];
+            //swaps[i]["dstTokenName"] = tokens["tokens"][swaps[i]["dstToken"].toLowerCase()]["name"];
+            //swaps[i]["dstTokenSymbol"] = tokens["tokens"][swaps[i]["dstToken"].toLowerCase()]["logoURI"];
+        }
+    }
+    console.log(swaps);
+    //console.log(swaps[0]["srcToken"]);
+    //console.log(tokens["tokens"][swaps[0]["srcToken"].toLowerCase()]);
+    return swaps;
+}
 
 async function loggedIn() {
     try {

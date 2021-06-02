@@ -1,6 +1,5 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../../functions/functions.dart';
 import '../../widgets/buttons/button.dart';
 import '../../widgets/inputfields/inputField.dart';
@@ -31,16 +30,16 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
       future: tokens,
       builder: (ctx, tokensnapshot) {
         if (tokensnapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
+          return CircularProgressIndicator();
         } else {
           List<Map> tokenList = tokensnapshot.data;
-          return Card(
-            color: Theme.of(context).primaryColor,
-            //elevation: 10,
-            child: Container(
-              padding: EdgeInsets.all(30),
-              height: width / 4,
-              width: width / 4,
+          return Container(
+            padding: EdgeInsets.all(30),
+            height: width / 3,
+            width: width / 3,
+            child: Card(
+              color: Theme.of(context).primaryColor,
+              //elevation: 10,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
