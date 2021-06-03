@@ -14,8 +14,22 @@ class _SwapDesktopViewState extends State<SwapDesktopView> {
     return Row(
       children: [
         SidebarDesktop(2),
-        SwapWidgetDesktopview(),
-        OneInchAnalytics()
+        Container(
+            width: (MediaQuery.of(context).size.width - 150) / 2,
+            child: SwapWidgetDesktopview()),
+        Container(
+          width: (MediaQuery.of(context).size.width - 150) / 2,
+          child: Column(
+            children: [
+              Container(
+                  child: Text(
+                "Latest swaps on 1Inch Exchange",
+                style: TextStyle(color: Theme.of(context).accentColor),
+              )),
+              OneInchAnalytics(),
+            ],
+          ),
+        )
       ],
     );
   }

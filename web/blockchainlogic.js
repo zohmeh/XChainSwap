@@ -27,25 +27,22 @@ async function init() {
 init()
 
 async function getSwaps() {
-    var test = new Object();
+    var allSwaps = [];
     const swaps = await Moralis.Cloud.run("getLatestSwaps");
     //fetch token infos 
     const response = await fetch('https://api.1inch.exchange/v3.0/1/tokens');
     const tokens = await response.json();
-    //console.log(tokens["tokens"]);
     for (var i = 0; i < swaps.length; i++) {
-        //console.log(tokens["tokens"][swaps[i]["srcToken"].toLowerCase()]);
-        if (typeof tokens["tokens"][swaps[i]["srcToken"].toLowerCase()] == typeof test) {
-            console.log("Hallo");
-            //swaps[i]["srcTokenName"] = tokens["tokens"][swaps[i]["srcToken"].toLowerCase()]["name"];
-            //swaps[i]["dstTokenName"] = tokens["tokens"][swaps[i]["dstToken"].toLowerCase()]["name"];
-            //swaps[i]["dstTokenSymbol"] = tokens["tokens"][swaps[i]["dstToken"].toLowerCase()]["logoURI"];
-        }
+        if (tokens["tokens"][swaps[i]["srcToken"].toLowerCase()]) {swaps[i]["srcTokenName"] = tokens["tokens"][swaps[i]["srcToken"].toLowerCase()]["symbol"];}
+        if (tokens["tokens"][swaps[i]["dstToken"].toLowerCase()]) {swaps[i]["dstTokenName"] = tokens["tokens"][swaps[i]["dstToken"].toLowerCase()]["symbol"];}
+        if (tokens["tokens"][swaps[i]["srcToken"].toLowerCase()] && tokens["tokens"][swaps[i]["srcToken"].toLowerCase()]["decimals"]) {swaps[i]["srcTokenDecimals"] = tokens["tokens"][swaps[i]["srcToken"].toLowerCase()]["decimals"];}
+        if (tokens["tokens"][swaps[i]["dstToken"].toLowerCase()] && tokens["tokens"][swaps[i]["dstToken"].toLowerCase()]["decimals"]) {swaps[i]["dstTokenDecimals"] = tokens["tokens"][swaps[i]["dstToken"].toLowerCase()]["decimals"];}
+        if (tokens["tokens"][swaps[i]["srcToken"].toLowerCase()] && tokens["tokens"][swaps[i]["srcToken"].toLowerCase()]["logoURI"]) {swaps[i]["srcTokenSymbol"] = tokens["tokens"][swaps[i]["srcToken"].toLowerCase()]["logoURI"];}
+        if (tokens["tokens"][swaps[i]["dstToken"].toLowerCase()] && tokens["tokens"][swaps[i]["dstToken"].toLowerCase()]["logoURI"]) {swaps[i]["dstTokenSymbol"] = tokens["tokens"][swaps[i]["dstToken"].toLowerCase()]["logoURI"];}
+        var swap = JSON.stringify(swaps[i]);
+        allSwaps.push(swap);
     }
-    console.log(swaps);
-    //console.log(swaps[0]["srcToken"]);
-    //console.log(tokens["tokens"][swaps[0]["srcToken"].toLowerCase()]);
-    return swaps;
+    return allSwaps;
 }
 
 async function loggedIn() {

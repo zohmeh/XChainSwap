@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:web_app_template/functions/functions.dart';
-import '../../widgets/useravatar.dart';
+import '../tokensymbols.dart';
 import '../../provider/contractinteraction.dart';
 import '../../provider/loginprovider.dart';
 import '../buttons/button.dart';
@@ -89,7 +89,6 @@ class _NavbardesktopState extends State<Navbardesktop> {
                                         fontSize: 10))),
                       ],
                     ),
-                    Useravatar(image: image, width: 50, height: 50),
                     SizedBox(width: 15),
                     Container(
                       child: Text(

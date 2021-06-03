@@ -25,18 +25,18 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
 
   @override
   Widget build(BuildContext context) {
-    var width = MediaQuery.of(context).size.width;
+    //var width = MediaQuery.of(context).size.width;
     return FutureBuilder(
       future: tokens,
       builder: (ctx, tokensnapshot) {
         if (tokensnapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
+          return Center(child: CircularProgressIndicator());
         } else {
           List<Map> tokenList = tokensnapshot.data;
           return Container(
             padding: EdgeInsets.all(30),
-            height: width / 3,
-            width: width / 3,
+            height: 300,
+            width: 300,
             child: Card(
               color: Theme.of(context).primaryColor,
               //elevation: 10,
@@ -47,7 +47,7 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       Container(
-                        width: width / 15,
+                        width: 300,
                         child: inputField(
                           ctx: context,
                           controller: widget.swapamount,
@@ -122,14 +122,16 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
                                                 color: Theme.of(context)
                                                     .accentColor),
                                           )),
-                                      Container(
-                                          margin: EdgeInsets.only(left: 20),
-                                          child: Text(
-                                            map["name"],
-                                            style: TextStyle(
-                                                color: Theme.of(context)
-                                                    .accentColor),
-                                          )),
+                                      //Container(
+                                      //    margin: EdgeInsets.only(left: 20),
+                                      //    child: Flexible(
+                                      //      child: Text(
+                                      //        map["name"],
+                                      //        style: TextStyle(
+                                      //            color: Theme.of(context)
+                                      //                .accentColor),
+                                      //      ),
+                                      //    )),
                                     ],
                                   ),
                                 ),
@@ -150,7 +152,7 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       Container(
-                          width: width / 15,
+                          width: 300,
                           child: quote != null
                               ? Text(
                                   (int.parse(quote["toTokenAmount"]) /
@@ -197,17 +199,17 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
                                                 color: Theme.of(context)
                                                     .accentColor),
                                           )),
-                                      Flexible(
-                                        child: Container(
-                                            width: 122,
-                                            margin: EdgeInsets.only(left: 20),
-                                            child: Text(
-                                              map["name"],
-                                              style: TextStyle(
-                                                  color: Theme.of(context)
-                                                      .accentColor),
-                                            )),
-                                      ),
+                                      //Flexible(
+                                      //  child: Container(
+                                      //      width: 122,
+                                      //      margin: EdgeInsets.only(left: 20),
+                                      //      child: Text(
+                                      //        map["name"],
+                                      //        style: TextStyle(
+                                      //            color: Theme.of(context)
+                                      //                .accentColor),
+                                      //      )),
+                                      //),
                                     ],
                                   ),
                                 ),

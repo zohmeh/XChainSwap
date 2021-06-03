@@ -38,10 +38,21 @@ Future getRate(List _arguments) async {
 
 Future getAllSwaps() async {
   List allSwaps = [];
+  List srcToken = [];
+  Map volume = {};
   var promise = getSwaps();
   var swaps = await promiseToFuture(promise);
   for (var i = 0; i < swaps.length; i++) {
-    allSwaps.add(json.decode(swaps[i]));
+    var swap = json.decode(swaps[i]);
+    allSwaps.add(swap);
+    print(swap);
+
+    if (srcToken.contains(swap["srcToken"])) {
+      volume[swap["srcToken"]] += double.parse(swap["amount"]);
+    } else {
+      srcToken.add(swap["srcToken"]);
+      volume[swap["srcToken"]] = double.parse(swap["amount"]);
+    }
   }
   return allSwaps;
 }
