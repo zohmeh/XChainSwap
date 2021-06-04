@@ -39,22 +39,81 @@ Future getRate(List _arguments) async {
 Future getAllSwaps() async {
   List allSwaps = [];
   List srcToken = [];
-  Map volume = {};
+  Map srcVolume = {};
+  List dstToken = [];
+  Map dstVolume = {};
+  List srcTokenCount = [];
+  List dstTokenCount = [];
+  double srcTokenVolume = 0.0;
+  double dstTokenVolume = 0.0;
+  var srcTokenVolumeAddresse;
+  var dstTokenVolumeAddresse;
+
+  var promise1 = fetch1InchTokens();
+  var tokens = await promiseToFuture(promise1);
+  var tokensdecoded = json.decode(tokens);
+
   var promise = getSwaps();
   var swaps = await promiseToFuture(promise);
   for (var i = 0; i < swaps.length; i++) {
     var swap = json.decode(swaps[i]);
     allSwaps.add(swap);
-    print(swap);
+    srcTokenCount.add(swap["srcToken"]);
+    dstTokenCount.add(swap["dstToken"]);
 
+    // storing srcToken and there sold volume
     if (srcToken.contains(swap["srcToken"])) {
-      volume[swap["srcToken"]] += double.parse(swap["amount"]);
+      srcVolume[swap["srcToken"]] +=
+          (double.parse(swap["amount"]) / pow(10, swap["srcTokenDecimals"]));
     } else {
       srcToken.add(swap["srcToken"]);
-      volume[swap["srcToken"]] = double.parse(swap["amount"]);
+      srcVolume[swap["srcToken"]] =
+          (double.parse(swap["amount"]) / pow(10, swap["srcTokenDecimals"]));
+    }
+
+    // storing dstToken and there sold volume
+    if (dstToken.contains(swap["dstToken"])) {
+      dstVolume[swap["dstToken"]] += (double.parse(swap["minReturnAmount"]) /
+          pow(10, swap["dstTokenDecimals"]));
+    } else {
+      dstToken.add(swap["dstToken"]);
+      dstVolume[swap["dstToken"]] = (double.parse(swap["minReturnAmount"]) /
+          pow(10, swap["dstTokenDecimals"]));
+    }
+
+    if (srcVolume[swap["srcToken"]] > srcTokenVolume) {
+      srcTokenVolume = srcVolume[swap["srcToken"]];
+      srcTokenVolumeAddresse = swap["srcToken"];
+    }
+
+    if (dstVolume[swap["dstToken"]] > dstTokenVolume) {
+      dstTokenVolume = dstVolume[swap["dstToken"]];
+      dstTokenVolumeAddresse = swap["dstToken"];
     }
   }
-  return allSwaps;
+
+  // counting for most sold and most often bought tokens
+  var mostSoldToken = srcTokenCount.toSet().reduce((i, j) =>
+      srcTokenCount.where((v) => v == i).length >
+              srcTokenCount.where((v) => v == j).length
+          ? i
+          : j);
+
+  var mostBoughtToken = dstTokenCount.toSet().reduce((i, j) =>
+      dstTokenCount.where((v) => v == i).length >
+              dstTokenCount.where((v) => v == j).length
+          ? i
+          : j);
+
+  print(srcTokenVolumeAddresse);
+  print(dstTokenVolumeAddresse);
+  return [
+    allSwaps,
+    tokensdecoded[mostSoldToken.toLowerCase()],
+    tokensdecoded[mostBoughtToken.toLowerCase()],
+    tokensdecoded[srcTokenVolumeAddresse.toLowerCase()],
+    tokensdecoded[dstTokenVolumeAddresse.toLowerCase()]
+  ];
 }
 
 Future<List<Map>> fetchTokens() async {
@@ -75,7 +134,6 @@ Future<List<Map>> fetchTokens() async {
     tokenList.add(token);
   }
   tokenList.sort((a, b) => a["symbol"].compareTo(b["symbol"]));
-
   return tokenList;
 }
 
