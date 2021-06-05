@@ -7,30 +7,17 @@ import '../../helpers/coinGeckoTokenList.dart';
 import '../widgets/javascript_controller.dart';
 import 'package:http/http.dart' as http;
 
-class Paraswap with ChangeNotifier {
-  var quote;
-
-  //get rates for chosen pair from kyber api
-  Future getRate(List _arguments) async {
-    //convert with decimals
-    var promise = fetch1InchTokens();
-    var tokens = await promiseToFuture(promise);
-    var tokensdecoded = json.decode(tokens);
-    var decimals = tokensdecoded[_arguments[0]]["decimals"];
-
-    double _amount = double.parse(_arguments[2]) * pow(10, decimals);
-
-    var promise1 = getQuote(_arguments[0], _arguments[1], _amount.toString());
-    var quote = await promiseToFuture(promise1);
-    var quotedecoded = json.decode(quote);
-    quote = quotedecoded;
-    notifyListeners();
-  }
-}
-
 Future getRate(List _arguments) async {
+  String chain;
+  if (_arguments[3] == 0) {
+    chain = "1";
+  }
+  if (_arguments[3] == 1) {
+    chain = "56";
+  }
   var fromAmount = BigInt.from(double.parse(_arguments[2]));
-  var promise1 = getQuote(_arguments[0], _arguments[1], fromAmount.toString());
+  var promise1 =
+      getQuote(_arguments[0], _arguments[1], fromAmount.toString(), chain);
   var quote = await promiseToFuture(promise1);
   var quotedecoded = json.decode(quote);
   return quotedecoded;
@@ -49,7 +36,7 @@ Future getAllSwaps() async {
   var srcTokenVolumeAddresse;
   var dstTokenVolumeAddresse;
 
-  var promise1 = fetch1InchTokens();
+  var promise1 = fetch1InchTokens("1");
   var tokens = await promiseToFuture(promise1);
   var tokensdecoded = json.decode(tokens);
 
@@ -104,9 +91,6 @@ Future getAllSwaps() async {
               dstTokenCount.where((v) => v == j).length
           ? i
           : j);
-
-  print(srcTokenVolumeAddresse);
-  print(dstTokenVolumeAddresse);
   return [
     allSwaps,
     tokensdecoded[mostSoldToken.toLowerCase()],
@@ -116,25 +100,46 @@ Future getAllSwaps() async {
   ];
 }
 
-Future<List<Map>> fetchTokens() async {
-  List<Map> tokenList = [];
-  var promise = fetch1InchTokens();
-  var tokens = await promiseToFuture(promise);
-  var tokensdecoded = json.decode(tokens);
-  var tokensdecodedList = tokensdecoded.values.toList();
+Future fetchTokens() async {
+  //fetch all tokens for ethereumchain
+  List<Map> ethertokenList = [];
+  var etherpromise = fetch1InchTokens("1");
+  var ethertokens = await promiseToFuture(etherpromise);
+  var ethertokensdecoded = json.decode(ethertokens);
+  var ethertokensdecodedList = ethertokensdecoded.values.toList();
 
-  for (var i = 0; i < tokensdecodedList.length; i++) {
-    Map token = {
-      "symbol": tokensdecodedList[i]["symbol"],
-      "name": tokensdecodedList[i]["name"],
-      "address": tokensdecodedList[i]["address"],
-      "decimals": tokensdecodedList[i]["decimals"],
-      "logoURI": tokensdecodedList[i]["logoURI"]
+  for (var i = 0; i < ethertokensdecodedList.length; i++) {
+    Map ethertoken = {
+      "symbol": ethertokensdecodedList[i]["symbol"],
+      "name": ethertokensdecodedList[i]["name"],
+      "address": ethertokensdecodedList[i]["address"],
+      "decimals": ethertokensdecodedList[i]["decimals"],
+      "logoURI": ethertokensdecodedList[i]["logoURI"]
     };
-    tokenList.add(token);
+    ethertokenList.add(ethertoken);
   }
-  tokenList.sort((a, b) => a["symbol"].compareTo(b["symbol"]));
-  return tokenList;
+  ethertokenList.sort((a, b) => a["symbol"].compareTo(b["symbol"]));
+
+  //fetch all tokens for bscchain
+  List<Map> bsctokenList = [];
+  var bscpromise = fetch1InchTokens("56");
+  var bsctokens = await promiseToFuture(bscpromise);
+  var bsctokensdecoded = json.decode(bsctokens);
+  var bsctokensdecodedList = bsctokensdecoded.values.toList();
+
+  for (var i = 0; i < bsctokensdecodedList.length; i++) {
+    Map bsctoken = {
+      "symbol": bsctokensdecodedList[i]["symbol"],
+      "name": bsctokensdecodedList[i]["name"],
+      "address": bsctokensdecodedList[i]["address"],
+      "decimals": bsctokensdecodedList[i]["decimals"],
+      "logoURI": bsctokensdecodedList[i]["logoURI"]
+    };
+    bsctokenList.add(bsctoken);
+  }
+  bsctokenList.sort((a, b) => a["symbol"].compareTo(b["symbol"]));
+
+  return [ethertokenList, bsctokenList];
 }
 
 Future swapTokens(List _arguments) async {
@@ -178,11 +183,6 @@ Future getBalances() async {
         ? myBalances[i]["current_price"] = 0
         : myBalances[i]["current_price"] = jsonData[0]["current_price"];
   }
-
-  var test = await http
-      .get(Uri.parse('https://api.coingecko.com/api/v3/asset_platforms'));
-  var testData = json.decode(test.body);
-  print(testData);
   return myBalances;
 }
 

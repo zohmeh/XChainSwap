@@ -33,14 +33,15 @@ async function getSwaps() {
     const response = await fetch('https://api.1inch.exchange/v3.0/1/tokens');
     const tokens = await response.json();
     for (var i = 0; i < swaps.length; i++) {
-        if (tokens["tokens"][swaps[i]["srcToken"].toLowerCase()]) {swaps[i]["srcTokenName"] = tokens["tokens"][swaps[i]["srcToken"].toLowerCase()]["symbol"];}
-        if (tokens["tokens"][swaps[i]["dstToken"].toLowerCase()]) {swaps[i]["dstTokenName"] = tokens["tokens"][swaps[i]["dstToken"].toLowerCase()]["symbol"];}
+        if (tokens["tokens"][swaps[i]["srcToken"].toLowerCase()] && tokens["tokens"][swaps[i]["dstToken"].toLowerCase()]) {swaps[i]["srcTokenName"] = tokens["tokens"][swaps[i]["srcToken"].toLowerCase()]["symbol"]; swaps[i]["dstTokenName"] = tokens["tokens"][swaps[i]["dstToken"].toLowerCase()]["symbol"];}
+        //if (tokens["tokens"][swaps[i]["dstToken"].toLowerCase()]) {swaps[i]["dstTokenName"] = tokens["tokens"][swaps[i]["dstToken"].toLowerCase()]["symbol"];}
         if (tokens["tokens"][swaps[i]["srcToken"].toLowerCase()] && tokens["tokens"][swaps[i]["srcToken"].toLowerCase()]["decimals"]) {swaps[i]["srcTokenDecimals"] = tokens["tokens"][swaps[i]["srcToken"].toLowerCase()]["decimals"];}
         if (tokens["tokens"][swaps[i]["dstToken"].toLowerCase()] && tokens["tokens"][swaps[i]["dstToken"].toLowerCase()]["decimals"]) {swaps[i]["dstTokenDecimals"] = tokens["tokens"][swaps[i]["dstToken"].toLowerCase()]["decimals"];}
         if (tokens["tokens"][swaps[i]["srcToken"].toLowerCase()] && tokens["tokens"][swaps[i]["srcToken"].toLowerCase()]["logoURI"]) {swaps[i]["srcTokenSymbol"] = tokens["tokens"][swaps[i]["srcToken"].toLowerCase()]["logoURI"];}
         if (tokens["tokens"][swaps[i]["dstToken"].toLowerCase()] && tokens["tokens"][swaps[i]["dstToken"].toLowerCase()]["logoURI"]) {swaps[i]["dstTokenSymbol"] = tokens["tokens"][swaps[i]["dstToken"].toLowerCase()]["logoURI"];}
+        if (tokens["tokens"][swaps[i]["srcToken"].toLowerCase()] && tokens["tokens"][swaps[i]["dstToken"].toLowerCase()]){
         var swap = JSON.stringify(swaps[i]);
-        allSwaps.push(swap);
+        allSwaps.push(swap);}
     }
     return allSwaps;
 }
@@ -88,18 +89,20 @@ async function setUserData(_file, _username) {
     } catch (error) { console.log(error); }
 }
 
-async function fetch1InchTokens() {
+async function fetch1InchTokens(_chain) {
+    //_chain = 1 => Ethereum
+    //_chain = 56 => BSC
     //fetch all tokens on 1inch eth-mainnnet
     try {
-        const response = await fetch('https://api.1inch.exchange/v3.0/1/tokens');
+        const response = await fetch(`https://api.1inch.exchange/v3.0/${_chain}/tokens`);
         const tokens = await response.json();
         return JSON.stringify(tokens["tokens"]);
     } catch (error) { console.log(error); }
 }
 
-async function getQuote(_fromToken, _toToken, _amount) {
+async function getQuote(_fromToken, _toToken, _amount, _chain) {
     try {
-        const response = await fetch(`https://api.1inch.exchange/v3.0/1/quote?fromTokenAddress=${_fromToken}&toTokenAddress=${_toToken}&amount=${_amount}`);
+        const response = await fetch(`https://api.1inch.exchange/v3.0/${_chain}/quote?fromTokenAddress=${_fromToken}&toTokenAddress=${_toToken}&amount=${_amount}`);
         const quote = await response.json();
         return JSON.stringify(quote);
     } catch (error) { console.log(error); }

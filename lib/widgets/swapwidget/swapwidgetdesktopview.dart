@@ -16,6 +16,22 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
   String fromAmount;
   Future tokens;
   var quote;
+  int chain = 0;
+
+  List colors = [Colors.white, Colors.purpleAccent];
+  List color = [1, 0];
+
+  chainChoice(_choice) {
+    setState(() {
+      chain = _choice;
+      color = [0, 0];
+      color[_choice] = 1;
+      fromToken = null;
+      toToken = null;
+      fromAmount = null;
+      widget.swapamount.text = "";
+    });
+  }
 
   @override
   void initState() {
@@ -32,7 +48,7 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
         if (tokensnapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
         } else {
-          List<Map> tokenList = tokensnapshot.data;
+          List<Map> tokenList = tokensnapshot.data[chain];
           return Container(
             padding: EdgeInsets.all(30),
             height: 300,
@@ -43,6 +59,23 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      TextButton(
+                          onPressed: () => chainChoice(0),
+                          child: Text(
+                            "Ethereumchain",
+                            style: TextStyle(color: colors[color[0]]),
+                          )),
+                      TextButton(
+                          onPressed: () => chainChoice(1),
+                          child: Text(
+                            "BSCchain",
+                            style: TextStyle(color: colors[color[1]]),
+                          )),
+                    ],
+                  ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
@@ -67,8 +100,8 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
                                 });
                               }
                             }
-                            quote =
-                                await getRate([fromToken, toToken, fromAmount]);
+                            quote = await getRate(
+                                [fromToken, toToken, fromAmount, chain]);
                           },
                           onSubmitted: (value) async {
                             //search for decimal
@@ -81,8 +114,8 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
                                 });
                               }
                             }
-                            quote =
-                                await getRate([fromToken, toToken, fromAmount]);
+                            quote = await getRate(
+                                [fromToken, toToken, fromAmount, chain]);
                           },
                         ),
                       ),

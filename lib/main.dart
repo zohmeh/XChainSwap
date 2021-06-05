@@ -23,9 +23,6 @@ class MyApp extends StatelessWidget {
           value: LoginModel(),
         ),
         ChangeNotifierProvider.value(
-          value: Paraswap(),
-        ),
-        ChangeNotifierProvider.value(
           value: Contractinteraction(),
         ),
       ],
