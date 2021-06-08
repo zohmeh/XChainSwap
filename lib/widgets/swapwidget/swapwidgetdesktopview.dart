@@ -18,18 +18,19 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
   var quote;
   int chain = 0;
 
-  List colors = [Colors.white, Colors.purpleAccent];
-  List color = [1, 0];
+  List colors = [Colors.white, Colors.purpleAccent, Colors.purpleAccent];
+  List color = [1, 0, 0];
 
   chainChoice(_choice) {
     setState(() {
       chain = _choice;
-      color = [0, 0];
+      color = [0, 0, 0];
       color[_choice] = 1;
       fromToken = null;
       toToken = null;
       fromAmount = null;
       widget.swapamount.text = "";
+      quote = null;
     });
   }
 
@@ -46,13 +47,15 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
       future: tokens,
       builder: (ctx, tokensnapshot) {
         if (tokensnapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
+          return Container(
+              width: (MediaQuery.of(context).size.width - 150) / 2,
+              child: Center(child: CircularProgressIndicator()));
         } else {
           List<Map> tokenList = tokensnapshot.data[chain];
           return Container(
             padding: EdgeInsets.all(30),
-            height: 300,
-            width: 300,
+            height: (MediaQuery.of(context).size.height) / 2,
+            width: (MediaQuery.of(context).size.width - 150) / 2,
             child: Card(
               color: Theme.of(context).primaryColor,
               //elevation: 10,
@@ -73,6 +76,12 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
                           child: Text(
                             "BSCchain",
                             style: TextStyle(color: colors[color[1]]),
+                          )),
+                      TextButton(
+                          onPressed: () => chainChoice(2),
+                          child: Text(
+                            "Polygon",
+                            style: TextStyle(color: colors[color[2]]),
                           )),
                     ],
                   ),
@@ -180,7 +189,7 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
                       Theme.of(context).highlightColor,
                       "Swap Tokens",
                       swapTokens,
-                      [fromToken, toToken, fromAmount]),
+                      [fromToken, toToken, fromAmount, chain]),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [

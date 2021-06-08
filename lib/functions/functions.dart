@@ -15,6 +15,9 @@ Future getRate(List _arguments) async {
   if (_arguments[3] == 1) {
     chain = "56";
   }
+  if (_arguments[3] == 2) {
+    chain = "137";
+  }
   var fromAmount = BigInt.from(double.parse(_arguments[2]));
   var promise1 =
       getQuote(_arguments[0], _arguments[1], fromAmount.toString(), chain);
@@ -139,12 +142,42 @@ Future fetchTokens() async {
   }
   bsctokenList.sort((a, b) => a["symbol"].compareTo(b["symbol"]));
 
-  return [ethertokenList, bsctokenList];
+  //fetch all tokens for polygon
+  List<Map> polygontokenList = [];
+  var polygonpromise = fetch1InchTokens("137");
+  var polygontokens = await promiseToFuture(polygonpromise);
+  var polygontokensdecoded = json.decode(polygontokens);
+  var polygontokensdecodedList = polygontokensdecoded.values.toList();
+
+  for (var i = 0; i < polygontokensdecodedList.length; i++) {
+    Map polygontoken = {
+      "symbol": polygontokensdecodedList[i]["symbol"],
+      "name": polygontokensdecodedList[i]["name"],
+      "address": polygontokensdecodedList[i]["address"],
+      "decimals": polygontokensdecodedList[i]["decimals"],
+      "logoURI": polygontokensdecodedList[i]["logoURI"]
+    };
+    polygontokenList.add(polygontoken);
+  }
+  polygontokenList.sort((a, b) => a["symbol"].compareTo(b["symbol"]));
+
+  return [ethertokenList, bsctokenList, polygontokenList];
 }
 
 Future swapTokens(List _arguments) async {
+  String chain;
+  if (_arguments[3] == 0) {
+    chain = "1";
+  }
+  if (_arguments[3] == 1) {
+    chain = "56";
+  }
+  if (_arguments[3] == 2) {
+    chain = "137";
+  }
   var fromAmount = BigInt.from(double.parse(_arguments[2]));
-  var promise = swap(_arguments[0], _arguments[1], fromAmount.toString());
+  var promise = swap(
+      _arguments[0], _arguments[1], fromAmount.toString(), chain.toString());
   await promiseToFuture(promise);
 }
 
@@ -253,4 +286,16 @@ Future getMyAssets() async {
   var tokens = await getBalances();
   var nfts = await getMyNFTBalance();
   return ([tokens, nfts]);
+}
+
+Future lunarCrushAnalysis(List _tokens) async {
+  List tokenSentiment = [];
+  for (var i = 0; i < _tokens.length; i++) {
+    var _token = _tokens[i];
+    var response = await http.get(Uri.parse(
+        'https://api.lunarcrush.com/v2?data=assets&key=xr23gzfh5aoia5x8c45j2p&symbol=${_token}&time_series_indicators=average_sentiment,galaxy_score&data_points=0'));
+    var jsonData = json.decode(response.body);
+    tokenSentiment.add(jsonData["data"][0]);
+  }
+  return tokenSentiment;
 }

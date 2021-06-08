@@ -108,11 +108,11 @@ async function getQuote(_fromToken, _toToken, _amount, _chain) {
     } catch (error) { console.log(error); }
 }
 
-async function swap(_fromToken, _toToken, _amount) {
+async function swap(_fromToken, _toToken, _amount, _chain) {
     try {
         user = await Moralis.User.current();
         const _userAddress = user.attributes.ethAddress;
-        const response = await fetch(`https://api.1inch.exchange/v3.0/1/swap?fromTokenAddress=${_fromToken}&toTokenAddress=${_toToken}&amount=${_amount}&fromAddress=${_userAddress}&slippage=1`);
+        const response = await fetch(`https://api.1inch.exchange/v3.0/${_chain}/swap?fromTokenAddress=${_fromToken}&toTokenAddress=${_toToken}&amount=${_amount}&fromAddress=${_userAddress}&slippage=1`);
         const swap = await response.json();
         console.log(swap);
     } catch (error) { console.log(error); }
