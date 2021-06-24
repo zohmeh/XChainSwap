@@ -13,8 +13,8 @@ external dynamic setUserData(var _file, String _username);
 external dynamic fetch1InchTokens(String _chain);
 external dynamic getTokenPairRate(
     String fromToken, String toToken, String amount);
-external dynamic swap(
-    String fromToken, String toToken, String amount, String chain);
+external dynamic swap(String fromToken, String toToken, String amount,
+    int fromchain, int tochain);
 external dynamic getTokenBalances();
 external dynamic getEthBalance();
 external dynamic getBscBalance();

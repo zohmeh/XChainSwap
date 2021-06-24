@@ -108,13 +108,29 @@ async function getQuote(_fromToken, _toToken, _amount, _chain) {
     } catch (error) { console.log(error); }
 }
 
-async function swap(_fromToken, _toToken, _amount, _chain) {
+async function swap(_fromTokenAddress, _toTokenAddress, _amount, _fromChain, _toChain) {
     try {
         user = await Moralis.User.current();
         const _userAddress = user.attributes.ethAddress;
-        const response = await fetch(`https://api.1inch.exchange/v3.0/${_chain}/swap?fromTokenAddress=${_fromToken}&toTokenAddress=${_toToken}&amount=${_amount}&fromAddress=${_userAddress}&slippage=1`);
-        const swap = await response.json();
-        console.log(swap);
+        
+        let chain = ["1", "56", "137"];
+        let contractAddresses = ["0x11111112542d85b3ef69ae05771c2dccff4faa26", "0x11111112542d85b3ef69ae05771c2dccff4faa26", "0x11111112542d85b3ef69ae05771c2dccff4faa26"]
+        
+        //direct swap without any token bridging
+        if(_fromChain == _toChain) {
+            window.ERC20TokencontractInstance = new web3.eth.Contract(erc20ABI, _fromTokenAddress);
+            //Approve 1inch to spend token
+            if(_fromTokenAddress != "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
+                const allowance = await ERC20TokencontractInstance.methods.allowance(_userAddress, contractAddresses[_fromChain]).call();
+                if(allowance < web3.utils.toBN(parseFloat(_amount))) {
+                    const approve = await ERC20TokencontractInstance.methods.approve(contractAddresses[_fromChain], _amount).send({from: _userAddress});
+                }
+            }       
+            //get TX Data for swap to sign and to do the swap            
+            const response = await fetch(`https://api.1inch.exchange/v3.0/${chain[_fromChain]}/swap?fromTokenAddress=${_fromTokenAddress}&toTokenAddress=${_toTokenAddress}&amount=${_amount}&fromAddress=${_userAddress}&slippage=1`);
+            const swap = await response.json();
+            const send = await web3.eth.sendTransaction(swap.tx);
+        }               
     } catch (error) { console.log(error); }
 }
 

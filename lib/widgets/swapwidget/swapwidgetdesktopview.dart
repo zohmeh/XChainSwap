@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:web_app_template/widgets/dropdownlist/drowpdownlist.dart';
 import '../../functions/functions.dart';
 import '../../widgets/buttons/button.dart';
 import '../../widgets/inputfields/inputField.dart';
@@ -11,26 +12,30 @@ class SwapWidgetDesktopview extends StatefulWidget {
 }
 
 class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
-  String fromToken;
-  String toToken;
+  Iterable fromToken = [
+    {"address": "0"}
+  ];
+  Iterable toToken = [
+    {"address": "0"}
+  ];
+  var fromChain;
+  var toChain;
   String fromAmount;
   Future tokens;
+  List tokenList = [];
   var quote;
-  int chain = 0;
 
-  List colors = [Colors.white, Colors.purpleAccent, Colors.purpleAccent];
-  List color = [1, 0, 0];
-
-  chainChoice(_choice) {
+  onChanged(String _value, int _chain, bool _isFromToken) {
     setState(() {
-      chain = _choice;
-      color = [0, 0, 0];
-      color[_choice] = 1;
-      fromToken = null;
-      toToken = null;
-      fromAmount = null;
-      widget.swapamount.text = "";
-      quote = null;
+      if (_isFromToken) {
+        fromToken =
+            tokenList[_chain].where((element) => element["address"] == _value);
+        fromChain = _chain;
+      } else {
+        toToken =
+            tokenList[_chain].where((element) => element["address"] == _value);
+        toChain = _chain;
+      }
     });
   }
 
@@ -48,14 +53,14 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
       builder: (ctx, tokensnapshot) {
         if (tokensnapshot.connectionState == ConnectionState.waiting) {
           return Container(
-              width: (MediaQuery.of(context).size.width - 150) / 2,
+              width: (MediaQuery.of(context).size.width - 150),
               child: Center(child: CircularProgressIndicator()));
         } else {
-          List<Map> tokenList = tokensnapshot.data[chain];
+          tokenList = tokensnapshot.data;
           return Container(
             padding: EdgeInsets.all(30),
             height: (MediaQuery.of(context).size.height) / 2,
-            width: (MediaQuery.of(context).size.width - 150) / 2,
+            width: (MediaQuery.of(context).size.width - 150),
             child: Card(
               color: Theme.of(context).primaryColor,
               //elevation: 10,
@@ -65,24 +70,22 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      TextButton(
-                          onPressed: () => chainChoice(0),
-                          child: Text(
-                            "Ethereumchain",
-                            style: TextStyle(color: colors[color[0]]),
-                          )),
-                      TextButton(
-                          onPressed: () => chainChoice(1),
-                          child: Text(
-                            "BSCchain",
-                            style: TextStyle(color: colors[color[1]]),
-                          )),
-                      TextButton(
-                          onPressed: () => chainChoice(2),
-                          child: Text(
-                            "Polygon",
-                            style: TextStyle(color: colors[color[2]]),
-                          )),
+                      Dropdownlist(
+                          tokenList: tokensnapshot.data[0],
+                          label: "Select Token Ethereumchain",
+                          onChanged: onChanged,
+                          chain: 0,
+                          isFromToken: true),
+                      //Dropdownlist(
+                      //    tokenList: tokensnapshot.data[1],
+                      //    label: "Select Token Binancechain",
+                      //    onChanged: onChanged),
+                      Dropdownlist(
+                          tokenList: tokensnapshot.data[2],
+                          label: "Select Token Polygon",
+                          onChanged: onChanged,
+                          chain: 2,
+                          isFromToken: true),
                     ],
                   ),
                   Row(
@@ -98,98 +101,53 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
                           leftMargin: 0,
                           rightMargin: 0,
                           bottomMargin: 0,
-                          onChanged: (value) async {
-                            //search for decimal
-                            for (var i = 0; i < tokenList.length; i++) {
-                              if (tokenList[i]["address"] == fromToken) {
-                                setState(() {
-                                  fromAmount = (double.parse(value) *
-                                          pow(10, tokenList[i]["decimals"]))
-                                      .toString();
-                                });
-                              }
+                          /*onChanged: (value) async {
+                            setState(() {
+                              fromAmount = (double.parse(value) *
+                                      pow(10,
+                                          fromToken.elementAt(0)["decimals"]))
+                                  .toString();
+                            });
+                            if (fromChain == toChain) {
+                              quote = await getRate([
+                                fromToken.elementAt(0)["address"],
+                                toToken.elementAt(0)["address"],
+                                fromAmount,
+                                fromChain
+                              ]);
                             }
-                            quote = await getRate(
-                                [fromToken, toToken, fromAmount, chain]);
-                          },
+                          },*/
                           onSubmitted: (value) async {
-                            //search for decimal
-                            for (var i = 0; i < tokenList.length; i++) {
-                              if (tokenList[i]["address"] == fromToken) {
-                                setState(() {
-                                  fromAmount = (double.parse(value) *
-                                          pow(10, tokenList[i]["decimals"]))
-                                      .toString();
-                                });
-                              }
+                            setState(() {
+                              fromAmount = (double.parse(value) *
+                                      pow(10,
+                                          fromToken.elementAt(0)["decimals"]))
+                                  .toString();
+                            });
+                            if (fromChain == toChain) {
+                              quote = await getRate([
+                                fromToken.elementAt(0)["address"],
+                                toToken.elementAt(0)["address"],
+                                fromAmount,
+                                fromChain
+                              ]);
                             }
-                            quote = await getRate(
-                                [fromToken, toToken, fromAmount, chain]);
                           },
                         ),
                       ),
-                      DropdownButtonHideUnderline(
-                        child: ButtonTheme(
-                          alignedDropdown: true,
-                          child: DropdownButton<String>(
-                            isDense: true,
-                            hint: new Text(
-                              "Select Token",
-                              style: TextStyle(
-                                  color: Theme.of(context).accentColor),
-                            ),
-                            value: fromToken,
-                            onChanged: (value) {
-                              setState(() {
-                                fromToken = value;
-                              });
-                            },
-                            items: tokenList.map((Map map) {
-                              return new DropdownMenuItem<String>(
-                                value: map["address"],
-                                child: Container(
-                                  width: 300,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: <Widget>[
-                                      Image.network(
-                                        map["logoURI"],
-                                        width: 25,
-                                      ),
-                                      Container(
-                                          margin: EdgeInsets.only(left: 10),
-                                          child: Text(
-                                            map["symbol"],
-                                            style: TextStyle(
-                                                color: Theme.of(context)
-                                                    .accentColor),
-                                          )),
-                                      //Container(
-                                      //    margin: EdgeInsets.only(left: 20),
-                                      //    child: Flexible(
-                                      //      child: Text(
-                                      //        map["name"],
-                                      //        style: TextStyle(
-                                      //            color: Theme.of(context)
-                                      //                .accentColor),
-                                      //      ),
-                                      //    )),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        ),
-                      )
                     ],
                   ),
                   button(
                       Theme.of(context).buttonColor,
                       Theme.of(context).highlightColor,
                       "Swap Tokens",
-                      swapTokens,
-                      [fromToken, toToken, fromAmount, chain]),
+                      swapTokens, [
+                    fromToken.elementAt(0)["address"],
+                    toToken.elementAt(0)["address"],
+                    fromAmount,
+                    fromChain,
+                    toChain
+                  ]),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
@@ -204,64 +162,29 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
                                       color: Theme.of(context).highlightColor),
                                 )
                               : Text("")),
-                      DropdownButtonHideUnderline(
-                        child: ButtonTheme(
-                          alignedDropdown: true,
-                          child: DropdownButton<String>(
-                            isDense: true,
-                            hint: new Text(
-                              "Select Token",
-                              style: TextStyle(
-                                  color: Theme.of(context).accentColor),
-                            ),
-                            value: toToken,
-                            onChanged: (value) {
-                              setState(() {
-                                toToken = value;
-                              });
-                            },
-                            items: tokenList.map((Map map) {
-                              return new DropdownMenuItem<String>(
-                                value: map["address"],
-                                child: Container(
-                                  width: 300,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: <Widget>[
-                                      Image.network(
-                                        map["logoURI"],
-                                        width: 25,
-                                      ),
-                                      Container(
-                                          width: 123,
-                                          margin: EdgeInsets.only(left: 10),
-                                          child: Text(
-                                            map["symbol"],
-                                            style: TextStyle(
-                                                color: Theme.of(context)
-                                                    .accentColor),
-                                          )),
-                                      //Flexible(
-                                      //  child: Container(
-                                      //      width: 122,
-                                      //      margin: EdgeInsets.only(left: 20),
-                                      //      child: Text(
-                                      //        map["name"],
-                                      //        style: TextStyle(
-                                      //            color: Theme.of(context)
-                                      //                .accentColor),
-                                      //      )),
-                                      //),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        ),
-                      )
                     ],
-                  )
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Dropdownlist(
+                          tokenList: tokensnapshot.data[0],
+                          label: "Select Token Ethereumchain",
+                          onChanged: onChanged,
+                          chain: 0,
+                          isFromToken: false),
+                      //Dropdownlist(
+                      //    tokenList: tokensnapshot.data[1],
+                      //    label: "Select Token Binancechain",
+                      //    onChanged: onChanged),
+                      Dropdownlist(
+                          tokenList: tokensnapshot.data[2],
+                          label: "Select Token Polygon",
+                          onChanged: onChanged,
+                          chain: 2,
+                          isFromToken: false),
+                    ],
+                  ),
                 ],
               ),
             ),

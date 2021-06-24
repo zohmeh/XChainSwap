@@ -17,11 +17,9 @@ class _SwapDesktopViewState extends State<SwapDesktopView> {
         Container(
           //padding: EdgeInsets.all(15),
           width: MediaQuery.of(context).size.width - 150,
-          child: Row(
-            children: [
-              SwapWidgetDesktopview(),
-              OneInchAnalytics(),
-            ],
+          child: Center(
+            child: SwapWidgetDesktopview(),
+            //OneInchAnalytics(),
           ),
         ),
       ],

@@ -165,19 +165,16 @@ Future fetchTokens() async {
 }
 
 Future swapTokens(List _arguments) async {
-  String chain;
-  if (_arguments[3] == 0) {
-    chain = "1";
-  }
-  if (_arguments[3] == 1) {
-    chain = "56";
-  }
-  if (_arguments[3] == 2) {
-    chain = "137";
-  }
-  var fromAmount = BigInt.from(double.parse(_arguments[2]));
-  var promise = swap(
-      _arguments[0], _arguments[1], fromAmount.toString(), chain.toString());
+  String fromTokenAddress = _arguments[0];
+  String toTokenAddress = _arguments[1];
+  String fromTokenAmount = _arguments[2];
+  int fromChain = _arguments[3];
+  int toChain = _arguments[4];
+
+  var fromAmount = BigInt.from(double.parse(fromTokenAmount));
+
+  var promise = swap(fromTokenAddress, toTokenAddress, fromAmount.toString(),
+      fromChain, toChain);
   await promiseToFuture(promise);
 }
 

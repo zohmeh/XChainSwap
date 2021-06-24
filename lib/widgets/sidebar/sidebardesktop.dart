@@ -37,7 +37,7 @@ class _SidebarDesktopState extends State<SidebarDesktop> {
       ),
       child: Column(
         children: [
-          ibutton(
+          /*ibutton(
               Icons.gavel_rounded,
               Theme.of(context).primaryColor,
               widget.side == 0
@@ -47,6 +47,7 @@ class _SidebarDesktopState extends State<SidebarDesktop> {
               _changeSide,
               [AllPortfoliosRoute]),
           SizedBox(height: 20),
+          */
           ibutton(
               Icons.account_balance_wallet_rounded,
               Theme.of(context).primaryColor,
@@ -66,7 +67,7 @@ class _SidebarDesktopState extends State<SidebarDesktop> {
               "Swap Tokens",
               _changeSide,
               [SwapTokensRoute]),
-          SizedBox(height: 20),
+          /*SizedBox(height: 20),
           ibutton(
               Icons.settings_applications_rounded,
               Theme.of(context).primaryColor,
@@ -75,7 +76,7 @@ class _SidebarDesktopState extends State<SidebarDesktop> {
                   : Theme.of(context).highlightColor,
               "Settings",
               _changeSide,
-              [SettingsRoute]),
+              [SettingsRoute]),*/
         ],
       ),
     );
