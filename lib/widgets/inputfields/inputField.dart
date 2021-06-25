@@ -26,9 +26,9 @@ inputField(
       focusNode: node2,
       decoration: InputDecoration(
           labelText: labelText, labelStyle: TextStyle(fontSize: 12)),
-      onChanged: (value) {
-        onSubmitted(value);
-      },
+      //onChanged: (value) {
+      //  onSubmitted(value);
+      //},
       onFieldSubmitted: (value) {
         onSubmitted(value);
       },

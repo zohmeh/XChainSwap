@@ -8,20 +8,9 @@ Moralis.serverURL = "https://8qei4hdfzsnk.moralis.io:2053/server";
 
 async function init() {
     window.web3 = await Moralis.Web3.enable();
-    //window.NFTTokencontractInstance = new web3.eth.Contract(thecollectorAbi, addresses["thecollector"]);
-    //let query = new Moralis.Query('EthTokenBalance');
-    //let subscription = await query.subscribe();
-    //subscription.on("update", updateDeployedPortfolio)
-
-    //let query2 = new Moralis.Query('EthTokenBalance');
-    //let subscription2 = await query2.subscribe();
-    //subscription2.on("create", updateDeployedPortfolio)
-
-    //let query3 = new Moralis.Query('EthTokenBalance');
-    //let subscription3 = await query2.subscribe();
-    //subscription3.on("delete", updateDeployedPortfolio)
-
-
+    
+    //window.ERC20TokencontractInstance = new web3.eth.Contract(erc20ABI, "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0");
+    //const allowance = await ERC20TokencontractInstance.methods.approve("0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0", "1").send({from: "0xC4e2c53664d929e1D7D0AE9fBC848690EF3f81C1"});
 }
 
 init()
@@ -113,34 +102,52 @@ async function swap(_fromTokenAddress, _toTokenAddress, _amount, _fromChain, _to
         user = await Moralis.User.current();
         const _userAddress = user.attributes.ethAddress;
         
+
+        console.log(_fromTokenAddress);
+        console.log(_toTokenAddress);
+        console.log(_amount);
+        console.log(_fromChain);
+        console.log(_toChain);
+        
         let chain = ["1", "56", "137"];
-        let contractAddresses = ["0x11111112542d85b3ef69ae05771c2dccff4faa26", "0x11111112542d85b3ef69ae05771c2dccff4faa26", "0x11111112542d85b3ef69ae05771c2dccff4faa26"]
         
         //direct swap without any token bridging
         if(_fromChain == _toChain) {
             window.ERC20TokencontractInstance = new web3.eth.Contract(erc20ABI, _fromTokenAddress);
             //Approve 1inch to spend token
             if(_fromTokenAddress != "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
-                const allowance = await ERC20TokencontractInstance.methods.allowance(_userAddress, contractAddresses[_fromChain]).call();
+                const allowance = await ERC20TokencontractInstance.methods.allowance(_userAddress, "0x11111112542d85b3ef69ae05771c2dccff4faa26").call();
                 if(allowance < web3.utils.toBN(parseFloat(_amount))) {
-                    const approve = await ERC20TokencontractInstance.methods.approve(contractAddresses[_fromChain], _amount).send({from: _userAddress});
+                    const approve = await ERC20TokencontractInstance.methods.approve("0x11111112542d85b3ef69ae05771c2dccff4faa26", _amount).send({from: _userAddress});
                 }
             }       
             //get TX Data for swap to sign and to do the swap            
             const response = await fetch(`https://api.1inch.exchange/v3.0/${chain[_fromChain]}/swap?fromTokenAddress=${_fromTokenAddress}&toTokenAddress=${_toTokenAddress}&amount=${_amount}&fromAddress=${_userAddress}&slippage=1`);
             const swap = await response.json();
             const send = await web3.eth.sendTransaction(swap.tx);
-        }               
+        }              
     } catch (error) { console.log(error); }
 }
 
-async function getTokenBalances() {
+async function getEthTokenBalances() {
     let tokenBalances = [];
     user = await Moralis.User.current();
     const params = { address: user.attributes.ethAddress };
-    const balances = await Moralis.Cloud.run("getTokenBalances", params);
-    for (var i = 0; i < balances.length; i++) {
-        let balance = JSON.stringify(balances[i]);
+    const ethTokenBalances = await Moralis.Cloud.run("getEthTokenBalances", params);
+    for (var i = 0; i < ethTokenBalances.length; i++) {
+        let balance = JSON.stringify(ethTokenBalances[i]);
+        tokenBalances.push(balance);
+    }
+    return tokenBalances;
+}
+
+async function getPolygonTokenBalances() {
+    let tokenBalances = [];
+    user = await Moralis.User.current();
+    const params = { address: user.attributes.ethAddress };
+    const polygonTokenBalances = await Moralis.Cloud.run("getPolygonTokenBalances", params);
+    for (var i = 0; i < polygonTokenBalances.length; i++) {
+        let balance = JSON.stringify(polygonTokenBalances[i]);
         tokenBalances.push(balance);
     }
     return tokenBalances;
@@ -158,6 +165,13 @@ async function getBscBalance() {
     const params = { address: user.attributes.ethAddress };
     const bscbalance = await Moralis.Cloud.run("getBscBalance", params);
     return bscbalance;
+}
+
+async function getPolygonBalance() {
+    user = await Moralis.User.current();
+    const params = { address: user.attributes.ethAddress };
+    const polygonbalance = await Moralis.Cloud.run("getPolygonBalance", params);
+    return polygonbalance;
 }
 
 async function getMyTransactions() {

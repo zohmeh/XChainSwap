@@ -45,7 +45,7 @@ class _DropdownlistState extends State<Dropdownlist> {
             return new DropdownMenuItem<String>(
               value: map["address"],
               child: Container(
-                width: 300,
+                width: 100,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[

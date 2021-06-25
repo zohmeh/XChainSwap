@@ -197,8 +197,34 @@ Future getBalances() async {
     "decimals": "18"
   };
   myBalances.add(bsc);
-  var promise = getTokenBalances();
+  var polygonbalance = await getMyPolygonBalance();
+  Map polygon = {
+    "name": "Polygon",
+    "symbol": "matic",
+    "balance": polygonbalance,
+    "decimals": "18"
+  };
+  myBalances.add(polygon);
+  //Eth Tokens
+  var promise = getEthTokenBalances();
   var balance = await promiseToFuture(promise);
+  for (var i = 0; i < balance.length; i++) {
+    myBalances.add(json.decode(balance[i]));
+  }
+  for (var i = 0; i < myBalances.length; i++) {
+    var coinGeckoId =
+        coinGeckoTokens[myBalances[i]["symbol"].toLowerCase()]["id"];
+    var response = await http.get(Uri.parse(
+        'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coinGeckoId}&order=market_cap_desc&per_page=100&page=1&sparkline=false'));
+    var jsonData = json.decode(response.body);
+    var currentPrice = jsonData[0]["current_price"];
+    currentPrice == null
+        ? myBalances[i]["current_price"] = 0
+        : myBalances[i]["current_price"] = jsonData[0]["current_price"];
+  }
+  //Polygon Tokens
+  promise = getPolygonTokenBalances();
+  balance = await promiseToFuture(promise);
   for (var i = 0; i < balance.length; i++) {
     myBalances.add(json.decode(balance[i]));
   }
@@ -228,6 +254,13 @@ Future getMyBscBalance() async {
   var promise = getBscBalance();
   var bscbalance = await promiseToFuture(promise);
   return bscbalance;
+}
+
+//get my EthBalance from Moralis
+Future getMyPolygonBalance() async {
+  var promise = getPolygonBalance();
+  var polygonbalance = await promiseToFuture(promise);
+  return polygonbalance;
 }
 
 //get my EthBalance from Moralis

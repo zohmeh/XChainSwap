@@ -15,9 +15,11 @@ external dynamic getTokenPairRate(
     String fromToken, String toToken, String amount);
 external dynamic swap(String fromToken, String toToken, String amount,
     int fromchain, int tochain);
-external dynamic getTokenBalances();
+external dynamic getEthTokenBalances();
+external dynamic getPolygonTokenBalances();
 external dynamic getEthBalance();
 external dynamic getBscBalance();
+external dynamic getPolygonBalance();
 external dynamic getMyTransactions();
 external dynamic deployPortfolio();
 external dynamic getDeployedPortfolios();

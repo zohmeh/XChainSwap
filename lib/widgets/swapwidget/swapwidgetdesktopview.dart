@@ -53,14 +53,14 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
       builder: (ctx, tokensnapshot) {
         if (tokensnapshot.connectionState == ConnectionState.waiting) {
           return Container(
-              width: (MediaQuery.of(context).size.width - 150),
+              width: (MediaQuery.of(context).size.width) / 3,
               child: Center(child: CircularProgressIndicator()));
         } else {
           tokenList = tokensnapshot.data;
           return Container(
             padding: EdgeInsets.all(30),
             height: (MediaQuery.of(context).size.height) / 2,
-            width: (MediaQuery.of(context).size.width - 150),
+            width: (MediaQuery.of(context).size.width) / 3,
             child: Card(
               color: Theme.of(context).primaryColor,
               //elevation: 10,
@@ -101,22 +101,6 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
                           leftMargin: 0,
                           rightMargin: 0,
                           bottomMargin: 0,
-                          /*onChanged: (value) async {
-                            setState(() {
-                              fromAmount = (double.parse(value) *
-                                      pow(10,
-                                          fromToken.elementAt(0)["decimals"]))
-                                  .toString();
-                            });
-                            if (fromChain == toChain) {
-                              quote = await getRate([
-                                fromToken.elementAt(0)["address"],
-                                toToken.elementAt(0)["address"],
-                                fromAmount,
-                                fromChain
-                              ]);
-                            }
-                          },*/
                           onSubmitted: (value) async {
                             setState(() {
                               fromAmount = (double.parse(value) *

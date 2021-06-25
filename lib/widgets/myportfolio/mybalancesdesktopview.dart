@@ -1,7 +1,11 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:web_app_template/functions/functions.dart';
 import 'package:web_app_template/widgets/charts/piechart.dart';
 import 'package:data_table_2/data_table_2.dart';
+import 'package:web_app_template/widgets/dropdownlist/drowpdownlist.dart';
+import 'package:web_app_template/widgets/inputfields/inputField.dart';
+import 'package:web_app_template/widgets/swapwidget/swapwidgetdesktopview.dart';
 
 class MyBalancesDesktopView extends StatefulWidget {
   final List myBalances;
@@ -19,6 +23,7 @@ class _MyBalancesDesktopViewState extends State<MyBalancesDesktopView> {
     return widget.myBalances != []
         ? SingleChildScrollView(
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Container(
                   height: 500,
@@ -106,73 +111,7 @@ class _MyBalancesDesktopViewState extends State<MyBalancesDesktopView> {
                     child: PieChartWidget(balances: widget.myBalances),
                   ),
                 ),
-                Container(
-                  height: 500,
-                  width: MediaQuery.of(context).size.width / 3,
-                  child: Card(
-                    color: Theme.of(context).primaryColor,
-                    child: DataTable2(
-                      columns: [
-                        DataColumn(
-                            label: Text(
-                          "Name",
-                          style:
-                              TextStyle(color: Theme.of(context).accentColor),
-                        )),
-                        DataColumn(
-                            label: Text(
-                          "Symbol",
-                          style:
-                              TextStyle(color: Theme.of(context).accentColor),
-                        )),
-                        DataColumn(
-                            label: Text(
-                          "Token Id",
-                          style:
-                              TextStyle(color: Theme.of(context).accentColor),
-                        )),
-                        DataColumn(
-                            label: Text(
-                          "Amount",
-                          style:
-                              TextStyle(color: Theme.of(context).accentColor),
-                        )),
-                      ],
-                      rows: widget.myNFTS
-                          .map(
-                            ((element) => DataRow(
-                                  cells: [
-                                    DataCell(Text(
-                                      element["name"],
-                                      style: TextStyle(
-                                          color:
-                                              Theme.of(context).highlightColor),
-                                    )),
-                                    DataCell(Text(
-                                      element["symbol"],
-                                      style: TextStyle(
-                                          color:
-                                              Theme.of(context).highlightColor),
-                                    )),
-                                    DataCell(Text(
-                                      element["token_id"],
-                                      style: TextStyle(
-                                          color:
-                                              Theme.of(context).highlightColor),
-                                    )),
-                                    DataCell(Text(
-                                      element["amount"].toString(),
-                                      style: TextStyle(
-                                          color:
-                                              Theme.of(context).highlightColor),
-                                    )),
-                                  ],
-                                )),
-                          )
-                          .toList(),
-                    ),
-                  ),
-                ),
+                SwapWidgetDesktopview(),
               ],
             ),
           )
