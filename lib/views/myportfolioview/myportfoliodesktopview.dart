@@ -38,8 +38,8 @@ class _MyPortfolioDesktopViewState extends State<MyPortfolioDesktopView> {
                       width:
                           (MediaQuery.of(context).size.width - 150) * (3 / 4),
                       height: MediaQuery.of(context).size.height,
-                      child: MyBalancesDesktopView(
-                          balancesnapshot.data[0], balancesnapshot.data[1]),
+                      child: MyBalancesDesktopView(balancesnapshot
+                          .data[0]), //, balancesnapshot.data[1]),
                     );
                   }
                 }),

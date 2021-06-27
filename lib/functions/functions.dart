@@ -211,24 +211,13 @@ Future getBalances() async {
   for (var i = 0; i < balance.length; i++) {
     myBalances.add(json.decode(balance[i]));
   }
-  for (var i = 0; i < myBalances.length; i++) {
-    var coinGeckoId =
-        coinGeckoTokens[myBalances[i]["symbol"].toLowerCase()]["id"];
-    var response = await http.get(Uri.parse(
-        'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coinGeckoId}&order=market_cap_desc&per_page=100&page=1&sparkline=false'));
-    var jsonData = json.decode(response.body);
-    var currentPrice = jsonData[0]["current_price"];
-    currentPrice == null
-        ? myBalances[i]["current_price"] = 0
-        : myBalances[i]["current_price"] = jsonData[0]["current_price"];
-  }
   //Polygon Tokens
   promise = getPolygonTokenBalances();
   balance = await promiseToFuture(promise);
   for (var i = 0; i < balance.length; i++) {
     myBalances.add(json.decode(balance[i]));
   }
-  for (var i = 0; i < myBalances.length; i++) {
+  /*for (var i = 0; i < myBalances.length; i++) {
     var coinGeckoId =
         coinGeckoTokens[myBalances[i]["symbol"].toLowerCase()]["id"];
     var response = await http.get(Uri.parse(
@@ -238,7 +227,7 @@ Future getBalances() async {
     currentPrice == null
         ? myBalances[i]["current_price"] = 0
         : myBalances[i]["current_price"] = jsonData[0]["current_price"];
-  }
+  }*/
   return myBalances;
 }
 
@@ -314,8 +303,8 @@ Future getMyFollowedPortfolios() async {
 //get all my Assests
 Future getMyAssets() async {
   var tokens = await getBalances();
-  var nfts = await getMyNFTBalance();
-  return ([tokens, nfts]);
+  //var nfts = await getMyNFTBalance();
+  return ([tokens]); //, nfts]);
 }
 
 Future lunarCrushAnalysis(List _tokens) async {

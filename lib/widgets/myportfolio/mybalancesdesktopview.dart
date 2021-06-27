@@ -9,9 +9,9 @@ import 'package:web_app_template/widgets/swapwidget/swapwidgetdesktopview.dart';
 
 class MyBalancesDesktopView extends StatefulWidget {
   final List myBalances;
-  final List myNFTS;
+  //final List myNFTS;
 
-  MyBalancesDesktopView(this.myBalances, this.myNFTS);
+  MyBalancesDesktopView(this.myBalances); //, this.myNFTS);
 
   @override
   _MyBalancesDesktopViewState createState() => _MyBalancesDesktopViewState();
@@ -50,12 +50,12 @@ class _MyBalancesDesktopViewState extends State<MyBalancesDesktopView> {
                           style:
                               TextStyle(color: Theme.of(context).accentColor),
                         )),
-                        DataColumn(
+                        /*DataColumn(
                             label: Text(
                           "Value in US Dollar",
                           style:
                               TextStyle(color: Theme.of(context).accentColor),
-                        )),
+                        )),*/
                       ],
                       rows: widget.myBalances
                           .map(
@@ -84,7 +84,7 @@ class _MyBalancesDesktopViewState extends State<MyBalancesDesktopView> {
                                           color:
                                               Theme.of(context).highlightColor),
                                     )),
-                                    DataCell(Text(
+                                    /*DataCell(Text(
                                       (element["current_price"] *
                                               (int.parse(element["balance"]) /
                                                   pow(
@@ -95,7 +95,7 @@ class _MyBalancesDesktopViewState extends State<MyBalancesDesktopView> {
                                       style: TextStyle(
                                           color:
                                               Theme.of(context).highlightColor),
-                                    )),
+                                    )),*/
                                   ],
                                 )),
                           )
@@ -103,14 +103,14 @@ class _MyBalancesDesktopViewState extends State<MyBalancesDesktopView> {
                     ),
                   ),
                 ),
-                Container(
-                  height: 500,
-                  width: MediaQuery.of(context).size.width / 4.5,
-                  child: Card(
-                    color: Theme.of(context).primaryColor,
-                    child: PieChartWidget(balances: widget.myBalances),
-                  ),
-                ),
+                //Container(
+                //  height: 500,
+                //  width: MediaQuery.of(context).size.width / 4.5,
+                //  child: Card(
+                //    color: Theme.of(context).primaryColor,
+                //    child: PieChartWidget(balances: widget.myBalances),
+                //  ),
+                //),
                 SwapWidgetDesktopview(),
               ],
             ),

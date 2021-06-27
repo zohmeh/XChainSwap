@@ -3,8 +3,8 @@
 //Moralis.serverURL = "https://paapz5dnbgto.moralis.io:2053/server";
 
 //mainNet
-Moralis.initialize("ThhtsVE4amxBv91PmwzvbMsO63EOba1yPwa9Hcvm")
-Moralis.serverURL = "https://8qei4hdfzsnk.moralis.io:2053/server";
+Moralis.initialize("x0ful1XMWL36Q4W8hD45fkTBo9t645QJWfpoNRo0")
+Moralis.serverURL = "https://cexjnpsqzkbg.moralis.io:2053/server";
 
 async function init() {
     window.web3 = await Moralis.Web3.enable();
@@ -14,26 +14,6 @@ async function init() {
 }
 
 init()
-
-async function getSwaps() {
-    var allSwaps = [];
-    const swaps = await Moralis.Cloud.run("getLatestSwaps");
-    //fetch token infos 
-    const response = await fetch('https://api.1inch.exchange/v3.0/1/tokens');
-    const tokens = await response.json();
-    for (var i = 0; i < swaps.length; i++) {
-        if (tokens["tokens"][swaps[i]["srcToken"].toLowerCase()] && tokens["tokens"][swaps[i]["dstToken"].toLowerCase()]) {swaps[i]["srcTokenName"] = tokens["tokens"][swaps[i]["srcToken"].toLowerCase()]["symbol"]; swaps[i]["dstTokenName"] = tokens["tokens"][swaps[i]["dstToken"].toLowerCase()]["symbol"];}
-        //if (tokens["tokens"][swaps[i]["dstToken"].toLowerCase()]) {swaps[i]["dstTokenName"] = tokens["tokens"][swaps[i]["dstToken"].toLowerCase()]["symbol"];}
-        if (tokens["tokens"][swaps[i]["srcToken"].toLowerCase()] && tokens["tokens"][swaps[i]["srcToken"].toLowerCase()]["decimals"]) {swaps[i]["srcTokenDecimals"] = tokens["tokens"][swaps[i]["srcToken"].toLowerCase()]["decimals"];}
-        if (tokens["tokens"][swaps[i]["dstToken"].toLowerCase()] && tokens["tokens"][swaps[i]["dstToken"].toLowerCase()]["decimals"]) {swaps[i]["dstTokenDecimals"] = tokens["tokens"][swaps[i]["dstToken"].toLowerCase()]["decimals"];}
-        if (tokens["tokens"][swaps[i]["srcToken"].toLowerCase()] && tokens["tokens"][swaps[i]["srcToken"].toLowerCase()]["logoURI"]) {swaps[i]["srcTokenSymbol"] = tokens["tokens"][swaps[i]["srcToken"].toLowerCase()]["logoURI"];}
-        if (tokens["tokens"][swaps[i]["dstToken"].toLowerCase()] && tokens["tokens"][swaps[i]["dstToken"].toLowerCase()]["logoURI"]) {swaps[i]["dstTokenSymbol"] = tokens["tokens"][swaps[i]["dstToken"].toLowerCase()]["logoURI"];}
-        if (tokens["tokens"][swaps[i]["srcToken"].toLowerCase()] && tokens["tokens"][swaps[i]["dstToken"].toLowerCase()]){
-        var swap = JSON.stringify(swaps[i]);
-        allSwaps.push(swap);}
-    }
-    return allSwaps;
-}
 
 async function loggedIn() {
     try {
@@ -101,9 +81,31 @@ async function swap(_fromTokenAddress, _toTokenAddress, _amount, _fromChain, _to
     try {
         user = await Moralis.User.current();
         const _userAddress = user.attributes.ethAddress;
-        
 
-        console.log(_fromTokenAddress);
+        let posRootERC20 = "0x655F2166b0709cd575202630952D71E2bB0d61Af"
+        //let posChildERC20 =
+        //let posWETH =
+        //let rootChainWETH =
+        let MATIC_RPC = "https://speedy-nodes-nyc.moralis.io/cff6f789838e10c4008b1baa/polygon/mumbai";
+        let ETHEREUM_RPC = "https://speedy-nodes-nyc.moralis.io/cff6f789838e10c4008b1baa/eth/goerli";
+        //let VERSION = 
+        let NETWORK = "testnet";
+        let MATIC_CHAINID = 80001;
+        let ETHEREUM_CHAINID = 5;
+
+
+        const maticPosClient = new Matic.MaticPOSClient({
+            network: "testnet",
+            version: "mumbai",
+            parentProvider: window.web3,
+            maticProvider: MATIC_RPC
+        });
+
+        //Deposit ERC20 test tokens from görli to mumbai testnet
+        await maticPosClient.approveERC20ForDeposit(posRootERC20, "1000000000000000000", {from: _userAddress});
+        await maticPosClient.depositERC20ForUser(posRootERC20, _userAddress, "1000000000000000000", {from: _userAddress});
+        
+        /*console.log(_fromTokenAddress);
         console.log(_toTokenAddress);
         console.log(_amount);
         console.log(_fromChain);
@@ -125,7 +127,32 @@ async function swap(_fromTokenAddress, _toTokenAddress, _amount, _fromChain, _to
             const response = await fetch(`https://api.1inch.exchange/v3.0/${chain[_fromChain]}/swap?fromTokenAddress=${_fromTokenAddress}&toTokenAddress=${_toTokenAddress}&amount=${_amount}&fromAddress=${_userAddress}&slippage=1`);
             const swap = await response.json();
             const send = await web3.eth.sendTransaction(swap.tx);
-        }              
+        }
+        
+        //bridging from ether to polygon
+        if(_fromChain == 0 && _toChain == 2) {
+            window.ERC20TokencontractInstance = new web3.eth.Contract(erc20ABI, _fromTokenAddress);
+            window.PolygonBridgecontractInstance = new web3.eth.Contract(polygonBridgeABI, "0x401F6c983eA34274ec46f84D70b31C151321188b");
+            //Approve Polygonbridge to spent my tokens
+            //if(_fromTokenAddress != "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
+                //Approve Polygon
+                //const allowancePolygon = await ERC20TokencontractInstance.methods.allowance(_userAddress, "0x401F6c983eA34274ec46f84D70b31C151321188b6").call();
+                //if(allowancePolygon < web3.utils.toBN(parseFloat(_amount))) {
+                    //const approve = await ERC20TokencontractInstance.methods.approve("0xd505C3822C787D51d5C2B1ae9aDB943B2304eB23", _amount).send({from: _userAddress});
+                //}
+                //Approve 1Inch
+                //const allowance1Inch = await ERC20TokencontractInstance.methods.allowance(_userAddress, "0x11111112542d85b3ef69ae05771c2dccff4faa26").call();
+                //if(allowance1Inch < web3.utils.toBN(parseFloat(_amount))) {
+                //    const approve1 = await ERC20TokencontractInstance.methods.approve("0x11111112542d85b3ef69ae05771c2dccff4faa26", _amount).send({from: _userAddress});
+                //}
+            //}
+            //Deposit Token
+            //if(_fromTokenAddress != "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
+                const deposit = await PolygonBridgecontractInstance.methods.depositERC20ForUser(_fromTokenAddress, _userAddress, _amount).send({from: _userAddress});
+            //}  else {
+            //    const deposit = await PolygonBridgecontractInstance.methods.depositEther().send({from: _userAddress, value: _amount});
+            //}
+        }*/
     } catch (error) { console.log(error); }
 }
 
@@ -183,7 +210,7 @@ async function getMyTransactions() {
     return JSON.stringify(transactions);
 }
 
-async function getMyNFT() {
+/*async function getMyNFT() {
     try {
         let nfts = [];
         user = await Moralis.User.current();
@@ -195,4 +222,4 @@ async function getMyNFT() {
         }
         return nfts;
     } catch (error) { console.log(error); }
-}
+}*/
