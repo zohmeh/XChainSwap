@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
           value: LoginModel(),
         ),
         ChangeNotifierProvider.value(
-          value: Contractinteraction(),
+          value: BlockchainInteraction(),
         ),
       ],
       child: MaterialApp(

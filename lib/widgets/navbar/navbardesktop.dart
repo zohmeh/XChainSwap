@@ -17,7 +17,6 @@ class _NavbardesktopState extends State<Navbardesktop> {
   Widget build(BuildContext context) {
     final user = Provider.of<LoginModel>(context).user;
     final image = Provider.of<LoginModel>(context).image;
-    final tx = Provider.of<Contractinteraction>(context).tx;
     return Container(
       height: 75,
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -44,51 +43,6 @@ class _NavbardesktopState extends State<Navbardesktop> {
           user != null
               ? Row(
                   children: [
-                    Column(
-                      children: [
-                        Container(),
-                        Container(
-                          width: 200,
-                          margin: EdgeInsets.symmetric(horizontal: 20),
-                          child: Text(
-                            "Your latest Transaction",
-                            style: TextStyle(
-                                color: Theme.of(context).highlightColor),
-                          ),
-                        ),
-                        tx != null
-                            ? Flexible(
-                                child: Container(
-                                    width: 200,
-                                    margin:
-                                        EdgeInsets.symmetric(horizontal: 20),
-                                    child: tx == "true"
-                                        ? Text("successful",
-                                            style: TextStyle(
-                                                color: Theme.of(context)
-                                                    .highlightColor,
-                                                fontSize: 10))
-                                        : tx == "pending"
-                                            ? Text("pending",
-                                                style: TextStyle(
-                                                    color: Theme.of(context)
-                                                        .highlightColor,
-                                                    fontSize: 10))
-                                            : Text("error",
-                                                style: TextStyle(
-                                                    color: Theme.of(context)
-                                                        .highlightColor,
-                                                    fontSize: 10))),
-                              )
-                            : Container(
-                                width: 200,
-                                margin: EdgeInsets.symmetric(horizontal: 20),
-                                child: Text("No Transaction",
-                                    style: TextStyle(
-                                        color: Theme.of(context).highlightColor,
-                                        fontSize: 10))),
-                      ],
-                    ),
                     SizedBox(width: 15),
                     Container(
                       child: Text(

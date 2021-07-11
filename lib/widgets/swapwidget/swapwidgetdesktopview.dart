@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:web_app_template/widgets/dropdownlist/drowpdownlist.dart';
 import '../../functions/functions.dart';
 import '../../widgets/buttons/button.dart';
@@ -125,13 +126,15 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
                       Theme.of(context).buttonColor,
                       Theme.of(context).highlightColor,
                       "Swap Tokens",
-                      swapTokens, [
+                      Provider.of<BlockchainInteraction>(context, listen: false)
+                          .swapTokens /*, [
                     fromToken.elementAt(0)["address"],
                     toToken.elementAt(0)["address"],
                     fromAmount,
                     fromChain,
                     toChain
-                  ]),
+                  ]*/
+                      ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [

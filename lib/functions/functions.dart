@@ -6,6 +6,48 @@ import 'package:web_app_template/helpers/coinGeckoTokenList.dart';
 import '../../helpers/coinGeckoTokenList.dart';
 import '../widgets/javascript_controller.dart';
 import 'package:http/http.dart' as http;
+import 'package:queue/queue.dart';
+
+class BlockchainInteraction with ChangeNotifier {
+  var status;
+  var txHash;
+
+  Future getStatus(String _txHash) async {
+    var promiseStatus = getDepositStatus(_txHash.toString());
+    var status = await promiseToFuture(promiseStatus);
+    return status;
+  }
+
+  Future swapTokens(/*List _arguments*/) async {
+    //String fromTokenAddress = _arguments[0];
+    //String toTokenAddress = _arguments[1];
+    //String fromTokenAmount = _arguments[2];
+    //int fromChain = _arguments[3];
+    //int toChain = _arguments[4];
+
+    //var fromAmount = BigInt.from(double.parse(fromTokenAmount));
+
+    var promiseSwap = swap(
+        /*fromTokenAddress, toTokenAddress, fromAmount.toString(),
+      fromChain, toChain*/
+        );
+    var _txHash = await promiseToFuture(promiseSwap);
+    txHash = _txHash;
+    notifyListeners();
+
+    var queue = Queue(delay: Duration(milliseconds: 500));
+    var _status = await queue.add(() => getStatus(_txHash));
+    status = _status;
+    notifyListeners();
+  }
+}
+
+Future getDeposits() async {
+  var promise = getMyDeposits();
+  var deposits = await promiseToFuture(promise);
+  var depositsDecoded = json.decode(deposits);
+  return depositsDecoded;
+}
 
 Future getRate(List _arguments) async {
   String chain;
@@ -24,83 +66,6 @@ Future getRate(List _arguments) async {
   var quote = await promiseToFuture(promise1);
   var quotedecoded = json.decode(quote);
   return quotedecoded;
-}
-
-Future getAllSwaps() async {
-  List allSwaps = [];
-  List srcToken = [];
-  Map srcVolume = {};
-  List dstToken = [];
-  Map dstVolume = {};
-  List srcTokenCount = [];
-  List dstTokenCount = [];
-  double srcTokenVolume = 0.0;
-  double dstTokenVolume = 0.0;
-  var srcTokenVolumeAddresse;
-  var dstTokenVolumeAddresse;
-
-  var promise1 = fetch1InchTokens("1");
-  var tokens = await promiseToFuture(promise1);
-  var tokensdecoded = json.decode(tokens);
-
-  var promise = getSwaps();
-  var swaps = await promiseToFuture(promise);
-  for (var i = 0; i < swaps.length; i++) {
-    var swap = json.decode(swaps[i]);
-    allSwaps.add(swap);
-    srcTokenCount.add(swap["srcToken"]);
-    dstTokenCount.add(swap["dstToken"]);
-
-    // storing srcToken and there sold volume
-    if (srcToken.contains(swap["srcToken"])) {
-      srcVolume[swap["srcToken"]] +=
-          (double.parse(swap["amount"]) / pow(10, swap["srcTokenDecimals"]));
-    } else {
-      srcToken.add(swap["srcToken"]);
-      srcVolume[swap["srcToken"]] =
-          (double.parse(swap["amount"]) / pow(10, swap["srcTokenDecimals"]));
-    }
-
-    // storing dstToken and there sold volume
-    if (dstToken.contains(swap["dstToken"])) {
-      dstVolume[swap["dstToken"]] += (double.parse(swap["minReturnAmount"]) /
-          pow(10, swap["dstTokenDecimals"]));
-    } else {
-      dstToken.add(swap["dstToken"]);
-      dstVolume[swap["dstToken"]] = (double.parse(swap["minReturnAmount"]) /
-          pow(10, swap["dstTokenDecimals"]));
-    }
-
-    if (srcVolume[swap["srcToken"]] > srcTokenVolume) {
-      srcTokenVolume = srcVolume[swap["srcToken"]];
-      srcTokenVolumeAddresse = swap["srcToken"];
-    }
-
-    if (dstVolume[swap["dstToken"]] > dstTokenVolume) {
-      dstTokenVolume = dstVolume[swap["dstToken"]];
-      dstTokenVolumeAddresse = swap["dstToken"];
-    }
-  }
-
-  // counting for most sold and most often bought tokens
-  var mostSoldToken = srcTokenCount.toSet().reduce((i, j) =>
-      srcTokenCount.where((v) => v == i).length >
-              srcTokenCount.where((v) => v == j).length
-          ? i
-          : j);
-
-  var mostBoughtToken = dstTokenCount.toSet().reduce((i, j) =>
-      dstTokenCount.where((v) => v == i).length >
-              dstTokenCount.where((v) => v == j).length
-          ? i
-          : j);
-  return [
-    allSwaps,
-    tokensdecoded[mostSoldToken.toLowerCase()],
-    tokensdecoded[mostBoughtToken.toLowerCase()],
-    tokensdecoded[srcTokenVolumeAddresse.toLowerCase()],
-    tokensdecoded[dstTokenVolumeAddresse.toLowerCase()]
-  ];
 }
 
 Future fetchTokens() async {
@@ -164,20 +129,6 @@ Future fetchTokens() async {
   return [ethertokenList, bsctokenList, polygontokenList];
 }
 
-Future swapTokens(List _arguments) async {
-  String fromTokenAddress = _arguments[0];
-  String toTokenAddress = _arguments[1];
-  String fromTokenAmount = _arguments[2];
-  int fromChain = _arguments[3];
-  int toChain = _arguments[4];
-
-  var fromAmount = BigInt.from(double.parse(fromTokenAmount));
-
-  var promise = swap(fromTokenAddress, toTokenAddress, fromAmount.toString(),
-      fromChain, toChain);
-  await promiseToFuture(promise);
-}
-
 //get my Balances from Moralis
 Future getBalances() async {
   var myBalances = [];
@@ -186,36 +137,42 @@ Future getBalances() async {
     "name": "Ether",
     "symbol": "Eth",
     "balance": ethbalance,
-    "decimals": "18"
+    "decimals": "18",
+    "chain": "Ethereumchain"
   };
   myBalances.add(eth);
-  var bscbalance = await getMyBscBalance();
+  /*var bscbalance = await getMyBscBalance();
   Map bsc = {
     "name": "Binance Coin",
     "symbol": "BNB",
     "balance": bscbalance,
     "decimals": "18"
   };
-  myBalances.add(bsc);
+  myBalances.add(bsc);*/
   var polygonbalance = await getMyPolygonBalance();
   Map polygon = {
     "name": "Polygon",
     "symbol": "matic",
     "balance": polygonbalance,
-    "decimals": "18"
+    "decimals": "18",
+    "chain": "Polygonchain"
   };
   myBalances.add(polygon);
   //Eth Tokens
   var promise = getEthTokenBalances();
   var balance = await promiseToFuture(promise);
   for (var i = 0; i < balance.length; i++) {
-    myBalances.add(json.decode(balance[i]));
+    var myBalance = json.decode(balance[i]);
+    myBalance["chain"] = "Ethereumchain";
+    myBalances.add(myBalance);
   }
   //Polygon Tokens
   promise = getPolygonTokenBalances();
   balance = await promiseToFuture(promise);
   for (var i = 0; i < balance.length; i++) {
-    myBalances.add(json.decode(balance[i]));
+    var myBalance = json.decode(balance[i]);
+    myBalance["chain"] = "Polygonchain";
+    myBalances.add(myBalance);
   }
   /*for (var i = 0; i < myBalances.length; i++) {
     var coinGeckoId =
@@ -252,18 +209,6 @@ Future getMyPolygonBalance() async {
   return polygonbalance;
 }
 
-//get my EthBalance from Moralis
-Future getMyNFTBalance() async {
-  var myNFT = [];
-  var promise = getMyNFT();
-  var nftbalance = await promiseToFuture(promise);
-  for (var i = 0; i < nftbalance.length; i++) {
-    var nft = json.decode(nftbalance[i]);
-    myNFT.add(nft);
-  }
-  return myNFT;
-}
-
 //get my Transactions from Moralis
 Future getAllMyTransactions() async {
   var promise = getMyTransactions();
@@ -272,49 +217,9 @@ Future getAllMyTransactions() async {
   return transactionsdecoded;
 }
 
-//deploy my portfolio
-Future deployMyPortfolio(List _arguments) async {
-  var promise = deployPortfolio();
-  var deploy = await promiseToFuture(promise);
-}
-
-//get all deployed portfolios
-Future getAllDeployedPortfolios() async {
-  var promise = getDeployedPortfolios();
-  var portfolios = await promiseToFuture(promise);
-  var portfoliosdecoded = json.decode(portfolios);
-  return portfoliosdecoded;
-}
-
-//follow a portfolios
-Future follow(List _arguments) async {
-  var promise = followPortfolio(_arguments[0]);
-  var follow = await promiseToFuture(promise);
-}
-
-//get all portfolios i follow
-Future getMyFollowedPortfolios() async {
-  var promise = getFollowedPortfolios();
-  var followed = await promiseToFuture(promise);
-  var followeddecoded = json.decode(followed);
-  return followeddecoded;
-}
-
 //get all my Assests
 Future getMyAssets() async {
   var tokens = await getBalances();
   //var nfts = await getMyNFTBalance();
   return ([tokens]); //, nfts]);
-}
-
-Future lunarCrushAnalysis(List _tokens) async {
-  List tokenSentiment = [];
-  for (var i = 0; i < _tokens.length; i++) {
-    var _token = _tokens[i];
-    var response = await http.get(Uri.parse(
-        'https://api.lunarcrush.com/v2?data=assets&key=xr23gzfh5aoia5x8c45j2p&symbol=${_token}&time_series_indicators=average_sentiment,galaxy_score&data_points=0'));
-    var jsonData = json.decode(response.body);
-    tokenSentiment.add(jsonData["data"][0]);
-  }
-  return tokenSentiment;
 }
