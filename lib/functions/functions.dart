@@ -18,27 +18,25 @@ class BlockchainInteraction with ChangeNotifier {
     return status;
   }
 
-  Future swapTokens(/*List _arguments*/) async {
-    //String fromTokenAddress = _arguments[0];
-    //String toTokenAddress = _arguments[1];
-    //String fromTokenAmount = _arguments[2];
-    //int fromChain = _arguments[3];
-    //int toChain = _arguments[4];
+  Future swapTokens(List _arguments) async {
+    String fromTokenAddress = _arguments[0];
+    String toTokenAddress = _arguments[1];
+    String fromTokenAmount = _arguments[2];
+    int fromChain = _arguments[3];
+    int toChain = _arguments[4];
 
-    //var fromAmount = BigInt.from(double.parse(fromTokenAmount));
+    var fromAmount = BigInt.from(double.parse(fromTokenAmount));
 
-    var promiseSwap = swap(
-        /*fromTokenAddress, toTokenAddress, fromAmount.toString(),
-      fromChain, toChain*/
-        );
-    var _txHash = await promiseToFuture(promiseSwap);
-    txHash = _txHash;
-    notifyListeners();
+    var promiseSwap = swap(fromTokenAddress, toTokenAddress,
+        fromAmount.toString(), fromChain, toChain);
+    var swapping = await promiseToFuture(promiseSwap);
+    //txHash = _txHash;
+    //notifyListeners();
 
-    var queue = Queue(delay: Duration(milliseconds: 500));
-    var _status = await queue.add(() => getStatus(_txHash));
-    status = _status;
-    notifyListeners();
+    //var queue = Queue(delay: Duration(milliseconds: 500));
+    //var _status = await queue.add(() => getStatus(_txHash));
+    //status = _status;
+    //notifyListeners();
   }
 }
 

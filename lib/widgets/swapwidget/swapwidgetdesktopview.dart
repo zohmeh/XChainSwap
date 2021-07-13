@@ -127,14 +127,14 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
                       Theme.of(context).highlightColor,
                       "Swap Tokens",
                       Provider.of<BlockchainInteraction>(context, listen: false)
-                          .swapTokens /*, [
-                    fromToken.elementAt(0)["address"],
-                    toToken.elementAt(0)["address"],
-                    fromAmount,
-                    fromChain,
-                    toChain
-                  ]*/
-                      ),
+                          .swapTokens,
+                      [
+                        fromToken.elementAt(0)["address"],
+                        toToken.elementAt(0)["address"],
+                        fromAmount,
+                        fromChain,
+                        toChain
+                      ]),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
