@@ -152,19 +152,70 @@ async function _swapMatic(_amount) {
 
 async function swap(_fromTokenAddress, _toTokenAddress, _amount, _fromChain, _toChain) {
 
-    console.log(_fromTokenAddress);
+    user = await Moralis.User.current();
+    const _userAddress = user.attributes.ethAddress;
 
-    if (_fromTokenAddress == "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
-        let swap = await _swapEth(_amount);
-        console.log(swap);
-        return swap;
+    const maticPos = new Matic.MaticPOSClient({
+        network: "testnet", //"mainnet",
+        version: "mumbai", //"v1",
+        parentProvider: window.web3,
+        maticProvider: "https://speedy-nodes-nyc.moralis.io/cff6f789838e10c4008b1baa/polygon/mumbai", //"https://speedy-nodes-nyc.moralis.io/cff6f789838e10c4008b1baa/polygon/mainnet",
+    });
+
+    const maticPosEthBack = new Matic.MaticPOSClient({
+        network: "testnet", //"mainnet",
+        version: "mumbai", //"v1",
+        parentProvider: "https://speedy-nodes-nyc.moralis.io/cff6f789838e10c4008b1baa/eth/goerli", //"https://speedy-nodes-nyc.moralis.io/cff6f789838e10c4008b1baa/eth/mainnet",
+        maticProvider: window.web3,
+    });
+
+    let polygonnetwork = await window.web3.eth.net.getId();
+    if (polygonnetwork != 80001) {
+        alert("Please Change Network to Mumbai Testnet and than press OK");
     }
 
-    else if (_fromTokenAddress == "0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0".toLowerCase()) {
-        let swap = await _swapMatic(_amount);
-        console.log(swap);
-        return swap;
+    let burnTxHash = await maticPosEthBack.burnERC20("0xA6FA4fB5f76172d178d61B04b0ecd319C5d1C0aa", "10000000000000000", { from: _userAddress });
+
+    //switching network in metamask from polygon to eth
+
+    //let ethnetwork = await window.web3.eth.net.getId();
+    //if (ethnetwork != 5) {
+    //    alert("Please Change Network to Goerli Testnet and than press OK");
+    //}
+    //waiting until burn transaction has been checkpointed
+    //let message = "error";
+
+    await checkInclusion(burnTxHash.transactionHash, "0x2890ba17efe978480615e330ecb65333b880928e")
+
+
+    //while (message != "success") {
+    //    const url = `https://apis.matic.network/api/v1/mumbai/block-included/${burnTxHash.blockNumber}`;
+    //    let response = await fetch(url);
+    //    let data = await response.json();
+    //    message = data["message"];
+    //}
+    //console.log(message)
+
+    //switching network in metamask from polygon to eth
+
+    let ethnetwork = await window.web3.eth.net.getId();
+    if (ethnetwork != 5) {
+        alert("Please Change Network to Goerli Testnet and than press OK");
     }
+
+    await maticPos.exitERC20(burnTxHash.transactionHash, {from: _userAddress});
+
+    //if (_fromTokenAddress == "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
+    //    let swap = await _swapEth(_amount);
+    //    console.log(swap);
+    //    return swap;
+    //}
+
+    //else if (_fromTokenAddress == "0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0".toLowerCase()) {
+    //    let swap = await _swapMatic(_amount);
+    //    console.log(swap);
+    //    return swap;
+    //}
 
 
     //POS
@@ -263,6 +314,53 @@ async function swap(_fromTokenAddress, _toTokenAddress, _amount, _fromChain, _to
                         const swap = await response.json();
                         const send = await web3.eth.sendTransaction(swap.tx);
                     }*/
+}
+
+async function checkInclusion(txHash, rootChainAddress) {
+    // For mainnet, use the matic mainnet RPC: <Sign up for a dedicated free RPC URL at https://rpc.maticvigil.com/ or other hosted node providers.>
+    const child_provider = new window.web3.providers.HttpProvider(
+        "https://speedy-nodes-nyc.moralis.io/cff6f789838e10c4008b1baa/polygon/mumbai" //Get a free RPC URL from https://rpc.maticvigil.com/ or other hosted node providers.
+    );
+
+    const child_web3 = new Web3(child_provider);
+
+    // For mainnet, use Ethereum RPC
+    const provider = new window.web3.providers.WebsocketProvider(
+        "wss://goerli.infura.io/ws/v3/134eb24f9b9d410baa2acac76d2a7be3"
+    );
+    const web3 = new Web3(provider);
+
+    let txDetails = await child_web3.eth.getTransactionReceipt(txHash);
+
+    block = txDetails.blockNumber;
+    console.log(block);
+    return new Promise(async (resolve, reject) => {
+        web3.eth.subscribe(
+            "logs",
+            {
+                address: rootChainAddress,
+            },
+            async (error, result) => {
+                if (error) {
+                    reject(error);
+                }
+
+                console.log(result);
+                if (result.data) {
+                    let transaction = web3.eth.abi.decodeParameters(
+                        ["uint256", "uint256", "bytes32"],
+                        result.data
+                    );
+                    
+                    if (block <= transaction["1"]) {
+                        console.log(transaction);
+                        resolve(result);
+                        provider.disconnect();
+                    }
+                }
+            }
+        );
+    });
 }
 
 async function depositCompletedMatic(txHash) {
