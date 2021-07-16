@@ -79,8 +79,6 @@ async function getQuote(_fromToken, _toToken, _amount, _chain) {
 
 async function _bridgingEth(_amount, _fromChain, _toChain) {
     try {
-        console.log(_fromChain);
-        console.log(_toChain);
         let chain = [5, 5, 80001];
         user = await Moralis.User.current();
         const _userAddress = user.attributes.ethAddress;
@@ -106,10 +104,9 @@ async function _bridgingEth(_amount, _fromChain, _toChain) {
             while (!deposit) {
                 deposit = await depositCompletedEth(txHash.transactionHash);
             }
-            return deposit;
+            return txHash.transactionHash;
         }
         else if (_fromChain == 2 && _toChain == 0) {
-            console.log("Third check");
             //Deposit Ether from Polygon to Ether
             let burnTxHash = await maticPosEthBack.burnERC20("0xA6FA4fB5f76172d178d61B04b0ecd319C5d1C0aa", _amount, { from: _userAddress });
             await checkInclusion(burnTxHash.transactionHash, "0x2890ba17efe978480615e330ecb65333b880928e");
@@ -189,11 +186,6 @@ async function _networkCheck(_networkId) {
 async function swap(_fromTokenAddress, _toTokenAddress, _amount, _fromChain, _toChain) {
     let chain = [5, 5, 80001];
 
-    console.log(_fromTokenAddress);
-    console.log(_toTokenAddress);
-    console.log(_fromChain);
-    console.log(_toChain);
-
     if (_fromChain == _toChain) {
         await _networkCheck(chain[_fromChain]);
         //Direct swap with 1inch
@@ -206,19 +198,22 @@ async function swap(_fromTokenAddress, _toTokenAddress, _amount, _fromChain, _to
             //Check if the FromToken is ETH or Matic, beacause these will be bridged directly
             if (_fromTokenAddress == "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
                 await _networkCheck(chain[_fromChain]);
-                await _bridgingEth(_amount, _fromChain, _toChain);
+                let bridging = await _bridgingEth(_amount, _fromChain, _toChain);
                 let _newFromTokenAddress = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
                 await _networkCheck(chain[_toChain]);
                 //await _doSwap(_newFromTokenAddress, _toTokenAddress, _amount, _toChain);
                 console.log("Do swap");
+                console.log(bridging);
+                return bridging;
             }
             else if (_fromTokenAddress == "0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0".toLowerCase()) {
                 await _networkCheck(chain[_fromChain]);
-                await _bridgingMatic(_amount);
+                let bridging = await _bridgingMatic(_amount);
                 let _newFromTokenAddress = "0x0000000000000000000000000000000000001010";
                 await _networkCheck(chain[_toChain]);
                 //await _doSwap(_newFromTokenAddress, _toTokenAddress, _amount, _toChain);
                 console.log("Do swap");
+                return bridging;
             }
             //all other FromTokens will first be swapped into Eth on Eth and then bridged to Polygon and again swapped into the final Token on Polygon
             else {
@@ -236,11 +231,12 @@ async function swap(_fromTokenAddress, _toTokenAddress, _amount, _fromChain, _to
             //Check if FromToken is WETH this will be bridged directly
             if (_fromTokenAddress == "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619".toLowerCase()) {
                 await _networkCheck(chain[_fromChain]);
-                await _bridgingEth(_amount, _fromChain, _toChain);
+                let bridging = await _bridgingEth(_amount, _fromChain, _toChain);
                 let _newFromTokenAddress = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
                 await _networkCheck(chain[_toChain]);
                 //await _doSwap(_newFromTokenAddress, _toTokenAddress, _amount, _toChain);
                 console.log("Do swap");
+                return bridging;
             }
             else {
                 await _networkCheck(chain[_fromChain]);
@@ -384,12 +380,12 @@ async function depositCompletedEth(txHash) {
 }
 
 
-async function getDepositStatus(_txHash) {
+async function getTransactionStatus(_txHash) {
     console.log(_txHash);
     let status = false;
     const params = { txHash: _txHash };
     while (!status) {
-        status = await Moralis.Cloud.run("getNewDepositStatus", params);
+        status = await Moralis.Cloud.run("getNewTransactionStatus", params);
     }
     return status;
 
@@ -441,12 +437,27 @@ async function getPolygonBalance() {
 }
 
 async function getMyTransactions() {
-    const query = new Moralis.Query("EthTransactions");
-    query.equalTo("from_address", ethereum.selectedAddress.toLowerCase());
-    query.limit(10);
-    query.descending("createdAt")
-    const transactions = await query.find();
-    return JSON.stringify(transactions);
+    user = await Moralis.User.current();
+    const params = { address: user.attributes.ethAddress };
+    const transactions = await Moralis.Cloud.run("getTransactions", params);
+    let transactionsArray = [];
+    let transaction;
+    //const testABI = [{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"userAddress","type":"address"},{"indexed":false,"internalType":"address payable","name":"relayerAddress","type":"address"},{"indexed":false,"internalType":"bytes","name":"functionSignature","type":"bytes"}],"name":"MetaTransactionExecuted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"tokenType","type":"bytes32"},{"indexed":true,"internalType":"address","name":"predicateAddress","type":"address"}],"name":"PredicateRegistered","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"role","type":"bytes32"},{"indexed":true,"internalType":"bytes32","name":"previousAdminRole","type":"bytes32"},{"indexed":true,"internalType":"bytes32","name":"newAdminRole","type":"bytes32"}],"name":"RoleAdminChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"role","type":"bytes32"},{"indexed":true,"internalType":"address","name":"account","type":"address"},{"indexed":true,"internalType":"address","name":"sender","type":"address"}],"name":"RoleGranted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"role","type":"bytes32"},{"indexed":true,"internalType":"address","name":"account","type":"address"},{"indexed":true,"internalType":"address","name":"sender","type":"address"}],"name":"RoleRevoked","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"rootToken","type":"address"},{"indexed":true,"internalType":"address","name":"childToken","type":"address"},{"indexed":true,"internalType":"bytes32","name":"tokenType","type":"bytes32"}],"name":"TokenMapped","type":"event"},{"inputs":[],"name":"DEFAULT_ADMIN_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DEPOSIT","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"ERC712_VERSION","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"ETHER_ADDRESS","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MAPPER_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MAP_TOKEN","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"checkpointManagerAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"childChainManagerAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"childToRootToken","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"rootToken","type":"address"},{"internalType":"address","name":"childToken","type":"address"}],"name":"cleanMapToken","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"depositEtherFor","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"address","name":"rootToken","type":"address"},{"internalType":"bytes","name":"depositData","type":"bytes"}],"name":"depositFor","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"userAddress","type":"address"},{"internalType":"bytes","name":"functionSignature","type":"bytes"},{"internalType":"bytes32","name":"sigR","type":"bytes32"},{"internalType":"bytes32","name":"sigS","type":"bytes32"},{"internalType":"uint8","name":"sigV","type":"uint8"}],"name":"executeMetaTransaction","outputs":[{"internalType":"bytes","name":"","type":"bytes"}],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"bytes","name":"inputData","type":"bytes"}],"name":"exit","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"getChainId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"pure","type":"function"},{"inputs":[],"name":"getDomainSeperator","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getNonce","outputs":[{"internalType":"uint256","name":"nonce","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"}],"name":"getRoleAdmin","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"uint256","name":"index","type":"uint256"}],"name":"getRoleMember","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"}],"name":"getRoleMemberCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"grantRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"hasRole","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_owner","type":"address"}],"name":"initialize","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"initializeEIP712","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"rootToken","type":"address"},{"internalType":"address","name":"childToken","type":"address"},{"internalType":"bytes32","name":"tokenType","type":"bytes32"}],"name":"mapToken","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"name":"processedExits","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"tokenType","type":"bytes32"},{"internalType":"address","name":"predicateAddress","type":"address"}],"name":"registerPredicate","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"rootToken","type":"address"},{"internalType":"address","name":"childToken","type":"address"},{"internalType":"bytes32","name":"tokenType","type":"bytes32"}],"name":"remapToken","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"renounceRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"revokeRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"rootToChildToken","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"newCheckpointManager","type":"address"}],"name":"setCheckpointManager","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newChildChainManager","type":"address"}],"name":"setChildChainManagerAddress","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newStateSender","type":"address"}],"name":"setStateSender","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"setupContractId","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"stateSenderAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"tokenToType","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"name":"typeToPredicate","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"stateMutability":"payable","type":"receive"}];
+    for(var i = 0; i < transactions.length; i++) {
+        transaction = {
+            "hash": transactions[i].attributes.hash,
+            "from_address": transactions[i].attributes.from_address,
+            "to_address": transactions[i].attributes.to_address,
+            "value": transactions[i].attributes.value,
+            "input": transactions[i].attributes.input.substring(0, 10),
+            "confirmed": transactions[i].attributes.confirmed
+        }
+        if(transactions[i].attributes.input.substring(0, 10) == window.web3.eth.abi.encodeFunctionSignature("depositEtherFor(address)")) {            
+            transaction["input"] = "Deposit Ether For";
+        }
+        transactionsArray.push(transaction);
+    }
+    return JSON.stringify(transactionsArray);
 }
 
 async function getMyDeposits() {
