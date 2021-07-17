@@ -1,14 +1,39 @@
-Moralis.Cloud.define("getTransactions", function(request) {
+Moralis.Cloud.define("getEthTransactions", function(request) {
 	const address = request.params.address;
   	const query = new Parse.Query("EthTransactions");
-	query.equalTo("to_address", address);
+	query.equalTo("from_address", address);
+    query.containedIn("to_address", ["0xBbD7cBFA79faee899Eaf900F13C9065bF03B1A74".toLowerCase(), "0x7850ec290a2e2f40b82ed962eaf30591bb5f5c96".toLowerCase()]);
 	query.descending("block_number");
 	query.limit(10);
 	return query.find();
 });
 
-Moralis.Cloud.define("getTokenBalances", async (request) => {
+Moralis.Cloud.define("getPolygonTransactions", function(request) {
+	const address = request.params.address;
+  	const query = new Parse.Query("PolygonTransactions");
+	query.equalTo("from_address", address);
+	query.descending("block_number");
+	query.limit(10);
+	return query.find();
+});
+
+Moralis.Cloud.define("getEthTokenBalances", async (request) => {
     const query = new Moralis.Query("EthTokenBalance");
+    query.equalTo("from_address", request.params.address);
+    const tokenbalance = await query.find();
+    const results = [];
+    if (!tokenbalance) return;
+    for(let i = 0; i < tokenbalance.length; ++i) {
+        if (tokenbalance[i].attributes["balance"] == "0") {
+            tokenbalance[i].destroy();
+        }
+        results.push(tokenbalance[i]);
+    }
+   return results;
+});
+
+Moralis.Cloud.define("getPolygonTokenBalances", async (request) => {
+    const query = new Moralis.Query("PolygonTokenBalance");
     query.equalTo("address", request.params.address);
     const tokenbalance = await query.find();
     const results = [];
@@ -31,7 +56,7 @@ Moralis.Cloud.define("getTokenBalances", async (request) => {
   });
 
   Moralis.Cloud.define("getBscBalance", async (request) => {
-    const query = new Moralis.Query("BscBalance");
+    const query = new Moralis.Query("PolygonBalance");
     query.equalTo("address", request.params.address);
     const result = await query.first();
     const bscbalance = result.get("balance")
@@ -46,40 +71,38 @@ Moralis.Cloud.define("getTokenBalances", async (request) => {
    return polygonbalance;
   });
 
-  Moralis.Cloud.define("getNFTBalance", async (request) => {
-    const query = new Moralis.Query("EthNFTTokenOwners");
-    query.equalTo("owner_of", request.params.address);
-    const nftbalance = await query.find();
-   return nftbalance;
+  Moralis.Cloud.define("getNewTransactionStatus", async (request) => {
+    const query = new Moralis.Query("EthTransactions");
+    query.equalTo("hash", request.params.txHash);
+    const result = await query.first();
+    const status = result.get("confirmed")
+   return status;
   });
 
-Moralis.Cloud.beforeConsume('NewSwap', function (object) {
-    if(object.amount > 100000000000){
-        return true;
-    }
-    return false;
-})
+  Moralis.Cloud.define("getNewEthTokenTransfers", async (request) => {
+    const query = new Moralis.Query("EthTokenTransfers");
+    query.equalTo("transaction_hash", request.params.txHash);
+    const result = await query.first();
+    return result;
+  });
 
-Moralis.Cloud.define("getLatestSwaps", async (request) => {
-  let allSwaps = [];
-  const query = new Moralis.Query("NewSwap");
-  query.descending("createdAt");
-  const swaps = await query.find();
-  for (var i = 0; i < swaps.length; i++) {
-    let swap = {
-      "srcToken": swaps[i].attributes.srcToken,
-      "srcTokenName": "",
-      "srcTokenSymbol": "",
-      "srcTokenDecimals": 0,
-      "dstToken": swaps[i].attributes.dstToken,
-      "dstTokenName": "",
-      "dstTokenSymbol": "",
-      "dstTokenDecimals": 0,
-      "amount": swaps[i].attributes.amount,
-      "minReturnAmount": swaps[i].attributes.minReturnAmount
-    }
-    allSwaps.push(swap);
-  }
-  return allSwaps;
-});
+  Moralis.Cloud.define("getEthTokenSymbol", async (request) => {
+    const query = new Moralis.Query("EthTokenBalance");
+    query.equalTo("token_address", request.params.tokenAddress);
+    const result = await query.first();
+    return result;
+  });
 
+  Moralis.Cloud.define("getNewPolygonTokenTransfers", async (request) => {
+    const query = new Moralis.Query("PolygonTokenTransfers");
+    query.equalTo("transaction_hash", request.params.txHash);
+    const result = await query.first();
+    return result;
+  });
+
+  Moralis.Cloud.define("getPolygonTokenSymbol", async (request) => {
+    const query = new Moralis.Query("PolygonTokenBalance");
+    query.equalTo("token_address", request.params.tokenAddress);
+    const result = await query.first();
+    return result;
+  });
