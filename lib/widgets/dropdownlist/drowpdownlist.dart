@@ -45,21 +45,25 @@ class _DropdownlistState extends State<Dropdownlist> {
             return new DropdownMenuItem<String>(
               value: map["address"],
               child: Container(
-                width: 100,
+                width: 210,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
-                    Image.network(
-                      map["logoURI"],
-                      width: 25,
+                    Container(
+                      width: 30,
+                      child: Image.network(
+                        map["logoURI"],
+                        width: 25,
+                      ),
                     ),
                     Container(
-                        margin: EdgeInsets.only(left: 10),
-                        child: Text(
-                          map["symbol"],
-                          style:
-                              TextStyle(color: Theme.of(context).accentColor),
-                        )),
+                      width: 170,
+                      margin: EdgeInsets.only(left: 10),
+                      child: Text(
+                        map["symbol"],
+                        style: TextStyle(color: Theme.of(context).accentColor),
+                      ),
+                    ),
                     //Container(
                     //    margin: EdgeInsets.only(left: 20),
                     //    child: Flexible(

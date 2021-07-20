@@ -410,7 +410,6 @@ async function depositCompletedEth(txHash) {
     return child_counter >= root_counter;
 }
 
-
 async function getTransactionStatus(_txHash) {
     console.log(_txHash);
     let status = false;
@@ -552,4 +551,23 @@ async function getMyDeposits() {
     const params = { address: user.attributes.ethAddress };
     const deposits = await Moralis.Cloud.run("getNewDeposits", params);
     return JSON.stringify(deposits);
+}
+
+async function storeJobData(_fromTokenAddress, _toTokenAddress, _amount, _fromChain, _toChain) {
+    user = await Moralis.User.current();
+    const _userAddress = user.attributes.ethAddress;    
+    const Jobs = Moralis.Object.extend("Jobs");
+    const job = new Jobs();
+
+    job.set("user", _userAddress);
+    job.set("fromTokenAddress", _fromTokenAddress);
+    job.set("toTokenAddress", _toTokenAddress);
+    job.set("amount", _amount);
+    job.set("fromChain", _fromChain);
+    job.set("toChain", _toChain);
+    job.set("status", "open");
+
+    await job.save();
+
+    return job.id;
 }

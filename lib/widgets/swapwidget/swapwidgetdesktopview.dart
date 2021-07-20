@@ -60,7 +60,7 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
           tokenList = tokensnapshot.data;
           return Container(
             padding: EdgeInsets.all(30),
-            height: (MediaQuery.of(context).size.height) / 2,
+            height: (MediaQuery.of(context).size.height) / 3,
             width: (MediaQuery.of(context).size.width) / 3,
             child: Card(
               color: Theme.of(context).primaryColor,
@@ -73,7 +73,7 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
                     children: [
                       Dropdownlist(
                           tokenList: tokensnapshot.data[0],
-                          label: "Select Token Ethereumchain",
+                          label: "Select Token Ethereum",
                           onChanged: onChanged,
                           chain: 0,
                           isFromToken: true),
@@ -156,7 +156,7 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
                     children: [
                       Dropdownlist(
                           tokenList: tokensnapshot.data[0],
-                          label: "Select Token Ethereumchain",
+                          label: "Select Token Ethereum",
                           onChanged: onChanged,
                           chain: 0,
                           isFromToken: false),

@@ -36,7 +36,7 @@ class _NavbardesktopState extends State<Navbardesktop> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
-            "DushiFolio",
+            "XChainSwap",
             style: TextStyle(
                 color: Theme.of(context).highlightColor, fontSize: 30),
           ),

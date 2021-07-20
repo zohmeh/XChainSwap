@@ -144,7 +144,29 @@ class _MyBalancesDesktopViewState extends State<MyBalancesDesktopView> {
                     SwapWidgetDesktopview(),
                   ],
                 ),
-                MyJobsDesktopView(),
+                SizedBox(height: 20),
+                Row(
+                  children: [
+                    Column(
+                      children: [
+                        Text(
+                          "Follow Transactions on Ethereum",
+                          style: TextStyle(color: Colors.white, fontSize: 20),
+                        ),
+                        MyJobsDesktopView(chain: 0),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        Text(
+                          "Follow Transactions on Polygon",
+                          style: TextStyle(color: Colors.white, fontSize: 20),
+                        ),
+                        MyJobsDesktopView(chain: 2),
+                      ],
+                    ),
+                  ],
+                )
               ],
             ),
           )

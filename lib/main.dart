@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-        title: 'DushiFolio',
+        title: 'XChainSwap',
         theme: ThemeData(
             errorColor: Colors.red,
             buttonColor: Colors.blueAccent,

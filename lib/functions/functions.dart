@@ -13,28 +13,152 @@ class BlockchainInteraction with ChangeNotifier {
   var txHash;
 
   Future getStatus(String _txHash) async {
-    var promiseStatus = getDepositStatus(_txHash.toString());
+    var promiseStatus = getTransactionStatus(_txHash.toString());
     var status = await promiseToFuture(promiseStatus);
     return status;
   }
 
   Future swapTokens(List _arguments) async {
-    String fromTokenAddress = _arguments[0];
-    String toTokenAddress = _arguments[1];
-    String fromTokenAmount = _arguments[2];
-    int fromChain = _arguments[3];
-    int toChain = _arguments[4];
+    String _fromTokenAddress = _arguments[0];
+    String _toTokenAddress = _arguments[1];
+    String _fromTokenAmount = _arguments[2];
+    int _fromChain = _arguments[3];
+    int _toChain = _arguments[4];
 
-    var fromAmount = BigInt.from(double.parse(fromTokenAmount));
+    var _fromAmount = BigInt.from(double.parse(_fromTokenAmount));
 
-    var promiseSwap = swap(fromTokenAddress, toTokenAddress,
-        fromAmount.toString(), fromChain, toChain);
-    var swapping = await promiseToFuture(promiseSwap);
-    //txHash = _txHash;
-    //notifyListeners();
+    var promiseStoreJob = storeJobData(_fromTokenAddress, _toTokenAddress,
+        _fromAmount.toString(), _fromChain, _toChain);
+    var jobId = await promiseToFuture(promiseStoreJob);
+
+    var chain = [5, 5, 80001];
+
+    //Casestudie for different swaps
+    if (_fromChain == _toChain) {
+      var promiseNetworkCheck = networkCheck(chain[_fromChain]);
+      await promiseToFuture(promiseNetworkCheck);
+      //var promiseDoSwap = doSwap(_fromTokenAddress, _toTokenAddress,
+      //    _fromAmount.toString(), _fromChain);
+      //print(promiseDoSwap);
+      print("Do the swap");
+    } else {
+      if (_fromChain == 0 && _toChain == 2) {
+        //Check if the FromToken is ETH or Matic, beacause these will be bridged directly
+        if (_fromTokenAddress == "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
+          var promiseNetworkCheck = networkCheck(chain[_fromChain]);
+          await promiseToFuture(promiseNetworkCheck);
+          var promiseBridging =
+              bridgingEth(_fromAmount.toString(), _fromChain, _toChain);
+          txHash = await promiseToFuture(promiseBridging);
+          notifyListeners();
+          var promiseCheckEthCompleted = checkEthCompleted(txHash);
+          status = await promiseToFuture(promiseCheckEthCompleted);
+          notifyListeners();
+          var _newFromTokenAddress =
+              "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
+          //var promiseNetworkCheck2 = networkCheck(chain[_toChain]);
+          //await promiseToFuture(promiseNetworkCheck2);
+          //var promiseDoSwap = doSwap(_newfromTokenAddress, _toTokenAddress,
+          //    _fromAmount.toString(), _toChain);
+          //print(promiseDoSwap);
+          print("Do the swap");
+        } else if (_fromTokenAddress ==
+            "0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0".toLowerCase()) {
+          var promiseNetworkCheck = networkCheck(chain[_fromChain]);
+          await promiseToFuture(promiseNetworkCheck);
+          var promiseBridging = bridgingMatic(_fromAmount.toString());
+          txHash = await promiseToFuture(promiseBridging);
+          notifyListeners();
+          var promiseCheckMaticCompleted = checkMaticCompleted(txHash);
+          status = await promiseToFuture(promiseCheckMaticCompleted);
+          notifyListeners();
+          var _newFromTokenAddress =
+              "0x0000000000000000000000000000000000001010";
+          //var promiseNetworkCheck2 = networkCheck(chain[_toChain]);
+          //await promiseToFuture(promiseNetworkCheck2);
+          //var promiseDoSwap = doSwap(_newfromTokenAddress, _toTokenAddress,
+          //    _fromAmount.toString(), _toChain);
+          //print(promiseDoSwap);
+          print("Do the swap");
+        }
+        //all other FromTokens will first be swapped into Eth on Eth and then bridged to Polygon and again swapped into the final Token on Polygon
+        else {
+          var promiseNetworkCheck = networkCheck(chain[_fromChain]);
+          await promiseToFuture(promiseNetworkCheck);
+          //getting the swapped amount in eth
+          var _ethBridgingAmount = "";
+          var promiseBridging =
+              bridgingEth(_ethBridgingAmount, _fromChain, _toChain);
+          txHash = await promiseToFuture(promiseBridging);
+          notifyListeners();
+          var promiseCheckEthCompleted = checkEthCompleted(txHash);
+          status = await promiseToFuture(promiseCheckEthCompleted);
+          notifyListeners();
+          var _newFromTokenAddress =
+              "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
+          var promiseNetworkCheck2 = networkCheck(chain[_toChain]);
+          await promiseToFuture(promiseNetworkCheck2);
+          //var promiseDoSwap = doSwap(_newfromTokenAddress, _toTokenAddress,
+          //    _ethBridgingAmount, _toChain);
+          //print(promiseDoSwap);
+          print("Do the swap");
+        }
+      } else if (_fromChain == 2 && _toChain == 0) {
+        //Check if FromToken is WETH this will be bridged directly
+        if (_fromTokenAddress ==
+            "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619".toLowerCase()) {
+          var promiseNetworkCheck = networkCheck(chain[_fromChain]);
+          await promiseToFuture(promiseNetworkCheck);
+          var promiseBridging =
+              bridgingEth(_fromTokenAmount, _fromChain, _toChain);
+          txHash = await promiseToFuture(promiseBridging);
+          notifyListeners();
+          var promiseCheckInclusion = checkForInclusion(txHash);
+          status = await promiseToFuture(promiseCheckInclusion);
+          notifyListeners();
+          var promiseNetworkCheck2 = networkCheck(chain[_toChain]);
+          await promiseToFuture(promiseNetworkCheck2);
+          var promiseERC20Exit = erc20Exit(txHash);
+          txHash = await promiseToFuture(promiseERC20Exit);
+          notifyListeners();
+          var _newFromTokenAddress =
+              "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
+          //var promiseDoSwap = doSwap(_newfromTokenAddress, _toTokenAddress,
+          //    _fromTokenAmount, _toChain);
+          //print(promiseDoSwap);
+          print("Do the swap");
+        } else {
+          var promiseNetworkCheck = networkCheck(chain[_fromChain]);
+          await promiseToFuture(promiseNetworkCheck);
+          //var promiseDoSwap = doSwap(_fromTokenAddress, "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619".toLowerCase(),
+          //    _fromTokenAmount, _fromChain);
+          //print(promiseDoSwap);
+          //getting the swapped amount in
+          var _ethBridgingAmount = "";
+          var promiseBridging =
+              bridgingEth(_ethBridgingAmount, _fromChain, _toChain);
+          txHash = await promiseToFuture(promiseBridging);
+          notifyListeners();
+          var promiseCheckInclusion = checkForInclusion(txHash);
+          status = await promiseToFuture(promiseCheckInclusion);
+          notifyListeners();
+          var promiseNetworkCheck2 = networkCheck(chain[_toChain]);
+          await promiseToFuture(promiseNetworkCheck2);
+          var promiseERC20Exit = erc20Exit(txHash);
+          txHash = await promiseToFuture(promiseERC20Exit);
+          notifyListeners();
+          var _newFromTokenAddress =
+              "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
+          //var promiseDoSwap = doSwap(_newfromTokenAddress, _toTokenAddress,
+          //    _fromTokenAmount, _toChain);
+          //print(promiseDoSwap);
+          print("Do the swap");
+        }
+      }
+    }
 
     //var queue = Queue(delay: Duration(milliseconds: 500));
-    //var _status = await queue.add(() => getStatus(_txHash));
+    //var _status = await queue.add(() => getStatus(swapping));
     //status = _status;
     //notifyListeners();
   }
@@ -136,7 +260,7 @@ Future getBalances() async {
     "symbol": "Eth",
     "balance": ethbalance,
     "decimals": "18",
-    "chain": "Ethereumchain"
+    "chain": "Ethereum"
   };
   myBalances.add(eth);
   /*var bscbalance = await getMyBscBalance();
@@ -153,7 +277,7 @@ Future getBalances() async {
     "symbol": "matic",
     "balance": polygonbalance,
     "decimals": "18",
-    "chain": "Polygonchain"
+    "chain": "Polygon"
   };
   myBalances.add(polygon);
   //Eth Tokens
@@ -161,7 +285,7 @@ Future getBalances() async {
   var balance = await promiseToFuture(promise);
   for (var i = 0; i < balance.length; i++) {
     var myBalance = json.decode(balance[i]);
-    myBalance["chain"] = "Ethereumchain";
+    myBalance["chain"] = "Ethereum";
     myBalances.add(myBalance);
   }
   //Polygon Tokens
@@ -169,7 +293,7 @@ Future getBalances() async {
   balance = await promiseToFuture(promise);
   for (var i = 0; i < balance.length; i++) {
     var myBalance = json.decode(balance[i]);
-    myBalance["chain"] = "Polygonchain";
+    myBalance["chain"] = "Polygon";
     myBalances.add(myBalance);
   }
   /*for (var i = 0; i < myBalances.length; i++) {
@@ -207,17 +331,23 @@ Future getMyPolygonBalance() async {
   return polygonbalance;
 }
 
-//get my Transactions from Moralis
-Future getAllMyTransactions() async {
-  var promise = getMyTransactions();
-  var transactions = await promiseToFuture(promise);
-  var transactionsdecoded = json.decode(transactions);
-  return transactionsdecoded;
-}
-
 //get all my Assests
 Future getMyAssets() async {
   var tokens = await getBalances();
   //var nfts = await getMyNFTBalance();
   return ([tokens]); //, nfts]);
+}
+
+Future getAllMyEthTransactions() async {
+  var promise = getMyEthTransactions();
+  var transactions = await promiseToFuture(promise);
+  var transactionsdecoded = json.decode(transactions);
+  return transactionsdecoded;
+}
+
+Future getAllMyPolygonTransactions() async {
+  var promise = getMyPolygonTransactions();
+  var transactions = await promiseToFuture(promise);
+  var transactionsdecoded = json.decode(transactions);
+  return transactionsdecoded;
 }
