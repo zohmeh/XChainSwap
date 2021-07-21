@@ -77,7 +77,7 @@ async function getQuote(_fromToken, _toToken, _amount, _chain) {
     } catch (error) { console.log(error); }
 }
 
-async function bridgingEth(_amount, _fromChain, _toChain) {
+async function bridgingEth(_amount, _fromChain, _toChain, _jobId) {
     try {
         let chain = [5, 5, 80001];
         user = await Moralis.User.current();
@@ -104,6 +104,11 @@ async function bridgingEth(_amount, _fromChain, _toChain) {
             //while (!deposit) {
             //    deposit = await depositCompletedEth(txHash.transactionHash);
             //}
+            //Setting transactionHash for Job
+            const params = { id: _jobId };
+            let job = await Moralis.Cloud.run("getJobsById", params);
+            job.set("txHash", txHash.transactionHash);
+            await job.save();
             return txHash.transactionHash;
         }
         else if (_fromChain == 2 && _toChain == 0) {
@@ -171,11 +176,15 @@ async function checkForInclusion(txHash) {
     return check;
 }
 
-async function checkEthCompleted(txHash) {
+async function checkEthCompleted(_jobId) {
     let deposit = false
+    const params = { id: _jobId };
+    let job = await Moralis.Cloud.run("getJobsById", params);
     while (!deposit) {
-        deposit = await depositCompletedEth(txHash);
+        deposit = await depositCompletedEth(job.attributes.txHash);
     }
+    job.set("status", "ethcompleted");
+    await job.save();
     return deposit;
 }
 
@@ -411,7 +420,6 @@ async function depositCompletedEth(txHash) {
 }
 
 async function getTransactionStatus(_txHash) {
-    console.log(_txHash);
     let status = false;
     const params = { txHash: _txHash };
     while (!status) {
@@ -565,6 +573,7 @@ async function storeJobData(_fromTokenAddress, _toTokenAddress, _amount, _fromCh
     job.set("amount", _amount);
     job.set("fromChain", _fromChain);
     job.set("toChain", _toChain);
+    job.set("txHash", "");
     job.set("status", "open");
 
     await job.save();

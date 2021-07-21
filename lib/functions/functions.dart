@@ -12,10 +12,13 @@ class BlockchainInteraction with ChangeNotifier {
   var status;
   var txHash;
 
-  Future getStatus(String _txHash) async {
-    var promiseStatus = getTransactionStatus(_txHash.toString());
-    var status = await promiseToFuture(promiseStatus);
-    return status;
+  Future getStatus(String _jobId, String _token) async {
+    print(_jobId);
+    if (_token == "eth") {
+      var promiseCheckEthCompleted = checkEthCompleted(_jobId);
+      var status = await promiseToFuture(promiseCheckEthCompleted);
+      return status;
+    }
   }
 
   Future swapTokens(List _arguments) async {
@@ -48,11 +51,12 @@ class BlockchainInteraction with ChangeNotifier {
           var promiseNetworkCheck = networkCheck(chain[_fromChain]);
           await promiseToFuture(promiseNetworkCheck);
           var promiseBridging =
-              bridgingEth(_fromAmount.toString(), _fromChain, _toChain);
+              bridgingEth(_fromAmount.toString(), _fromChain, _toChain, jobId);
           txHash = await promiseToFuture(promiseBridging);
           notifyListeners();
-          var promiseCheckEthCompleted = checkEthCompleted(txHash);
-          status = await promiseToFuture(promiseCheckEthCompleted);
+          var queue = Queue(delay: Duration(milliseconds: 500));
+          var _status = await queue.add(() => getStatus(jobId, "eth"));
+          status = _status;
           notifyListeners();
           var _newFromTokenAddress =
               "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
@@ -88,7 +92,7 @@ class BlockchainInteraction with ChangeNotifier {
           //getting the swapped amount in eth
           var _ethBridgingAmount = "";
           var promiseBridging =
-              bridgingEth(_ethBridgingAmount, _fromChain, _toChain);
+              bridgingEth(_ethBridgingAmount, _fromChain, _toChain, jobId);
           txHash = await promiseToFuture(promiseBridging);
           notifyListeners();
           var promiseCheckEthCompleted = checkEthCompleted(txHash);
@@ -110,7 +114,7 @@ class BlockchainInteraction with ChangeNotifier {
           var promiseNetworkCheck = networkCheck(chain[_fromChain]);
           await promiseToFuture(promiseNetworkCheck);
           var promiseBridging =
-              bridgingEth(_fromTokenAmount, _fromChain, _toChain);
+              bridgingEth(_fromTokenAmount, _fromChain, _toChain, jobId);
           txHash = await promiseToFuture(promiseBridging);
           notifyListeners();
           var promiseCheckInclusion = checkForInclusion(txHash);
@@ -136,7 +140,7 @@ class BlockchainInteraction with ChangeNotifier {
           //getting the swapped amount in
           var _ethBridgingAmount = "";
           var promiseBridging =
-              bridgingEth(_ethBridgingAmount, _fromChain, _toChain);
+              bridgingEth(_ethBridgingAmount, _fromChain, _toChain, jobId);
           txHash = await promiseToFuture(promiseBridging);
           notifyListeners();
           var promiseCheckInclusion = checkForInclusion(txHash);
@@ -156,11 +160,6 @@ class BlockchainInteraction with ChangeNotifier {
         }
       }
     }
-
-    //var queue = Queue(delay: Duration(milliseconds: 500));
-    //var _status = await queue.add(() => getStatus(swapping));
-    //status = _status;
-    //notifyListeners();
   }
 }
 
