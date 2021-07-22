@@ -108,8 +108,9 @@ async function bridgingEth(_amount, _fromChain, _toChain, _jobId) {
             const params = { id: _jobId };
             let job = await Moralis.Cloud.run("getJobsById", params);
             job.set("txHash", txHash.transactionHash);
+            job.set("status", "ethbridged");
             await job.save();
-            return txHash.transactionHash;
+            return "ethbridged";
         }
         else if (_fromChain == 2 && _toChain == 0) {
             //Deposit Ether from Polygon to Ether
@@ -183,9 +184,10 @@ async function checkEthCompleted(_jobId) {
     while (!deposit) {
         deposit = await depositCompletedEth(job.attributes.txHash);
     }
+    console.log(deposit);
     job.set("status", "ethcompleted");
     await job.save();
-    return deposit;
+    return "ethcompleted";
 }
 
 async function checkMaticCompleted(txHash) {
@@ -414,6 +416,7 @@ async function depositCompletedEth(txHash) {
         "0x0000000000000000000000000000000000001001"
     );
     let tx = await window.web3.eth.getTransactionReceipt(txHash);
+    console.log(txHash);
     let child_counter = await contractInstance.methods.lastStateId().call();
     let root_counter = web3.utils.hexToNumberString(tx.logs[1].topics[1]);
     return child_counter >= root_counter;
@@ -554,13 +557,6 @@ async function getMyPolygonTransactions() {
     return JSON.stringify(transactionsArray);
 }
 
-async function getMyDeposits() {
-    user = await Moralis.User.current();
-    const params = { address: user.attributes.ethAddress };
-    const deposits = await Moralis.Cloud.run("getNewDeposits", params);
-    return JSON.stringify(deposits);
-}
-
 async function storeJobData(_fromTokenAddress, _toTokenAddress, _amount, _fromChain, _toChain) {
     user = await Moralis.User.current();
     const _userAddress = user.attributes.ethAddress;    
@@ -579,4 +575,11 @@ async function storeJobData(_fromTokenAddress, _toTokenAddress, _amount, _fromCh
     await job.save();
 
     return job.id;
+}
+
+async function getMyJobs() {
+    user = await Moralis.User.current();
+    const params = { address: user.attributes.ethAddress };
+    const myJobs = await Moralis.Cloud.run("getMyJobs", params);
+    return JSON.stringify(myJobs);
 }

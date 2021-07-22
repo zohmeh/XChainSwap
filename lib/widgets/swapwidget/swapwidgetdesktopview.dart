@@ -133,7 +133,10 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
                         toToken.elementAt(0)["address"],
                         fromAmount,
                         fromChain,
-                        toChain
+                        toChain,
+                        "",
+                        "new",
+                        ""
                       ]),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,

@@ -106,3 +106,17 @@ Moralis.Cloud.define("getPolygonTokenBalances", async (request) => {
     const result = await query.first();
     return result;
   });
+
+  Moralis.Cloud.define("getJobsById", async (request) => {
+    const query = new Moralis.Query("Jobs");
+    query.equalTo("objectId", request.params.id);
+    const result = await query.first();
+    return result;
+  });
+
+  Moralis.Cloud.define("getMyJobs", async (request) => {
+    const query = new Moralis.Query("Jobs");
+    query.equalTo("user", request.params.address);
+    const result = await query.find();
+    return result;
+  });

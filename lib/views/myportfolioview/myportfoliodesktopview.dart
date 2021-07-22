@@ -14,6 +14,7 @@ class _MyPortfolioDesktopViewState extends State<MyPortfolioDesktopView> {
   @override
   void initState() {
     myAssets = getMyAssets();
+    getAllMyJobs();
     super.initState();
   }
 

@@ -12,8 +12,7 @@ class BlockchainInteraction with ChangeNotifier {
   var status;
   var txHash;
 
-  Future getStatus(String _jobId, String _token) async {
-    print(_jobId);
+  Future<String> getStatus(String _jobId, String _token) async {
     if (_token == "eth") {
       var promiseCheckEthCompleted = checkEthCompleted(_jobId);
       var status = await promiseToFuture(promiseCheckEthCompleted);
@@ -27,14 +26,17 @@ class BlockchainInteraction with ChangeNotifier {
     String _fromTokenAmount = _arguments[2];
     int _fromChain = _arguments[3];
     int _toChain = _arguments[4];
-
+    String txHash = _arguments[5];
+    String status = _arguments[6];
+    String jobId = _arguments[7];
+    List chain = [5, 5, 80001];
     var _fromAmount = BigInt.from(double.parse(_fromTokenAmount));
 
-    var promiseStoreJob = storeJobData(_fromTokenAddress, _toTokenAddress,
-        _fromAmount.toString(), _fromChain, _toChain);
-    var jobId = await promiseToFuture(promiseStoreJob);
-
-    var chain = [5, 5, 80001];
+    if (status == "new") {
+      var promiseStoreJob = storeJobData(_fromTokenAddress, _toTokenAddress,
+          _fromTokenAmount, _fromChain, _toChain);
+      jobId = await promiseToFuture(promiseStoreJob);
+    }
 
     //Casestudie for different swaps
     if (_fromChain == _toChain) {
@@ -48,24 +50,36 @@ class BlockchainInteraction with ChangeNotifier {
       if (_fromChain == 0 && _toChain == 2) {
         //Check if the FromToken is ETH or Matic, beacause these will be bridged directly
         if (_fromTokenAddress == "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
-          var promiseNetworkCheck = networkCheck(chain[_fromChain]);
-          await promiseToFuture(promiseNetworkCheck);
-          var promiseBridging =
-              bridgingEth(_fromAmount.toString(), _fromChain, _toChain, jobId);
-          txHash = await promiseToFuture(promiseBridging);
-          notifyListeners();
-          var queue = Queue(delay: Duration(milliseconds: 500));
-          var _status = await queue.add(() => getStatus(jobId, "eth"));
-          status = _status;
-          notifyListeners();
-          var _newFromTokenAddress =
-              "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
-          //var promiseNetworkCheck2 = networkCheck(chain[_toChain]);
-          //await promiseToFuture(promiseNetworkCheck2);
-          //var promiseDoSwap = doSwap(_newfromTokenAddress, _toTokenAddress,
-          //    _fromAmount.toString(), _toChain);
-          //print(promiseDoSwap);
-          print("Do the swap");
+          switch (status) {
+            case "new":
+              var promiseNetworkCheck = networkCheck(chain[_fromChain]);
+              await promiseToFuture(promiseNetworkCheck);
+              var promiseBridging = bridgingEth(
+                  _fromAmount.toString(), _fromChain, _toChain, jobId);
+              status = await promiseToFuture(promiseBridging);
+              print(status + jobId);
+              notifyListeners();
+              continue checking;
+            checking:
+            case "ethbridged":
+              var queue = Queue(delay: Duration(milliseconds: 500));
+              status = await queue.add(() async => getStatus(jobId, "eth"));
+              print(status + jobId);
+              notifyListeners();
+              continue swapping;
+            swapping:
+            case "ethcompleted":
+              var _newFromTokenAddress =
+                  "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
+              //var promiseNetworkCheck2 = networkCheck(chain[_toChain]);
+              //await promiseToFuture(promiseNetworkCheck2);
+              //var promiseDoSwap = doSwap(_newfromTokenAddress, _toTokenAddress,
+              //    _fromAmount.toString(), _toChain);
+              //print(promiseDoSwap);
+              print("Do the swap" + jobId);
+              status = "done";
+              break;
+          }
         } else if (_fromTokenAddress ==
             "0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0".toLowerCase()) {
           var promiseNetworkCheck = networkCheck(chain[_fromChain]);
@@ -161,13 +175,6 @@ class BlockchainInteraction with ChangeNotifier {
       }
     }
   }
-}
-
-Future getDeposits() async {
-  var promise = getMyDeposits();
-  var deposits = await promiseToFuture(promise);
-  var depositsDecoded = json.decode(deposits);
-  return depositsDecoded;
 }
 
 Future getRate(List _arguments) async {
@@ -349,4 +356,26 @@ Future getAllMyPolygonTransactions() async {
   var transactions = await promiseToFuture(promise);
   var transactionsdecoded = json.decode(transactions);
   return transactionsdecoded;
+}
+
+Future getAllMyJobs() async {
+  var promise = getMyJobs();
+  var jobs = await promiseToFuture(promise);
+  var jobsdecoded = json.decode(jobs);
+  print(jobsdecoded);
+
+  for (int i = 0; i < jobsdecoded.length; i++) {
+    var queue = Queue(delay: Duration(milliseconds: 500));
+    await queue.add(() => BlockchainInteraction().swapTokens([
+          jobsdecoded[i]["fromTokenAddress"],
+          jobsdecoded[i]["toTokenAddress"],
+          jobsdecoded[i]["amount"],
+          jobsdecoded[i]["fromChain"],
+          jobsdecoded[i]["toChain"],
+          jobsdecoded[i]["txHash"],
+          jobsdecoded[i]["status"],
+          jobsdecoded[i]["objectId"]
+        ]));
+  }
+  return jobsdecoded;
 }

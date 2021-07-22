@@ -26,7 +26,6 @@ external dynamic getSwaps();
 external dynamic getQuote(
     String _fromToken, String _toToken, String _amount, String _chain);
 external dynamic getTransactionStatus(String _txHash);
-external dynamic getMyDeposits();
 external dynamic networkCheck(int _networkId);
 external dynamic doSwap(String _fromTokenAddress, String _toTokenAddress,
     String _amount, int _fromChain);
@@ -37,3 +36,4 @@ external checkEthCompleted(String _jobId);
 external checkMaticCompleted(String _txHash);
 external erc20Exit(String _txHash);
 external checkForInclusion(String _txHash);
+external getMyJobs();
