@@ -18,6 +18,13 @@ class BlockchainInteraction with ChangeNotifier {
       var status = await promiseToFuture(promiseCheckEthCompleted);
       return status;
     }
+    if (_token == "matic") {
+      var promiseCheckMaticCompleted = checkMaticCompleted(_jobId);
+      var status = await promiseToFuture(promiseCheckMaticCompleted);
+      return status;
+    } else {
+      return "error";
+    }
   }
 
   Future swapTokens(List _arguments) async {
@@ -57,14 +64,12 @@ class BlockchainInteraction with ChangeNotifier {
               var promiseBridging = bridgingEth(
                   _fromAmount.toString(), _fromChain, _toChain, jobId);
               status = await promiseToFuture(promiseBridging);
-              print(status + jobId);
               notifyListeners();
               continue checking;
             checking:
             case "ethbridged":
               var queue = Queue(delay: Duration(milliseconds: 500));
               status = await queue.add(() async => getStatus(jobId, "eth"));
-              print(status + jobId);
               notifyListeners();
               continue swapping;
             swapping:
@@ -82,22 +87,32 @@ class BlockchainInteraction with ChangeNotifier {
           }
         } else if (_fromTokenAddress ==
             "0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0".toLowerCase()) {
-          var promiseNetworkCheck = networkCheck(chain[_fromChain]);
-          await promiseToFuture(promiseNetworkCheck);
-          var promiseBridging = bridgingMatic(_fromAmount.toString());
-          txHash = await promiseToFuture(promiseBridging);
-          notifyListeners();
-          var promiseCheckMaticCompleted = checkMaticCompleted(txHash);
-          status = await promiseToFuture(promiseCheckMaticCompleted);
-          notifyListeners();
-          var _newFromTokenAddress =
-              "0x0000000000000000000000000000000000001010";
-          //var promiseNetworkCheck2 = networkCheck(chain[_toChain]);
-          //await promiseToFuture(promiseNetworkCheck2);
-          //var promiseDoSwap = doSwap(_newfromTokenAddress, _toTokenAddress,
-          //    _fromAmount.toString(), _toChain);
-          //print(promiseDoSwap);
-          print("Do the swap");
+          switch (status) {
+            case "new":
+              var promiseNetworkCheck = networkCheck(chain[_fromChain]);
+              await promiseToFuture(promiseNetworkCheck);
+              var promiseBridging =
+                  bridgingMatic(_fromAmount.toString(), jobId);
+              status = await promiseToFuture(promiseBridging);
+              notifyListeners();
+              continue checking;
+            checking:
+            case "maticbridged":
+              var queue = Queue(delay: Duration(milliseconds: 500));
+              status = await queue.add(() async => getStatus(jobId, "matic"));
+              notifyListeners();
+              continue swapping;
+            swapping:
+            case "maticcompleted":
+              var _newFromTokenAddress =
+                  "0x0000000000000000000000000000000000001010";
+              //var promiseNetworkCheck2 = networkCheck(chain[_toChain]);
+              //await promiseToFuture(promiseNetworkCheck2);
+              //var promiseDoSwap = doSwap(_newfromTokenAddress, _toTokenAddress,
+              //    _fromAmount.toString(), _toChain);
+              //print(promiseDoSwap);
+              print("Do the swap" + jobId);
+          }
         }
         //all other FromTokens will first be swapped into Eth on Eth and then bridged to Polygon and again swapped into the final Token on Polygon
         else {

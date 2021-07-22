@@ -136,7 +136,7 @@ async function erc20Exit(txHash) {
     return exit.transactionHash;
 }
 
-async function bridgingMatic(_amount) {
+async function bridgingMatic(_amount, _jobId) {
     try {
         let chain = [5, 5, 80001];
         user = await Moralis.User.current();
@@ -161,13 +161,19 @@ async function bridgingMatic(_amount) {
         await maticPlasma.approveERC20TokensForDeposit("0x499d11E0b6eAC7c0593d8Fb292DCBbF815Fb29Ae", _amount, { from: _userAddress });
         //Deposit ERC20
         let txHash = await maticPlasma.depositERC20ForUser("0x499d11E0b6eAC7c0593d8Fb292DCBbF815Fb29Ae", _userAddress, _amount, { from: _userAddress });
+        //Setting transactionHash for Job
+        const params = { id: _jobId };
+        let job = await Moralis.Cloud.run("getJobsById", params);
+        job.set("txHash", txHash.transactionHash);
+        job.set("status", "maticbridged");
+        await job.save();
         //let deposit = false
 
         //while (!deposit) {
         //    deposit = await depositCompletedMatic(txHash.transactionHash);
         //}
 
-        return txHash.transactionHash;
+        return "maticbridged";
 
     } catch (error) { console.log(error); }
 }
@@ -190,14 +196,17 @@ async function checkEthCompleted(_jobId) {
     return "ethcompleted";
 }
 
-async function checkMaticCompleted(txHash) {
+async function checkMaticCompleted(_jobId) {
     let deposit;
-
+    const params = { id: _jobId };
+    let job = await Moralis.Cloud.run("getJobsById", params);
     while (!deposit) {
-        deposit = await depositCompletedMatic(txHash);
+        deposit = await depositCompletedMatic(job.attributes.txHash);
     }
-
-    return deposit;
+    console.log(deposit);
+    job.set("status", "maticcompleted");
+    await job.save();
+    return "maticcompleted";
 }
 
 async function doSwap(_fromTokenAddress, _toTokenAddress, _amount, _fromChain) {
