@@ -190,7 +190,6 @@ async function checkEthCompleted(_jobId) {
     while (!deposit) {
         deposit = await depositCompletedEth(job.attributes.txHash);
     }
-    console.log(deposit);
     job.set("status", "ethcompleted");
     await job.save();
     return "ethcompleted";
@@ -203,7 +202,6 @@ async function checkMaticCompleted(_jobId) {
     while (!deposit) {
         deposit = await depositCompletedMatic(job.attributes.txHash);
     }
-    console.log(deposit);
     job.set("status", "maticcompleted");
     await job.save();
     return "maticcompleted";

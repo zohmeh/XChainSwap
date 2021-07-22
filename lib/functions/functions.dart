@@ -116,25 +116,37 @@ class BlockchainInteraction with ChangeNotifier {
         }
         //all other FromTokens will first be swapped into Eth on Eth and then bridged to Polygon and again swapped into the final Token on Polygon
         else {
-          var promiseNetworkCheck = networkCheck(chain[_fromChain]);
-          await promiseToFuture(promiseNetworkCheck);
-          //getting the swapped amount in eth
-          var _ethBridgingAmount = "";
-          var promiseBridging =
-              bridgingEth(_ethBridgingAmount, _fromChain, _toChain, jobId);
-          txHash = await promiseToFuture(promiseBridging);
-          notifyListeners();
-          var promiseCheckEthCompleted = checkEthCompleted(txHash);
-          status = await promiseToFuture(promiseCheckEthCompleted);
-          notifyListeners();
-          var _newFromTokenAddress =
-              "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
-          var promiseNetworkCheck2 = networkCheck(chain[_toChain]);
-          await promiseToFuture(promiseNetworkCheck2);
-          //var promiseDoSwap = doSwap(_newfromTokenAddress, _toTokenAddress,
-          //    _ethBridgingAmount, _toChain);
-          //print(promiseDoSwap);
-          print("Do the swap");
+          switch (status) {
+            case "new":
+              var promiseNetworkCheck = networkCheck(chain[_fromChain]);
+              await promiseToFuture(promiseNetworkCheck);
+              //getting the swapped amount in eth
+              //Swapping Token to ETH on Eth
+              var _ethBridgingAmount = "";
+              var promiseBridging =
+                  bridgingEth(_ethBridgingAmount, _fromChain, _toChain, jobId);
+              status = await promiseToFuture(promiseBridging);
+              notifyListeners();
+              continue checking;
+            checking:
+            case "ethbridged":
+              var queue = Queue(delay: Duration(milliseconds: 500));
+              status = await queue.add(() async => getStatus(jobId, "eth"));
+              notifyListeners();
+              continue swapping;
+            swapping:
+            case "ethcompleted":
+              var _newFromTokenAddress =
+                  "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
+              //var promiseNetworkCheck2 = networkCheck(chain[_toChain]);
+              //await promiseToFuture(promiseNetworkCheck2);
+              //var promiseDoSwap = doSwap(_newfromTokenAddress, _toTokenAddress,
+              //    _fromAmount.toString(), _toChain);
+              //print(promiseDoSwap);
+              print("Do the swap" + jobId);
+              status = "done";
+              break;
+          }
         }
       } else if (_fromChain == 2 && _toChain == 0) {
         //Check if FromToken is WETH this will be bridged directly
