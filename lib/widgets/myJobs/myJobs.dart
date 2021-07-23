@@ -18,8 +18,9 @@ class MyJobsDesktopView extends StatefulWidget {
 class _MyJobsDesktopViewState extends State<MyJobsDesktopView> {
   @override
   Widget build(BuildContext context) {
-    Provider.of<BlockchainInteraction>(context, listen: true).status;
-    Provider.of<BlockchainInteraction>(context, listen: true).txHash;
+    widget.chain == 0
+        ? Provider.of<EthBlockchainInteraction>(context, listen: true)
+        : Provider.of<PolygonBlockchainInteraction>(context, listen: true);
 
     return Container(
       height: 500,
@@ -59,12 +60,12 @@ class _MyJobsDesktopViewState extends State<MyJobsDesktopView> {
                       )),
                       DataColumn(
                           label: Text(
-                        "Native Value",
+                        "Value",
                         style: TextStyle(color: Theme.of(context).accentColor),
                       )),
                       DataColumn(
                           label: Text(
-                        "Token Value",
+                        "Amount",
                         style: TextStyle(color: Theme.of(context).accentColor),
                       )),
                       DataColumn(
@@ -91,13 +92,16 @@ class _MyJobsDesktopViewState extends State<MyJobsDesktopView> {
                                 cells: [
                                   DataCell(
                                     Text(
-                                      element["hash"],
+                                      element["hash"].substring(0, 5) +
+                                          "..." +
+                                          element["hash"].substring(
+                                              element["hash"].length - 5),
                                       style: TextStyle(
-                                          fontSize: 10,
                                           color:
                                               Theme.of(context).highlightColor),
                                     ),
                                   ),
+
                                   DataCell(Text(
                                     element["input"],
                                     style: TextStyle(
@@ -112,9 +116,11 @@ class _MyJobsDesktopViewState extends State<MyJobsDesktopView> {
                                   //          Theme.of(context).highlightColor),
                                   //)),
                                   DataCell(Text(
-                                    element["to_address"],
+                                    element["to_address"].substring(0, 5) +
+                                        "..." +
+                                        element["to_address"].substring(
+                                            element["to_address"].length - 5),
                                     style: TextStyle(
-                                        fontSize: 10,
                                         color:
                                             Theme.of(context).highlightColor),
                                   )),
@@ -154,7 +160,7 @@ class _MyJobsDesktopViewState extends State<MyJobsDesktopView> {
                                             Theme.of(context).buttonColor,
                                             Theme.of(context).highlightColor,
                                             "Get active",
-                                            Provider.of<BlockchainInteraction>(
+                                            Provider.of<EthBlockchainInteraction>(
                                                     context,
                                                     listen: false)
                                                 .openActivity,
