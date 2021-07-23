@@ -22,6 +22,11 @@ class BlockchainInteraction with ChangeNotifier {
       var promiseCheckMaticCompleted = checkMaticCompleted(_jobId);
       var status = await promiseToFuture(promiseCheckMaticCompleted);
       return status;
+    }
+    if (_token == "erc20Eth") {
+      var promiseCheckInclusion = checkForInclusion(_jobId);
+      var status = await promiseToFuture(promiseCheckInclusion);
+      return status;
     } else {
       return "error";
     }
@@ -37,7 +42,6 @@ class BlockchainInteraction with ChangeNotifier {
     String status = _arguments[6];
     String jobId = _arguments[7];
     List chain = [5, 5, 80001];
-    var _fromAmount = BigInt.from(double.parse(_fromTokenAmount));
 
     if (status == "new") {
       var promiseStoreJob = storeJobData(_fromTokenAddress, _toTokenAddress,
@@ -61,8 +65,8 @@ class BlockchainInteraction with ChangeNotifier {
             case "new":
               var promiseNetworkCheck = networkCheck(chain[_fromChain]);
               await promiseToFuture(promiseNetworkCheck);
-              var promiseBridging = bridgingEth(
-                  _fromAmount.toString(), _fromChain, _toChain, jobId);
+              var promiseBridging =
+                  bridgingEth(_fromTokenAmount, _fromChain, _toChain, jobId);
               status = await promiseToFuture(promiseBridging);
               notifyListeners();
               continue checking;
@@ -91,8 +95,7 @@ class BlockchainInteraction with ChangeNotifier {
             case "new":
               var promiseNetworkCheck = networkCheck(chain[_fromChain]);
               await promiseToFuture(promiseNetworkCheck);
-              var promiseBridging =
-                  bridgingMatic(_fromAmount.toString(), jobId);
+              var promiseBridging = bridgingMatic(_fromTokenAmount, jobId);
               status = await promiseToFuture(promiseBridging);
               notifyListeners();
               continue checking;
@@ -152,55 +155,70 @@ class BlockchainInteraction with ChangeNotifier {
         //Check if FromToken is WETH this will be bridged directly
         if (_fromTokenAddress ==
             "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619".toLowerCase()) {
-          var promiseNetworkCheck = networkCheck(chain[_fromChain]);
-          await promiseToFuture(promiseNetworkCheck);
-          var promiseBridging =
-              bridgingEth(_fromTokenAmount, _fromChain, _toChain, jobId);
-          txHash = await promiseToFuture(promiseBridging);
-          notifyListeners();
-          var promiseCheckInclusion = checkForInclusion(txHash);
-          status = await promiseToFuture(promiseCheckInclusion);
-          notifyListeners();
-          var promiseNetworkCheck2 = networkCheck(chain[_toChain]);
-          await promiseToFuture(promiseNetworkCheck2);
-          var promiseERC20Exit = erc20Exit(txHash);
-          txHash = await promiseToFuture(promiseERC20Exit);
-          notifyListeners();
-          var _newFromTokenAddress =
-              "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
-          //var promiseDoSwap = doSwap(_newfromTokenAddress, _toTokenAddress,
-          //    _fromTokenAmount, _toChain);
-          //print(promiseDoSwap);
-          print("Do the swap");
+          switch (status) {
+            case "new":
+              var promiseNetworkCheck = networkCheck(chain[_fromChain]);
+              await promiseToFuture(promiseNetworkCheck);
+              var promiseBridging =
+                  bridgingEth(_fromTokenAmount, _fromChain, _toChain, jobId);
+              status = await promiseToFuture(promiseBridging);
+              notifyListeners();
+              continue checking;
+            checking:
+            case "ethbridged":
+              var queue = Queue(delay: Duration(milliseconds: 500));
+              status =
+                  await queue.add(() async => getStatus(jobId, "erc20Eth"));
+              notifyListeners();
+              break;
+          }
         } else {
-          var promiseNetworkCheck = networkCheck(chain[_fromChain]);
-          await promiseToFuture(promiseNetworkCheck);
-          //var promiseDoSwap = doSwap(_fromTokenAddress, "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619".toLowerCase(),
-          //    _fromTokenAmount, _fromChain);
-          //print(promiseDoSwap);
-          //getting the swapped amount in
-          var _ethBridgingAmount = "";
-          var promiseBridging =
-              bridgingEth(_ethBridgingAmount, _fromChain, _toChain, jobId);
-          txHash = await promiseToFuture(promiseBridging);
-          notifyListeners();
-          var promiseCheckInclusion = checkForInclusion(txHash);
-          status = await promiseToFuture(promiseCheckInclusion);
-          notifyListeners();
-          var promiseNetworkCheck2 = networkCheck(chain[_toChain]);
-          await promiseToFuture(promiseNetworkCheck2);
-          var promiseERC20Exit = erc20Exit(txHash);
-          txHash = await promiseToFuture(promiseERC20Exit);
-          notifyListeners();
-          var _newFromTokenAddress =
-              "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
-          //var promiseDoSwap = doSwap(_newfromTokenAddress, _toTokenAddress,
-          //    _fromTokenAmount, _toChain);
-          //print(promiseDoSwap);
-          print("Do the swap");
+          switch (status) {
+            case "new":
+              var promiseNetworkCheck = networkCheck(chain[_fromChain]);
+              await promiseToFuture(promiseNetworkCheck);
+              //var promiseDoSwap = doSwap(_fromTokenAddress, "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619".toLowerCase(),
+              //    _fromTokenAmount, _fromChain);
+              //print(promiseDoSwap);
+              //getting the swapped amount in
+              var _ethBridgingAmount = "";
+              var promiseBridging =
+                  bridgingEth(_ethBridgingAmount, _fromChain, _toChain, jobId);
+              status = await promiseToFuture(promiseBridging);
+              notifyListeners();
+              continue checking;
+            checking:
+            case "ethbridged":
+              var queue = Queue(delay: Duration(milliseconds: 500));
+              status =
+                  await queue.add(() async => getStatus(jobId, "erc20Eth"));
+              notifyListeners();
+              break;
+          }
         }
       }
     }
+  }
+
+  Future openActivity(List _arguments) async {
+    String _jobId = _arguments[0];
+    List chain = [5, 5, 80001];
+    //get the job by id
+    var promiseJob = getJobById(_jobId);
+    var job = await promiseToFuture(promiseJob);
+    var jobdecoded = json.decode(job);
+
+    var promiseNetworkCheck2 = networkCheck(chain[jobdecoded["toChain"]]);
+    await promiseToFuture(promiseNetworkCheck2);
+    var promiseERC20Exit = erc20Exit(_jobId);
+    status = await promiseToFuture(promiseERC20Exit);
+    notifyListeners();
+    var _newFromTokenAddress = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
+    //var promiseDoSwap = doSwap(_newfromTokenAddress, _toTokenAddress,
+    //    _fromTokenAmount, _toChain);
+    //print(promiseDoSwap);
+    print("Do the swap" + _jobId);
+    status = "done";
   }
 }
 
@@ -379,9 +397,24 @@ Future getAllMyEthTransactions() async {
 }
 
 Future getAllMyPolygonTransactions() async {
+  //get all my transactions on polygon
   var promise = getMyPolygonTransactions();
   var transactions = await promiseToFuture(promise);
   var transactionsdecoded = json.decode(transactions);
+
+  //get all my open jobs
+  var promiseJobs = getMyJobs();
+  var jobs = await promiseToFuture(promiseJobs);
+  var jobsdecoded = json.decode(jobs);
+
+  for (var i = 0; i < transactionsdecoded.length; i++) {
+    for (var j = 0; j < jobsdecoded.length; j++) {
+      if (transactionsdecoded[i]["hash"] == jobsdecoded[j]["txHash"] &&
+          jobsdecoded[j]["status"] == "erc20Ethcompleted") {
+        transactionsdecoded[i]["openJob"] = jobsdecoded[j]["objectId"];
+      }
+    }
+  }
   return transactionsdecoded;
 }
 
@@ -389,7 +422,6 @@ Future getAllMyJobs() async {
   var promise = getMyJobs();
   var jobs = await promiseToFuture(promise);
   var jobsdecoded = json.decode(jobs);
-  print(jobsdecoded);
 
   for (int i = 0; i < jobsdecoded.length; i++) {
     var queue = Queue(delay: Duration(milliseconds: 500));

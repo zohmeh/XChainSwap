@@ -118,22 +118,32 @@ async function bridgingEth(_amount, _fromChain, _toChain, _jobId) {
             //await checkInclusion(burnTxHash.transactionHash, "0x2890ba17efe978480615e330ecb65333b880928e");
             //await networkCheck(chain[_toChain]);
             //await maticPos.exitERC20(burnTxHash.transactionHash, { from: _userAddress });
-            return burnTxHash.transactionHash;
+            //Setting transactionHash for Job
+            const params = { id: _jobId };
+            let job = await Moralis.Cloud.run("getJobsById", params);
+            job.set("txHash", burnTxHash.transactionHash);
+            job.set("status", "ethbridged");
+            await job.save();
+            return "ethbridged";
         }
     } catch (error) { console.log(error); }
 }
 
-async function erc20Exit(txHash) {
+async function erc20Exit(_jobId) {
     user = await Moralis.User.current();
     const _userAddress = user.attributes.ethAddress;
+    const params = { id: _jobId };
+    let job = await Moralis.Cloud.run("getJobsById", params);
     const maticPos = new Matic.MaticPOSClient({
         network: "testnet", //"mainnet",
         version: "mumbai", //"v1",
         parentProvider: window.web3,
         maticProvider: "https://speedy-nodes-nyc.moralis.io/cff6f789838e10c4008b1baa/polygon/mumbai", //"https://speedy-nodes-nyc.moralis.io/cff6f789838e10c4008b1baa/polygon/mainnet",
     });
-    let exit = await maticPos.exitERC20(txHash, { from: _userAddress });
-    return exit.transactionHash;
+    await maticPos.exitERC20(job.attributes.txHash, { from: _userAddress });
+    job.set("status", "erc20Exit");
+    await job.save();
+    return "erc20Exit";
 }
 
 async function bridgingMatic(_amount, _jobId) {
@@ -178,9 +188,14 @@ async function bridgingMatic(_amount, _jobId) {
     } catch (error) { console.log(error); }
 }
 
-async function checkForInclusion(txHash) {
-    let check = await checkInclusion(txHash, "0x2890ba17efe978480615e330ecb65333b880928e");
-    return check;
+async function checkForInclusion(_jobId) {
+    const params = { id: _jobId };
+    let job = await Moralis.Cloud.run("getJobsById", params);
+    await checkInclusion(job.attributes.txHash, "0x2890ba17efe978480615e330ecb65333b880928e");
+    job.set("status", "erc20Ethcompleted");
+    await job.save();
+    console.log("Inclusion Check");
+    return "erc20Ethcompleted";
 }
 
 async function checkEthCompleted(_jobId) {
@@ -589,4 +604,10 @@ async function getMyJobs() {
     const params = { address: user.attributes.ethAddress };
     const myJobs = await Moralis.Cloud.run("getMyJobs", params);
     return JSON.stringify(myJobs);
+}
+
+async function getJobById(_jobId) {
+    const params = { id: _jobId };
+    let job = await Moralis.Cloud.run("getJobsById", params);
+    return JSON.stringify(job);
 }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:provider/provider.dart';
 import 'package:web_app_template/functions/functions.dart';
+import 'package:web_app_template/widgets/buttons/button.dart';
 
 class MyJobsDesktopView extends StatefulWidget {
   final chain;
@@ -38,12 +39,12 @@ class _MyJobsDesktopViewState extends State<MyJobsDesktopView> {
                     columns: [
                       DataColumn(
                           label: Text(
-                        "Transactionhash",
+                        "TxHash",
                         style: TextStyle(color: Theme.of(context).accentColor),
                       )),
                       DataColumn(
                           label: Text(
-                        "Functioncall",
+                        "Methode",
                         style: TextStyle(color: Theme.of(context).accentColor),
                       )),
                       //DataColumn(
@@ -68,7 +69,7 @@ class _MyJobsDesktopViewState extends State<MyJobsDesktopView> {
                       )),
                       DataColumn(
                           label: Text(
-                        "Tokensymbol",
+                        "Token",
                         style: TextStyle(color: Theme.of(context).accentColor),
                       )),
                       DataColumn(
@@ -76,6 +77,13 @@ class _MyJobsDesktopViewState extends State<MyJobsDesktopView> {
                         "Status",
                         style: TextStyle(color: Theme.of(context).accentColor),
                       )),
+                      if (widget.chain == 2)
+                        DataColumn(
+                            label: Text(
+                          "Activity",
+                          style:
+                              TextStyle(color: Theme.of(context).accentColor),
+                        )),
                     ],
                     rows: jobs
                         .map(
@@ -140,6 +148,18 @@ class _MyJobsDesktopViewState extends State<MyJobsDesktopView> {
                                         color:
                                             Theme.of(context).highlightColor),
                                   )),
+                                  if (widget.chain == 2)
+                                    DataCell(element["openJob"] != null
+                                        ? button(
+                                            Theme.of(context).buttonColor,
+                                            Theme.of(context).highlightColor,
+                                            "Get active",
+                                            Provider.of<BlockchainInteraction>(
+                                                    context,
+                                                    listen: false)
+                                                .openActivity,
+                                            [element["openJob"]])
+                                        : Text(""))
                                 ],
                               )),
                         )
