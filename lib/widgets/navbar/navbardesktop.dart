@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:web_app_template/functions/functions.dart';
 import '../tokensymbols.dart';
-import '../../provider/contractinteraction.dart';
 import '../../provider/loginprovider.dart';
 import '../buttons/button.dart';
 

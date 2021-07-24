@@ -2,7 +2,7 @@ Moralis.Cloud.define("getEthTransactions", function(request) {
 	const address = request.params.address;
   	const query = new Parse.Query("EthTransactions");
 	query.equalTo("from_address", address);
-    query.containedIn("to_address", ["0xBbD7cBFA79faee899Eaf900F13C9065bF03B1A74".toLowerCase(), "0x7850ec290a2e2f40b82ed962eaf30591bb5f5c96".toLowerCase()]);
+    query.containedIn("to_address", [/*"0xBbD7cBFA79faee899Eaf900F13C9065bF03B1A74"*/"0xA0c68C638235ee32657e8f720a23ceC1bFc77C77".toLowerCase(), /*"0x7850ec290a2e2f40b82ed962eaf30591bb5f5c96"*/"0x401F6c983eA34274ec46f84D70b31C151321188b".toLowerCase()]);
 	query.descending("block_number");
 	query.limit(10);
 	return query.find();
@@ -12,14 +12,15 @@ Moralis.Cloud.define("getPolygonTransactions", function(request) {
 	const address = request.params.address;
   	const query = new Parse.Query("PolygonTransactions");
 	query.equalTo("from_address", address);
-	query.descending("block_number");
+  query.containedIn("to_address", ["0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619".toLowerCase()]);
+  query.descending("block_number");
 	query.limit(10);
 	return query.find();
 });
 
 Moralis.Cloud.define("getEthTokenBalances", async (request) => {
     const query = new Moralis.Query("EthTokenBalance");
-    query.equalTo("from_address", request.params.address);
+    query.equalTo("address", request.params.address);
     const tokenbalance = await query.find();
     const results = [];
     if (!tokenbalance) return;

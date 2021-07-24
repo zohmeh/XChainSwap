@@ -31,7 +31,7 @@ class _MyPortfolioDesktopViewState extends State<MyPortfolioDesktopView> {
               } else {
                 return Container(
                   padding: EdgeInsets.all(10),
-                  width: (MediaQuery.of(context).size.width - 150) * (3 / 4),
+                  width: MediaQuery.of(context).size.width,
                   height: MediaQuery.of(context).size.height,
                   child: MyBalancesDesktopView(
                       balancesnapshot.data[0]), //, balancesnapshot.data[1]),

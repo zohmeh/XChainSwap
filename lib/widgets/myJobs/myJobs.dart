@@ -1,10 +1,9 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:provider/provider.dart';
-import 'package:web_app_template/functions/functions.dart';
-import 'package:web_app_template/widgets/buttons/button.dart';
+import '../../functions/functions.dart';
+import '../../provider/blockchainprovider.dart';
+import '../../widgets/buttons/button.dart';
 
 class MyJobsDesktopView extends StatefulWidget {
   final chain;
@@ -21,7 +20,6 @@ class _MyJobsDesktopViewState extends State<MyJobsDesktopView> {
     widget.chain == 0
         ? Provider.of<EthBlockchainInteraction>(context, listen: true)
         : Provider.of<PolygonBlockchainInteraction>(context, listen: true);
-
     return Container(
       height: 500,
       width: (MediaQuery.of(context).size.width / 2) - 10,
@@ -55,22 +53,22 @@ class _MyJobsDesktopViewState extends State<MyJobsDesktopView> {
                       //)),
                       DataColumn(
                           label: Text(
-                        "To Address",
+                        "To \n Address",
                         style: TextStyle(color: Theme.of(context).accentColor),
                       )),
                       DataColumn(
                           label: Text(
-                        "Value",
+                        "Native \n Value",
                         style: TextStyle(color: Theme.of(context).accentColor),
                       )),
                       DataColumn(
                           label: Text(
-                        "Amount",
+                        "Token \n Amount",
                         style: TextStyle(color: Theme.of(context).accentColor),
                       )),
                       DataColumn(
                           label: Text(
-                        "Token",
+                        "Token \n Symbol",
                         style: TextStyle(color: Theme.of(context).accentColor),
                       )),
                       DataColumn(

@@ -1,13 +1,9 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:web_app_template/functions/functions.dart';
-import 'package:web_app_template/widgets/charts/piechart.dart';
+import '../../widgets/charts/piechart.dart';
 import 'package:data_table_2/data_table_2.dart';
-import 'package:web_app_template/widgets/dropdownlist/drowpdownlist.dart';
-import 'package:web_app_template/widgets/inputfields/inputField.dart';
-import 'package:web_app_template/widgets/myJobs/myJobs.dart';
-import 'package:web_app_template/widgets/swapwidget/swapwidgetdesktopview.dart';
+import '../../widgets/myJobs/myJobs.dart';
+import '../../widgets/swapwidget/swapwidgetdesktopview.dart';
 
 class MyBalancesDesktopView extends StatefulWidget {
   final List myBalances;
@@ -30,7 +26,7 @@ class _MyBalancesDesktopViewState extends State<MyBalancesDesktopView> {
                   children: [
                     Container(
                       height: 500,
-                      width: MediaQuery.of(context).size.width / 2,
+                      width: MediaQuery.of(context).size.width / 3 + 190,
                       child: Card(
                         color: Theme.of(context).primaryColor,
                         child: DataTable2(
@@ -59,18 +55,18 @@ class _MyBalancesDesktopViewState extends State<MyBalancesDesktopView> {
                               style: TextStyle(
                                   color: Theme.of(context).accentColor),
                             )),
-                            DataColumn(
+                            /*DataColumn(
                                 label: Text(
                               "Address",
                               style: TextStyle(
                                   color: Theme.of(context).accentColor),
+                            )),*/
+                            DataColumn(
+                                label: Text(
+                              "Value in US Dollar",
+                              style: TextStyle(
+                                  color: Theme.of(context).accentColor),
                             )),
-                            //DataColumn(
-                            //    label: Text(
-                            //  "Value in US Dollar",
-                            //  style:
-                            //      TextStyle(color: Theme.of(context).accentColor),
-                            //)),
                           ],
                           rows: widget.myBalances
                               .map(
@@ -105,7 +101,7 @@ class _MyBalancesDesktopViewState extends State<MyBalancesDesktopView> {
                                               color: Theme.of(context)
                                                   .highlightColor),
                                         )),
-                                        DataCell(
+                                        /*DataCell(
                                             element["token_address"] != null
                                                 ? Text(
                                                     element["token_address"],
@@ -113,19 +109,20 @@ class _MyBalancesDesktopViewState extends State<MyBalancesDesktopView> {
                                                         color: Theme.of(context)
                                                             .highlightColor),
                                                   )
-                                                : Text("")),
-                                        //DataCell(Text(
-                                        //  (element["current_price"] *
-                                        //          (int.parse(element["balance"]) /
-                                        //              pow(
-                                        //                  10,
-                                        //                  int.parse(element[
-                                        //                      "decimals"]))))
-                                        //      .toStringAsFixed(2),
-                                        //  style: TextStyle(
-                                        //      color:
-                                        //          Theme.of(context).highlightColor),
-                                        //)),
+                                                : Text("")),*/
+                                        DataCell(Text(
+                                          (element["current_price"] *
+                                                  (int.parse(
+                                                          element["balance"]) /
+                                                      pow(
+                                                          10,
+                                                          int.parse(element[
+                                                              "decimals"]))))
+                                              .toStringAsFixed(2),
+                                          style: TextStyle(
+                                              color: Theme.of(context)
+                                                  .highlightColor),
+                                        )),
                                       ],
                                     )),
                               )
@@ -133,14 +130,14 @@ class _MyBalancesDesktopViewState extends State<MyBalancesDesktopView> {
                         ),
                       ),
                     ),
-                    //Container(
-                    //  height: 500,
-                    //  width: MediaQuery.of(context).size.width / 4.5,
-                    //  child: Card(
-                    //    color: Theme.of(context).primaryColor,
-                    //    child: PieChartWidget(balances: widget.myBalances),
-                    //  ),
-                    //),
+                    Container(
+                      height: 500,
+                      width: MediaQuery.of(context).size.width / 4.5,
+                      child: Card(
+                        color: Theme.of(context).primaryColor,
+                        child: PieChartWidget(balances: widget.myBalances),
+                      ),
+                    ),
                     SwapWidgetDesktopview(),
                   ],
                 ),

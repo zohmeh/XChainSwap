@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:web_app_template/widgets/sidebar/sidebardesktop.dart';
 import '../responsive.dart';
-import '../views/mobileview.dart';
 import '../widgets/navbar/navbardesktop.dart';
 
 class LayoutTemplate extends StatefulWidget {
@@ -17,8 +16,8 @@ class _LayoutTemplateState extends State<LayoutTemplate> {
     return Scaffold(
       backgroundColor: Theme.of(context).backgroundColor,
       body: Responsive(
-        mobile: Mobileview(child: widget.child),
-        tablet: Mobileview(child: widget.child),
+        mobile: Container(),
+        tablet: Container(),
         desktop: Column(
           children: [
             Navbardesktop(),

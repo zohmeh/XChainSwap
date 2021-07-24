@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:web_app_template/functions/functions.dart';
-import '/provider/contractinteraction.dart';
+import 'package:web_app_template/provider/blockchainprovider.dart';
 import '../provider/loginprovider.dart';
 import 'package:provider/provider.dart';
 import '../routing/router.dart';
