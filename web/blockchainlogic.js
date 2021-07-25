@@ -221,6 +221,7 @@ async function doSwap(_fromTokenAddress, _toTokenAddress, _amount, _fromChain, _
     let job = await Moralis.Cloud.run("getJobsById", params);
     job.set("txHash", send.transactionHash);
     job.set("status", "swapped");
+    job.set("amount", swap["toTokenAmount"]);
     await job.save();
     return ["swapped", swap["toTokenAmount"]];
 }

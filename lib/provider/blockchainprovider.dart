@@ -159,7 +159,7 @@ class EthBlockchainInteraction with ChangeNotifier {
                   _fromChain,
                   jobId);
               var _ethBridgingAmount = values[1].toString();
-              PolygonBlockchainInteraction().polygonBridging(
+              status = await PolygonBlockchainInteraction().polygonBridging(
                   _ethBridgingAmount, _fromChain, _toChain, jobId);
               continue checking;
             checking:
@@ -167,7 +167,6 @@ class EthBlockchainInteraction with ChangeNotifier {
               var queue = Queue(delay: Duration(milliseconds: 500));
               status =
                   await queue.add(() async => getStatus(jobId, "erc20Eth"));
-              notifyListeners();
               break;
           }
         }

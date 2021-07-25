@@ -149,6 +149,7 @@ Future getBalances() async {
   for (var i = 0; i < myBalances.length; i++) {
     var coinGeckoId =
         coinGeckoTokens[myBalances[i]["symbol"].toLowerCase()]["id"];
+    //coinGecko for price
     var response = await http.get(Uri.parse(
         'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coinGeckoId}&order=market_cap_desc&per_page=100&page=1&sparkline=false'));
     var jsonData = json.decode(response.body);
@@ -156,6 +157,11 @@ Future getBalances() async {
     currentPrice == null
         ? myBalances[i]["current_price"] = 0
         : myBalances[i]["current_price"] = currentPrice;
+    //coinGecko for image
+    var responseImage = await http.get(
+        Uri.parse('https://api.coingecko.com/api/v3/coins/${coinGeckoId}'));
+    var jsonDataImage = json.decode(responseImage.body);
+    myBalances[i]["image"] = jsonDataImage["image"]["thumb"];
   }
   return myBalances;
 }

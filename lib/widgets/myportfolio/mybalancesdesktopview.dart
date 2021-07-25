@@ -78,12 +78,26 @@ class _MyBalancesDesktopViewState extends State<MyBalancesDesktopView> {
                                               color: Theme.of(context)
                                                   .highlightColor),
                                         )),
-                                        DataCell(Text(
-                                          element["symbol"],
-                                          style: TextStyle(
-                                              color: Theme.of(context)
-                                                  .highlightColor),
-                                        )),
+                                        DataCell(
+                                          Row(
+                                            children: [
+                                              Container(
+                                                width: 30,
+                                                child: Image.network(
+                                                  element["image"],
+                                                  width: 25,
+                                                ),
+                                              ),
+                                              SizedBox(width: 5),
+                                              Text(
+                                                element["symbol"],
+                                                style: TextStyle(
+                                                    color: Theme.of(context)
+                                                        .highlightColor),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
                                         DataCell(Text(
                                           (int.parse(element["balance"]) /
                                                   pow(
