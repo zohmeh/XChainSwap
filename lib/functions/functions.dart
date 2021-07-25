@@ -21,7 +21,7 @@ Future<String> getStatus(String _jobId, String _token) async {
     return status;
   }
   if (_token == "erc20Eth") {
-    var status = await PolygonBlockchainInteraction().polygonChecking(_jobId);
+    var status = await polygonChecking(_jobId);
     return status;
   } else {
     return "error";
@@ -271,4 +271,18 @@ Future<String> ethBridging(
 Future<String> maticBridging(_fromTokenAmount, jobId) async {
   var promiseBridging = bridgingMatic(_fromTokenAmount, jobId);
   return await promiseToFuture(promiseBridging);
+}
+
+Future<String> polygonBridging(
+    _fromTokenAmount, _fromChain, _toChain, _jobId) async {
+  String status;
+  status = await ethBridging(_fromTokenAmount, _fromChain, _toChain, _jobId);
+  return status;
+}
+
+Future<String> polygonChecking(_jobId) async {
+  String status;
+  var promiseCheckInclusion = checkForInclusion(_jobId);
+  status = await promiseToFuture(promiseCheckInclusion);
+  return status;
 }

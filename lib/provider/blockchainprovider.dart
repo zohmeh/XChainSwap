@@ -52,12 +52,8 @@ class EthBlockchainInteraction with ChangeNotifier {
             case "ethcompleted":
               var _newFromTokenAddress =
                   "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
-              List values = await PolygonBlockchainInteraction().polygonSwap(
-                  _newFromTokenAddress,
-                  _toTokenAddress,
-                  _fromTokenAmount,
-                  _toChain,
-                  jobId);
+              List values = await swap(_newFromTokenAddress, _toTokenAddress,
+                  _fromTokenAmount, _toChain, jobId);
               status = values[0];
               await deleteJob(jobId);
               break;
@@ -80,12 +76,8 @@ class EthBlockchainInteraction with ChangeNotifier {
             case "maticcompleted":
               var _newFromTokenAddress =
                   "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"; //"0x0000000000000000000000000000000000001010";
-              List values = await PolygonBlockchainInteraction().polygonSwap(
-                  _newFromTokenAddress,
-                  _toTokenAddress,
-                  _fromTokenAmount,
-                  _toChain,
-                  jobId);
+              List values = await swap(_newFromTokenAddress, _toTokenAddress,
+                  _fromTokenAmount, _toChain, jobId);
               status = values[0];
               await deleteJob(jobId);
               break;
@@ -120,53 +112,10 @@ class EthBlockchainInteraction with ChangeNotifier {
               var _newFromTokenAddress =
                   "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
               await checkNetwork(chain[_toChain]);
-              List values = await PolygonBlockchainInteraction().polygonSwap(
-                  _newFromTokenAddress,
-                  _toTokenAddress,
-                  _fromTokenAmount,
-                  _toChain,
-                  jobId);
+              List values = await swap(_newFromTokenAddress, _toTokenAddress,
+                  _fromTokenAmount, _toChain, jobId);
               status = values[0];
               await deleteJob(jobId);
-              break;
-          }
-        }
-      } else if (_fromChain == 2 && _toChain == 0) {
-        //Check if FromToken is WETH this will be bridged directly
-        if (_fromTokenAddress ==
-            "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619".toLowerCase()) {
-          switch (status) {
-            case "new":
-              await checkNetwork(chain[_fromChain]);
-              status = await PolygonBlockchainInteraction().polygonBridging(
-                  _fromTokenAmount, _fromChain, _toChain, jobId);
-              continue checking;
-            checking:
-            case "ethbridged":
-              var queue = Queue(delay: Duration(milliseconds: 500));
-              status =
-                  await queue.add(() async => getStatus(jobId, "erc20Eth"));
-              break;
-          }
-        } else {
-          switch (status) {
-            case "new":
-              await checkNetwork(chain[_fromChain]);
-              List values = await PolygonBlockchainInteraction().polygonSwap(
-                  _fromTokenAddress,
-                  "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619".toLowerCase(),
-                  _fromTokenAmount,
-                  _fromChain,
-                  jobId);
-              var _ethBridgingAmount = values[1].toString();
-              status = await PolygonBlockchainInteraction().polygonBridging(
-                  _ethBridgingAmount, _fromChain, _toChain, jobId);
-              continue checking;
-            checking:
-            case "ethbridged":
-              var queue = Queue(delay: Duration(milliseconds: 500));
-              status =
-                  await queue.add(() async => getStatus(jobId, "erc20Eth"));
               break;
           }
         }
@@ -197,29 +146,72 @@ class EthBlockchainInteraction with ChangeNotifier {
 }
 
 class PolygonBlockchainInteraction with ChangeNotifier {
-  Future<List> polygonSwap(
-      _fromTokenAddress, _toTokenAddress, _amount, _chain, _jobId) async {
+  Future swapTokens(List _arguments) async {
+    String _fromTokenAddress = _arguments[0];
+    String _toTokenAddress = _arguments[1];
+    String _fromTokenAmount = _arguments[2];
+    int _fromChain = _arguments[3];
+    int _toChain = _arguments[4];
+    String txHash = _arguments[5];
+    String status = _arguments[6];
+    String jobId = _arguments[7];
     List chain = [1, 56, 137];
-    await checkNetwork(chain[_chain]);
-    List values =
-        await swap(_fromTokenAddress, _toTokenAddress, _amount, _chain, _jobId);
-    notifyListeners();
-    return values;
-  }
 
-  Future<String> polygonBridging(
-      _fromTokenAmount, _fromChain, _toChain, _jobId) async {
-    String status;
-    status = await ethBridging(_fromTokenAmount, _fromChain, _toChain, _jobId);
-    notifyListeners();
-    return status;
-  }
+    if (status == "new") {
+      var promiseStoreJob = storeJobData(_fromTokenAddress, _toTokenAddress,
+          _fromTokenAmount, _fromChain, _toChain);
+      jobId = await promiseToFuture(promiseStoreJob);
+    }
 
-  Future<String> polygonChecking(_jobId) async {
-    String status;
-    var promiseCheckInclusion = checkForInclusion(_jobId);
-    status = await promiseToFuture(promiseCheckInclusion);
-    notifyListeners();
-    return status;
+    //Casestudie for different swaps
+    if (_fromChain == _toChain) {
+      await checkNetwork(chain[_fromChain]);
+      List values = await swap(_fromTokenAddress, _toTokenAddress,
+          _fromTokenAmount, _fromChain, jobId);
+      status = values[0];
+      await deleteJob(jobId);
+      notifyListeners();
+    } else if (_fromChain == 2 && _toChain == 0) {
+      //Check if FromToken is WETH this will be bridged directly
+      if (_fromTokenAddress ==
+          "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619".toLowerCase()) {
+        switch (status) {
+          case "new":
+            await checkNetwork(chain[_fromChain]);
+            status = await polygonBridging(
+                _fromTokenAmount, _fromChain, _toChain, jobId);
+            notifyListeners();
+            continue checking;
+          checking:
+          case "ethbridged":
+            var queue = Queue(delay: Duration(milliseconds: 500));
+            status = await queue.add(() async => getStatus(jobId, "erc20Eth"));
+            notifyListeners();
+            break;
+        }
+      } else {
+        switch (status) {
+          case "new":
+            await checkNetwork(chain[_fromChain]);
+            List values = await swap(
+                _fromTokenAddress,
+                "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619".toLowerCase(),
+                _fromTokenAmount,
+                _fromChain,
+                jobId);
+            var _ethBridgingAmount = values[1].toString();
+            status = await polygonBridging(
+                _ethBridgingAmount, _fromChain, _toChain, jobId);
+            notifyListeners();
+            continue checking;
+          checking:
+          case "ethbridged":
+            var queue = Queue(delay: Duration(milliseconds: 500));
+            status = await queue.add(() async => getStatus(jobId, "erc20Eth"));
+            notifyListeners();
+            break;
+        }
+      }
+    }
   }
 }

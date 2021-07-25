@@ -127,9 +127,13 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
                       Theme.of(context).buttonColor,
                       Theme.of(context).highlightColor,
                       "Swap Tokens",
-                      Provider.of<EthBlockchainInteraction>(context,
-                              listen: false)
-                          .swapTokens,
+                      fromChain == 0
+                          ? Provider.of<EthBlockchainInteraction>(context,
+                                  listen: false)
+                              .swapTokens
+                          : Provider.of<PolygonBlockchainInteraction>(context,
+                                  listen: false)
+                              .swapTokens,
                       [
                         fromToken.elementAt(0)["address"],
                         toToken.elementAt(0)["address"],
