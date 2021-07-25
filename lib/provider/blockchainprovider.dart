@@ -1,29 +1,11 @@
 import 'dart:convert';
 import 'dart:js_util';
 import 'package:flutter/material.dart';
+import '../../functions/functions.dart';
 import '../widgets/javascript_controller.dart';
 import 'package:queue/queue.dart';
 
 class EthBlockchainInteraction with ChangeNotifier {
-  Future<String> getStatus(String _jobId, String _token) async {
-    if (_token == "eth") {
-      var promiseCheckEthCompleted = checkEthCompleted(_jobId);
-      var status = await promiseToFuture(promiseCheckEthCompleted);
-      return status;
-    }
-    if (_token == "matic") {
-      var promiseCheckMaticCompleted = checkMaticCompleted(_jobId);
-      var status = await promiseToFuture(promiseCheckMaticCompleted);
-      return status;
-    }
-    if (_token == "erc20Eth") {
-      var status = await PolygonBlockchainInteraction().polygonChecking(_jobId);
-      return status;
-    } else {
-      return "error";
-    }
-  }
-
   Future swapTokens(List _arguments) async {
     String _fromTokenAddress = _arguments[0];
     String _toTokenAddress = _arguments[1];
@@ -43,11 +25,11 @@ class EthBlockchainInteraction with ChangeNotifier {
 
     //Casestudie for different swaps
     if (_fromChain == _toChain) {
-      var promiseNetworkCheck = networkCheck(chain[_fromChain]);
-      await promiseToFuture(promiseNetworkCheck);
-      var promiseSwap = doSwap(_fromTokenAddress, _toTokenAddress,
+      await checkNetwork(chain[_fromChain]);
+      List values = await swap(_fromTokenAddress, _toTokenAddress,
           _fromTokenAmount, _fromChain, jobId);
-      status = await promiseToFuture(promiseSwap);
+      status = values[0];
+      await deleteJob(jobId);
       notifyListeners();
     } else {
       if (_fromChain == 0 && _toChain == 2) {
@@ -55,11 +37,9 @@ class EthBlockchainInteraction with ChangeNotifier {
         if (_fromTokenAddress == "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
           switch (status) {
             case "new":
-              var promiseNetworkCheck = networkCheck(chain[_fromChain]);
-              await promiseToFuture(promiseNetworkCheck);
-              var promiseBridging =
-                  bridgingEth(_fromTokenAmount, _fromChain, _toChain, jobId);
-              status = await promiseToFuture(promiseBridging);
+              await checkNetwork(chain[_fromChain]);
+              status = await ethBridging(
+                  _fromTokenAmount, _fromChain, _toChain, jobId);
               notifyListeners();
               continue checking;
             checking:
@@ -72,22 +52,22 @@ class EthBlockchainInteraction with ChangeNotifier {
             case "ethcompleted":
               var _newFromTokenAddress =
                   "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
-              //var promiseNetworkCheck2 = networkCheck(chain[_toChain]);
-              //PolygonBlockchainInteraction().polygonSwap(_newFromTokenAddress, _toTokenAddress,
-              //    _fromTokenAmount, _toChain);
-              //print(promiseDoSwap);
-              print("Do the swap" + jobId);
-              status = "done";
+              List values = await PolygonBlockchainInteraction().polygonSwap(
+                  _newFromTokenAddress,
+                  _toTokenAddress,
+                  _fromTokenAmount,
+                  _toChain,
+                  jobId);
+              status = values[0];
+              await deleteJob(jobId);
               break;
           }
         } else if (_fromTokenAddress ==
             "0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0".toLowerCase()) {
           switch (status) {
             case "new":
-              var promiseNetworkCheck = networkCheck(chain[_fromChain]);
-              await promiseToFuture(promiseNetworkCheck);
-              var promiseBridging = bridgingMatic(_fromTokenAmount, jobId);
-              status = await promiseToFuture(promiseBridging);
+              await checkNetwork(chain[_fromChain]);
+              status = await maticBridging(_fromTokenAmount, jobId);
               notifyListeners();
               continue checking;
             checking:
@@ -99,27 +79,34 @@ class EthBlockchainInteraction with ChangeNotifier {
             swapping:
             case "maticcompleted":
               var _newFromTokenAddress =
-                  "0x0000000000000000000000000000000000001010";
-              //var promiseNetworkCheck2 = networkCheck(chain[_toChain]);
-              //PolygonBlockchainInteraction().polygonSwap(_newFromTokenAddress, _toTokenAddress,
-              //    _fromTokenAmount, _toChain);
-              //print(promiseDoSwap);
-              print("Do the swap" + jobId);
-              status = "done";
+                  "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"; //"0x0000000000000000000000000000000000001010";
+              List values = await PolygonBlockchainInteraction().polygonSwap(
+                  _newFromTokenAddress,
+                  _toTokenAddress,
+                  _fromTokenAmount,
+                  _toChain,
+                  jobId);
+              status = values[0];
+              await deleteJob(jobId);
+              break;
           }
         }
         //all other FromTokens will first be swapped into Eth on Eth and then bridged to Polygon and again swapped into the final Token on Polygon
         else {
           switch (status) {
             case "new":
-              var promiseNetworkCheck = networkCheck(chain[_fromChain]);
-              await promiseToFuture(promiseNetworkCheck);
-              //getting the swapped amount in eth
+              await checkNetwork(chain[_fromChain]);
               //Swapping Token to ETH on Eth
-              var _ethBridgingAmount = "";
-              var promiseBridging =
-                  bridgingEth(_ethBridgingAmount, _fromChain, _toChain, jobId);
-              status = await promiseToFuture(promiseBridging);
+              List values = await swap(
+                  _fromTokenAddress,
+                  "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+                  _fromTokenAmount,
+                  _fromChain,
+                  jobId);
+              status = values[0];
+              var _ethBridgingAmount = values[1].toString();
+              status = await ethBridging(
+                  _ethBridgingAmount, _fromChain, _toChain, jobId);
               notifyListeners();
               continue checking;
             checking:
@@ -132,12 +119,15 @@ class EthBlockchainInteraction with ChangeNotifier {
             case "ethcompleted":
               var _newFromTokenAddress =
                   "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
-              //var promiseNetworkCheck2 = networkCheck(chain[_toChain]);
-              //PolygonBlockchainInteraction().polygonSwap(_newFromTokenAddress, _toTokenAddress,
-              //    _fromTokenAmount, _toChain);
-              //print(promiseDoSwap);
-              print("Do the swap" + jobId);
-              status = "done";
+              await checkNetwork(chain[_toChain]);
+              List values = await PolygonBlockchainInteraction().polygonSwap(
+                  _newFromTokenAddress,
+                  _toTokenAddress,
+                  _fromTokenAmount,
+                  _toChain,
+                  jobId);
+              status = values[0];
+              await deleteJob(jobId);
               break;
           }
         }
@@ -147,8 +137,7 @@ class EthBlockchainInteraction with ChangeNotifier {
             "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619".toLowerCase()) {
           switch (status) {
             case "new":
-              var promiseNetworkCheck = networkCheck(chain[_fromChain]);
-              await promiseToFuture(promiseNetworkCheck);
+              await checkNetwork(chain[_fromChain]);
               status = await PolygonBlockchainInteraction().polygonBridging(
                   _fromTokenAmount, _fromChain, _toChain, jobId);
               continue checking;
@@ -162,21 +151,16 @@ class EthBlockchainInteraction with ChangeNotifier {
         } else {
           switch (status) {
             case "new":
-              var promiseNetworkCheck = networkCheck(chain[_fromChain]);
-              await promiseToFuture(promiseNetworkCheck);
-              //var promiseDoSwap = doSwap(_fromTokenAddress, "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619".toLowerCase(),
-              //    _fromTokenAmount, _fromChain);
-              //print(promiseDoSwap);
-              //getting the swapped amount in
-              //PolygonBlockchainInteraction().polygonSwap(_fromTokenAddress, "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619".toLowerCase(),
-              //   _fromTokenAmount, _fromChain)
-              var _ethBridgingAmount = "";
-              //var promiseBridging =
-              //    bridgingEth(_ethBridgingAmount, _fromChain, _toChain, jobId);
-              //status = await promiseToFuture(promiseBridging);
-              //notifyListeners();
+              await checkNetwork(chain[_fromChain]);
+              List values = await PolygonBlockchainInteraction().polygonSwap(
+                  _fromTokenAddress,
+                  "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619".toLowerCase(),
+                  _fromTokenAmount,
+                  _fromChain,
+                  jobId);
+              var _ethBridgingAmount = values[1].toString();
               PolygonBlockchainInteraction().polygonBridging(
-                  _fromTokenAmount, _fromChain, _toChain, jobId);
+                  _ethBridgingAmount, _fromChain, _toChain, jobId);
               continue checking;
             checking:
             case "ethbridged":
@@ -193,41 +177,41 @@ class EthBlockchainInteraction with ChangeNotifier {
 
   Future openActivity(List _arguments) async {
     String _jobId = _arguments[0];
-    List chain = [5, 5, 80001];
+    List chain = [1, 56, 137];
+    String status;
     //get the job by id
     var promiseJob = getJobById(_jobId);
     var job = await promiseToFuture(promiseJob);
     var jobdecoded = json.decode(job);
 
-    var promiseNetworkCheck2 = networkCheck(chain[jobdecoded["toChain"]]);
-    await promiseToFuture(promiseNetworkCheck2);
+    await checkNetwork(chain[jobdecoded["toChain"]]);
     var promiseERC20Exit = erc20Exit(_jobId);
-    await promiseToFuture(promiseERC20Exit);
-    //statusEth = status;
+    status = await promiseToFuture(promiseERC20Exit);
     notifyListeners();
     var _newFromTokenAddress = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
-    //var promiseDoSwap = doSwap(_newfromTokenAddress, _toTokenAddress,
-    //    _fromTokenAmount, _toChain);
-    //print(promiseDoSwap);
-    print("Do the swap" + _jobId);
+    List values = await swap(_newFromTokenAddress, jobdecoded["toTokenAddress"],
+        jobdecoded["amount"], jobdecoded["toChain"], jobdecoded["objectId"]);
+    status = values[0];
+    await deleteJob(_jobId);
+    notifyListeners();
   }
 }
 
 class PolygonBlockchainInteraction with ChangeNotifier {
-  Future polygonSwap(
+  Future<List> polygonSwap(
       _fromTokenAddress, _toTokenAddress, _amount, _chain, _jobId) async {
-    var promiseDoSwap =
-        doSwap(_fromTokenAddress, _toTokenAddress, _amount, _chain, _jobId);
-    await promiseToFuture(promiseDoSwap);
+    List chain = [1, 56, 137];
+    await checkNetwork(chain[_chain]);
+    List values =
+        await swap(_fromTokenAddress, _toTokenAddress, _amount, _chain, _jobId);
     notifyListeners();
+    return values;
   }
 
   Future<String> polygonBridging(
       _fromTokenAmount, _fromChain, _toChain, _jobId) async {
     String status;
-    var promiseBridging =
-        bridgingEth(_fromTokenAmount, _fromChain, _toChain, _jobId);
-    status = await promiseToFuture(promiseBridging);
+    status = await ethBridging(_fromTokenAmount, _fromChain, _toChain, _jobId);
     notifyListeners();
     return status;
   }

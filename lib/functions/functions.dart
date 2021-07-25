@@ -9,6 +9,25 @@ import '../widgets/javascript_controller.dart';
 import 'package:http/http.dart' as http;
 import 'package:queue/queue.dart';
 
+Future<String> getStatus(String _jobId, String _token) async {
+  if (_token == "eth") {
+    var promiseCheckEthCompleted = checkEthCompleted(_jobId);
+    var status = await promiseToFuture(promiseCheckEthCompleted);
+    return status;
+  }
+  if (_token == "matic") {
+    var promiseCheckMaticCompleted = checkMaticCompleted(_jobId);
+    var status = await promiseToFuture(promiseCheckMaticCompleted);
+    return status;
+  }
+  if (_token == "erc20Eth") {
+    var status = await PolygonBlockchainInteraction().polygonChecking(_jobId);
+    return status;
+  } else {
+    return "error";
+  }
+}
+
 Future getRate(List _arguments) async {
   String chain;
   if (_arguments[3] == 0) {
@@ -217,4 +236,33 @@ Future getAllMyJobs() async {
         ]));
   }
   return jobsdecoded;
+}
+
+Future deleteJob(_jobId) async {
+  var promise = deleteJobById(_jobId);
+  await promiseToFuture(promise);
+}
+
+Future<List> swap(_fromTokenAddress, _toTokenAddress, _fromTokenAmount,
+    _fromChain, jobId) async {
+  var promiseSwap = doSwap(
+      _fromTokenAddress, _toTokenAddress, _fromTokenAmount, _fromChain, jobId);
+  return await promiseToFuture(promiseSwap);
+}
+
+Future checkNetwork(_chain) async {
+  var promiseNetworkCheck = networkCheck(_chain);
+  await promiseToFuture(promiseNetworkCheck);
+}
+
+Future<String> ethBridging(
+    _fromTokenAmount, _fromChain, _toChain, jobId) async {
+  var promiseBridging =
+      bridgingEth(_fromTokenAmount, _fromChain, _toChain, jobId);
+  return await promiseToFuture(promiseBridging);
+}
+
+Future<String> maticBridging(_fromTokenAmount, jobId) async {
+  var promiseBridging = bridgingMatic(_fromTokenAmount, jobId);
+  return await promiseToFuture(promiseBridging);
 }

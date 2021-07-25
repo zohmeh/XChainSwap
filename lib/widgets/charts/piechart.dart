@@ -26,7 +26,19 @@ class PieChartWidget extends StatelessWidget {
       Colors.purple,
       Colors.white,
       Colors.blueAccent,
-      Colors.amber
+      Colors.amber,
+      Colors.pink,
+      Colors.deepOrange,
+      Colors.lime,
+      Colors.lightBlue,
+      Colors.lightGreen,
+      Colors.cyan,
+      Colors.teal,
+      Colors.grey,
+      Colors.indigo,
+      Colors.deepPurple,
+      Colors.blueGrey,
+      Colors.brown,
     ];
     for (var i = 0; i < balances.length; i++) {
       var balance = balances[i]["current_price"] *

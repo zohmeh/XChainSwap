@@ -38,3 +38,4 @@ external erc20Exit(String _txHash);
 external checkForInclusion(String _txHash);
 external getMyJobs();
 external getJobById(String _jobId);
+external deleteJobById(String _jobId);

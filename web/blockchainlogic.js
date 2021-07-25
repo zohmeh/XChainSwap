@@ -199,6 +199,7 @@ async function checkMaticCompleted(_jobId) {
 }
 
 async function doSwap(_fromTokenAddress, _toTokenAddress, _amount, _fromChain, _jobId) {
+    
     let chain = ["1", "56", "137"];
     user = await Moralis.User.current();
     const _userAddress = user.attributes.ethAddress;
@@ -221,7 +222,7 @@ async function doSwap(_fromTokenAddress, _toTokenAddress, _amount, _fromChain, _
     job.set("txHash", send.transactionHash);
     job.set("status", "swapped");
     await job.save();
-    return "swapped";
+    return ["swapped", swap["toTokenAmount"]];
 }
 
 async function networkCheck(_networkId) {
@@ -435,6 +436,9 @@ async function getMyEthTransactions() {
         if (transactions[i].attributes.input.substring(0, 10) == "0x8b9e4f93") {
             transaction["input"] = "Deposit ERC20 For User";
         }
+        if (transactions[i].attributes.input.substring(0, 10) == "0x2e95b6c8") {
+            transaction["input"] = "Swap";
+        }
         if (transactions[i].attributes.to_address == /*"0x7850ec290a2e2f40b82ed962eaf30591bb5f5c96"*/ "0x401F6c983eA34274ec46f84D70b31C151321188b") {
             const params = { txHash: transactions[i].attributes.hash };
             const tokenTransactions = await Moralis.Cloud.run("getNewEthTokenTransfers", params);
@@ -471,9 +475,9 @@ async function getMyPolygonTransactions() {
         //if(transactions[i].attributes.input.substring(0, 10) == window.web3.eth.abi.encodeFunctionSignature("exit(bytes)")) {            
         //    transaction["input"] = "Exit";
         //}
-        //if(transactions[i].attributes.input.substring(0, 10) == "0x8b9e4f93") {            
-        //    transaction["input"] = "Deposit ERC20 For User";
-        //}
+        if(transactions[i].attributes.input.substring(0, 10) == "0x7c025200") {            
+            transaction["input"] = "Swap";
+        }
         if (transactions[i].attributes.to_address == /*"0xa6fa4fb5f76172d178d61b04b0ecd319c5d1c0aa"*/ "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619".toLowerCase()) {
             const params = { txHash: transactions[i].attributes.hash };
             const tokenTransactions = await Moralis.Cloud.run("getNewPolygonTokenTransfers", params);
@@ -518,4 +522,10 @@ async function getJobById(_jobId) {
     const params = { id: _jobId };
     let job = await Moralis.Cloud.run("getJobsById", params);
     return JSON.stringify(job);
+}
+
+async function deleteJobById(_jobId) {
+    const params = { id: _jobId };
+    let job = await Moralis.Cloud.run("getJobsById", params);
+    await job.destroy();
 }
