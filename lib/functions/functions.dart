@@ -262,9 +262,9 @@ Future checkNetwork(_chain) async {
 }
 
 Future<String> ethBridging(
-    _fromTokenAmount, _fromChain, _toChain, jobId) async {
+    _fromTokenAmount, _fromChain, _toChain, jobId, _newFromToken) async {
   var promiseBridging =
-      bridgingEth(_fromTokenAmount, _fromChain, _toChain, jobId);
+      bridgingEth(_fromTokenAmount, _fromChain, _toChain, jobId, _newFromToken);
   return await promiseToFuture(promiseBridging);
 }
 
@@ -273,16 +273,16 @@ Future<String> maticBridging(_fromTokenAmount, jobId) async {
   return await promiseToFuture(promiseBridging);
 }
 
-Future<String> polygonBridging(
-    _fromTokenAmount, _fromChain, _toChain, _jobId) async {
-  String status;
-  status = await ethBridging(_fromTokenAmount, _fromChain, _toChain, _jobId);
-  return status;
-}
-
 Future<String> polygonChecking(_jobId) async {
   String status;
   var promiseCheckInclusion = checkForInclusion(_jobId);
   status = await promiseToFuture(promiseCheckInclusion);
   return status;
+}
+
+Future getJobWithId(_jobId) async {
+  var promiseJob = getJobById(_jobId);
+  var job = await promiseToFuture(promiseJob);
+  var jobdecoded = json.decode(job);
+  return jobdecoded;
 }

@@ -29,8 +29,8 @@ external dynamic getTransactionStatus(String _txHash);
 external dynamic networkCheck(int _networkId);
 external dynamic doSwap(String _fromTokenAddress, String _toTokenAddress,
     String _amount, int _fromChain, String _jobId);
-external bridgingEth(
-    String _amount, int _fromChain, int _toChain, String _jobId);
+external bridgingEth(String _amount, int _fromChain, int _toChain,
+    String _jobId, String _newFromToken);
 external bridgingMatic(String _amount, String _jobId);
 external checkEthCompleted(String _jobId);
 external checkMaticCompleted(String _txHash);

@@ -1,0 +1,33 @@
+List mappedPoSTokensEth = [
+  "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE".toLowerCase(),
+  "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48".toLowerCase(),
+  "0xc00e94cb662c3520282e6f5717214004a7f26888".toLowerCase(),
+  "0x80fB784B7eD66730e8b1DBd9820aFD29931aab03".toLowerCase(),
+  "0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e".toLowerCase(),
+  "0xdac17f958d2ee523a2206206994597c13d831ec7".toLowerCase(),
+  "0x6b175474e89094c44da98b954eedeac495271d0f".toLowerCase(),
+  "0x4fabb145d64652a948d72533023f6e7a623c7c53".toLowerCase(),
+  "0x0f5d2fb29fb7d3cfee444a200298f468908cc942".toLowerCase(),
+  "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599".toLowerCase(),
+  "0xb6ed7644c69416d67b522e20bc294a9a9b405b31".toLowerCase(),
+  "0x2BF91c18Cd4AE9C2f2858ef9FE518180F7B5096D".toLowerCase(),
+  "0xbca3c97837a39099ec3082df97e28ce91be14472".toLowerCase(),
+  "0x20f7a3ddf244dc9299975b4da1c39f8d5d75f05a".toLowerCase(),
+];
+
+List mappedPoSTokensPolygon = [
+  "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619".toLowerCase(),
+  "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174".toLowerCase(),
+  "0x8505b9d2254A7Ae468c0E9dd10Ccea3A837aef5c".toLowerCase(),
+  "0x313d009888329C9d1cf4f75CA3f32566335bd604".toLowerCase(),
+  "0xDA537104D6A5edd53c6fBba9A898708E465260b6".toLowerCase(),
+  "0xc2132D05D31c914a87C6611C10748AEb04B58e8F".toLowerCase(),
+  "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063".toLowerCase(),
+  "0xdAb529f40E671A1D4bF91361c21bf9f0C9712ab7".toLowerCase(),
+  "0xA1c57f48F0Deb89f569dFbE6E2B7f46D33606fD4".toLowerCase(),
+  "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6".toLowerCase(),
+  "0x71B821aa52a49F32EEd535fCA6Eb5aa130085978".toLowerCase(),
+  "0x578360AdF0BbB2F10ec9cEC7EF89Ef495511ED5f".toLowerCase(),
+  "0x556f501CF8a43216Df5bc9cC57Eb04D4FFAA9e6D".toLowerCase(),
+  "0xeAb9Cfb094db203e6035c2e7268A86DEbeD5BD14".toLowerCase(),
+];

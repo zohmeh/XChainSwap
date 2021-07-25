@@ -151,9 +151,11 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
                           width: 300,
                           child: quote != null
                               ? Text(
-                                  (int.parse(quote["toTokenAmount"]) /
-                                          pow(10, quote["toToken"]["decimals"]))
-                                      .toString(),
+                                  "Expected return: " +
+                                      (int.parse(quote["toTokenAmount"]) /
+                                              pow(10,
+                                                  quote["toToken"]["decimals"]))
+                                          .toString(),
                                   style: TextStyle(
                                       color: Theme.of(context).highlightColor),
                                 )

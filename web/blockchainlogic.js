@@ -77,7 +77,7 @@ async function getQuote(_fromToken, _toToken, _amount, _chain) {
     } catch (error) { console.log(error); }
 }
 
-async function bridgingEth(_amount, _fromChain, _toChain, _jobId) {
+async function bridgingEth(_amount, _fromChain, _toChain, _jobId, _newFromToken) {
     try {
         user = await Moralis.User.current();
         const _userAddress = user.attributes.ethAddress;
@@ -103,6 +103,7 @@ async function bridgingEth(_amount, _fromChain, _toChain, _jobId) {
             let job = await Moralis.Cloud.run("getJobsById", params);
             job.set("txHash", txHash.transactionHash);
             job.set("status", "ethbridged");
+            job.set("newFromToken", _newFromToken);
             await job.save();
             return "ethbridged";
         }
@@ -113,6 +114,7 @@ async function bridgingEth(_amount, _fromChain, _toChain, _jobId) {
             let job = await Moralis.Cloud.run("getJobsById", params);
             job.set("txHash", burnTxHash.transactionHash);
             job.set("status", "ethbridged");
+            job.set("newFromToken", _newFromToken);
             await job.save();
             return "ethbridged";
         }
