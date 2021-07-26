@@ -269,13 +269,6 @@ Future getMyPolygonBalance() async {
   return polygonbalance;
 }
 
-//get all my Assests
-Future getMyAssets() async {
-  var tokens = await getBalances();
-  //var nfts = await getMyNFTBalance();
-  return ([tokens]); //, nfts]);
-}
-
 Future getAllMyEthTransactions() async {
   var promise = getMyEthTransactions();
   var transactions = await promiseToFuture(promise);
@@ -392,4 +385,10 @@ Future getJobWithId(_jobId) async {
   var job = await promiseToFuture(promiseJob);
   var jobdecoded = json.decode(job);
   return jobdecoded;
+}
+
+Future loadAtStart() async {
+  var balances = await getBalances();
+  var tokens = await fetchTokens();
+  return [balances, tokens];
 }

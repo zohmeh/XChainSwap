@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 class PieChartWidget extends StatelessWidget {
   final balances;
 
-  PieChartWidget({this.balances});
+  PieChartWidget(this.balances);
 
   final List<Color> gradientsColors = [
     const Color(0xff23b6e6),
