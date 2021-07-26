@@ -33,7 +33,7 @@ class _MyJobsDesktopViewState extends State<MyJobsDesktopView> {
               if (depositsnapshot.connectionState == ConnectionState.waiting) {
                 return Container();
               } else {
-                List jobs = depositsnapshot.data;
+                List tx = depositsnapshot.data;
                 return DataTable2(
                     columns: [
                       DataColumn(
@@ -84,7 +84,7 @@ class _MyJobsDesktopViewState extends State<MyJobsDesktopView> {
                               TextStyle(color: Theme.of(context).accentColor),
                         )),
                     ],
-                    rows: jobs
+                    rows: tx
                         .map(
                           ((element) => DataRow(
                                 cells: [

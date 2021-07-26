@@ -27,16 +27,14 @@ class EthBlockchainInteraction with ChangeNotifier {
     //Casestudie for different swaps
     if (_fromChain == _toChain) {
       await checkNetwork(chain[_fromChain]);
-      List values = await swap(_fromTokenAddress, _toTokenAddress,
-          _fromTokenAmount, _fromChain, jobId);
+      List values = await swap(jobId, 0);
       status = values[0];
       await deleteJob(jobId);
       notifyListeners();
     } else {
       if (_fromChain == 0 && _toChain == 2) {
         //Check if fromToken is contained in PoS List for direct bridging
-        if (/*_fromTokenAddress == "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"*/ mappedPoSTokensEth
-            .contains(_fromTokenAddress)) {
+        if (mappedPoSTokensEth.contains(_fromTokenAddress)) {
           var index = mappedPoSTokensEth.indexOf(_fromTokenAddress);
           switch (status) {
             case "new":
@@ -53,12 +51,7 @@ class EthBlockchainInteraction with ChangeNotifier {
               continue swapping;
             swapping:
             case "ethcompleted":
-              //get the job by id
-              var job = await getJobWithId(jobId);
-              var _newFromTokenAddress = job["newFromToken"]
-                  /*"0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"*/;
-              List values = await swap(_newFromTokenAddress, _toTokenAddress,
-                  _fromTokenAmount, _toChain, jobId);
+              List values = await swap(jobId, 0);
               status = values[0];
               await deleteJob(jobId);
               break;
@@ -70,7 +63,8 @@ class EthBlockchainInteraction with ChangeNotifier {
           switch (status) {
             case "new":
               await checkNetwork(chain[_fromChain]);
-              status = await maticBridging(_fromTokenAmount, jobId);
+              status = await maticBridging(_fromTokenAmount, jobId,
+                  "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
               notifyListeners();
               continue checking;
             checking:
@@ -81,10 +75,7 @@ class EthBlockchainInteraction with ChangeNotifier {
               continue swapping;
             swapping:
             case "maticcompleted":
-              var _newFromTokenAddress =
-                  "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"; //"0x0000000000000000000000000000000000001010";
-              List values = await swap(_newFromTokenAddress, _toTokenAddress,
-                  _fromTokenAmount, _toChain, jobId);
+              List values = await swap(jobId, 0);
               status = values[0];
               await deleteJob(jobId);
               break;
@@ -96,12 +87,7 @@ class EthBlockchainInteraction with ChangeNotifier {
             case "new":
               await checkNetwork(chain[_fromChain]);
               //Swapping Token to ETH on Eth
-              List values = await swap(
-                  _fromTokenAddress,
-                  "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-                  _fromTokenAmount,
-                  _fromChain,
-                  jobId);
+              List values = await swap(jobId, 1);
               status = values[0];
               var _ethBridgingAmount = values[1].toString();
               status = await ethBridging(
@@ -120,13 +106,8 @@ class EthBlockchainInteraction with ChangeNotifier {
               continue swapping;
             swapping:
             case "ethcompleted":
-              //get the job by id
-              var job = await getJobWithId(jobId);
-              var _newFromTokenAddress = job["newFromToken"]
-                  /*"0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"*/;
               await checkNetwork(chain[_toChain]);
-              List values = await swap(_newFromTokenAddress, _toTokenAddress,
-                  _fromTokenAmount, _toChain, jobId);
+              List values = await swap(jobId, 0);
               status = values[0];
               await deleteJob(jobId);
               break;
@@ -140,7 +121,7 @@ class EthBlockchainInteraction with ChangeNotifier {
     String _jobId = _arguments[0];
     List chain = [1, 56, 137];
     String status;
-    //get the job by id
+
     var promiseJob = getJobById(_jobId);
     var job = await promiseToFuture(promiseJob);
     var jobdecoded = json.decode(job);
@@ -149,12 +130,7 @@ class EthBlockchainInteraction with ChangeNotifier {
     var promiseERC20Exit = erc20Exit(_jobId);
     status = await promiseToFuture(promiseERC20Exit);
     notifyListeners();
-    List values = await swap(
-        jobdecoded["newFromToken"],
-        jobdecoded["toTokenAddress"],
-        jobdecoded["amount"],
-        jobdecoded["toChain"],
-        jobdecoded["objectId"]);
+    List values = await swap(_jobId, 0);
     status = values[0];
     await deleteJob(_jobId);
     notifyListeners();
@@ -182,16 +158,13 @@ class PolygonBlockchainInteraction with ChangeNotifier {
     //Casestudie for different swaps
     if (_fromChain == _toChain) {
       await checkNetwork(chain[_fromChain]);
-      List values = await swap(_fromTokenAddress, _toTokenAddress,
-          _fromTokenAmount, _fromChain, jobId);
+      List values = await swap(jobId, 0);
       status = values[0];
       await deleteJob(jobId);
       notifyListeners();
     } else if (_fromChain == 2 && _toChain == 0) {
       //Check if FromToken is WETH this will be bridged directly
-      if (/*_fromTokenAddress ==
-          "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619".toLowerCase()*/
-          mappedPoSTokensPolygon.contains(_fromTokenAddress)) {
+      if (mappedPoSTokensPolygon.contains(_fromTokenAddress)) {
         var index = mappedPoSTokensPolygon.indexOf(_fromTokenAddress);
         switch (status) {
           case "new":
@@ -211,12 +184,7 @@ class PolygonBlockchainInteraction with ChangeNotifier {
         switch (status) {
           case "new":
             await checkNetwork(chain[_fromChain]);
-            List values = await swap(
-                _fromTokenAddress,
-                "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619".toLowerCase(),
-                _fromTokenAmount,
-                _fromChain,
-                jobId);
+            List values = await swap(jobId, 2);
             var _ethBridgingAmount = values[1].toString();
             status = await ethBridging(
                 _ethBridgingAmount,

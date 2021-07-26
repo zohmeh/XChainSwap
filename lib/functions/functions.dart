@@ -312,16 +312,43 @@ Future getAllMyJobs() async {
 
   for (int i = 0; i < jobsdecoded.length; i++) {
     var queue = Queue(delay: Duration(milliseconds: 500));
-    await queue.add(() => EthBlockchainInteraction().swapTokens([
-          jobsdecoded[i]["fromTokenAddress"],
-          jobsdecoded[i]["toTokenAddress"],
-          jobsdecoded[i]["amount"],
-          jobsdecoded[i]["fromChain"],
-          jobsdecoded[i]["toChain"],
-          jobsdecoded[i]["txHash"],
-          jobsdecoded[i]["status"],
-          jobsdecoded[i]["objectId"]
-        ]));
+
+    if (jobsdecoded[i]["fromChain"] == jobsdecoded[i]["toChain"]) {
+      await queue.add(() => EthBlockchainInteraction().swapTokens([
+            jobsdecoded[i]["fromTokenAddress"],
+            jobsdecoded[i]["toTokenAddress"],
+            jobsdecoded[i]["amount"],
+            jobsdecoded[i]["fromChain"],
+            jobsdecoded[i]["toChain"],
+            jobsdecoded[i]["txHash"],
+            jobsdecoded[i]["status"],
+            jobsdecoded[i]["objectId"]
+          ]));
+    } else if (jobsdecoded[i]["fromChain"] == 0 &&
+        jobsdecoded[i]["toChain"] == 2) {
+      await queue.add(() => EthBlockchainInteraction().swapTokens([
+            jobsdecoded[i]["fromTokenAddress"],
+            jobsdecoded[i]["toTokenAddress"],
+            jobsdecoded[i]["amount"],
+            jobsdecoded[i]["fromChain"],
+            jobsdecoded[i]["toChain"],
+            jobsdecoded[i]["txHash"],
+            jobsdecoded[i]["status"],
+            jobsdecoded[i]["objectId"]
+          ]));
+    } else if (jobsdecoded[i]["fromChain"] == 2 &&
+        jobsdecoded[i]["toChain"] == 0) {
+      await queue.add(() => PolygonBlockchainInteraction().swapTokens([
+            jobsdecoded[i]["fromTokenAddress"],
+            jobsdecoded[i]["toTokenAddress"],
+            jobsdecoded[i]["amount"],
+            jobsdecoded[i]["fromChain"],
+            jobsdecoded[i]["toChain"],
+            jobsdecoded[i]["txHash"],
+            jobsdecoded[i]["status"],
+            jobsdecoded[i]["objectId"]
+          ]));
+    }
   }
   return jobsdecoded;
 }
@@ -331,10 +358,8 @@ Future deleteJob(_jobId) async {
   await promiseToFuture(promise);
 }
 
-Future<List> swap(_fromTokenAddress, _toTokenAddress, _fromTokenAmount,
-    _fromChain, jobId) async {
-  var promiseSwap = doSwap(
-      _fromTokenAddress, _toTokenAddress, _fromTokenAmount, _fromChain, jobId);
+Future<List> swap(jobId, step) async {
+  var promiseSwap = doSwap(jobId, step);
   return await promiseToFuture(promiseSwap);
 }
 
@@ -350,8 +375,8 @@ Future<String> ethBridging(
   return await promiseToFuture(promiseBridging);
 }
 
-Future<String> maticBridging(_fromTokenAmount, jobId) async {
-  var promiseBridging = bridgingMatic(_fromTokenAmount, jobId);
+Future<String> maticBridging(_fromTokenAmount, jobId, _newFromToken) async {
+  var promiseBridging = bridgingMatic(_fromTokenAmount, jobId, _newFromToken);
   return await promiseToFuture(promiseBridging);
 }
 

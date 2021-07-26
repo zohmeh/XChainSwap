@@ -103,7 +103,7 @@ async function bridgingEth(_amount, _fromChain, _toChain, _jobId, _newFromToken)
             let job = await Moralis.Cloud.run("getJobsById", params);
             job.set("txHash", txHash.transactionHash);
             job.set("status", "ethbridged");
-            job.set("newFromToken", _newFromToken);
+            job.set("fromTokenAddress", _newFromToken);
             await job.save();
             return "ethbridged";
         }
@@ -114,7 +114,7 @@ async function bridgingEth(_amount, _fromChain, _toChain, _jobId, _newFromToken)
             let job = await Moralis.Cloud.run("getJobsById", params);
             job.set("txHash", burnTxHash.transactionHash);
             job.set("status", "ethbridged");
-            job.set("newFromToken", _newFromToken);
+            job.set("fromTokenAddress", _newFromToken);
             await job.save();
             return "ethbridged";
         }
@@ -138,7 +138,7 @@ async function erc20Exit(_jobId) {
     return "erc20Exit";
 }
 
-async function bridgingMatic(_amount, _jobId) {
+async function bridgingMatic(_amount, _jobId, _newFromToken) {
     try {
         user = await Moralis.User.current();
         const _userAddress = user.attributes.ethAddress;
@@ -158,6 +158,7 @@ async function bridgingMatic(_amount, _jobId) {
         const params = { id: _jobId };
         let job = await Moralis.Cloud.run("getJobsById", params);
         job.set("txHash", txHash.transactionHash);
+        job.set("fromTokenAddress", _newFromToken);
         job.set("status", "maticbridged");
         await job.save();
 
@@ -172,7 +173,6 @@ async function checkForInclusion(_jobId) {
     await checkInclusion(job.attributes.txHash, /*"0x2890ba17efe978480615e330ecb65333b880928e"*/ "0x86E4Dc95c7FBdBf52e33D563BbDB00823894C287");
     job.set("status", "erc20Ethcompleted");
     await job.save();
-    console.log("Inclusion Check");
     return "erc20Ethcompleted";
 }
 
@@ -200,22 +200,32 @@ async function checkMaticCompleted(_jobId) {
     return "maticcompleted";
 }
 
-async function doSwap(_fromTokenAddress, _toTokenAddress, _amount, _fromChain, _jobId) {
+async function doSwap(_jobId, _step) {
     
     let chain = ["1", "56", "137"];
     user = await Moralis.User.current();
     const _userAddress = user.attributes.ethAddress;
 
-    window.ERC20TokencontractInstance = new web3.eth.Contract(erc20ABI, _fromTokenAddress);
+    //find job by id
+    const params = { id: _jobId };
+    let job = await Moralis.Cloud.run("getJobsById", params);
+
+    let _toTokenAddress;
+    //decide if there is a swap to eth before bridging
+    if (_step == 0) { _toTokenAddress = job["toTokenAddress"]; };
+    if (_step == 1) { _toTokenAddress = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"; };
+    if (_step == 2) { _toTokenAddress = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619".toLowerCase(); };
+
+    window.ERC20TokencontractInstance = new web3.eth.Contract(erc20ABI, job["fromTokenAddress"]);
     //Approve 1inch to spend token
-    if (_fromTokenAddress != "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
+    if (job["fromTokenAddress"] != "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
         const allowance = await ERC20TokencontractInstance.methods.allowance(_userAddress, "0x11111112542d85b3ef69ae05771c2dccff4faa26").call();
-        if (allowance < web3.utils.toBN(parseFloat(_amount))) {
-            const approve = await ERC20TokencontractInstance.methods.approve("0x11111112542d85b3ef69ae05771c2dccff4faa26", _amount).send({ from: _userAddress });
+        if (allowance < web3.utils.toBN(parseFloat(job["amount"]))) {
+            const approve = await ERC20TokencontractInstance.methods.approve("0x11111112542d85b3ef69ae05771c2dccff4faa26", job["amount"]).send({ from: _userAddress });
         }
     }
     //get TX Data for swap to sign and to do the swap            
-    const response = await fetch(`https://api.1inch.exchange/v3.0/${chain[_fromChain]}/swap?fromTokenAddress=${_fromTokenAddress}&toTokenAddress=${_toTokenAddress}&amount=${_amount}&fromAddress=${_userAddress}&slippage=1`);
+    const response = await fetch(`https://api.1inch.exchange/v3.0/${chain[job["fromChain"]]}/swap?fromTokenAddress=${job["fromTokenAddress"]}&toTokenAddress=${_toTokenAddress}&amount=${job["amount"]}&fromAddress=${_userAddress}&slippage=1`);
     const swap = await response.json();
     const send = await web3.eth.sendTransaction(swap.tx);
         

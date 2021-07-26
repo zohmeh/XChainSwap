@@ -84,7 +84,7 @@ class _MyBalancesDesktopViewState extends State<MyBalancesDesktopView> {
                                               Container(
                                                 width: 30,
                                                 child: Image.network(
-                                                  element["image"],
+                                                  'https://cors-anywhere.herokuapp.com/${element["image"]}',
                                                   width: 25,
                                                 ),
                                               ),
