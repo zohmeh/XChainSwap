@@ -58,7 +58,7 @@ class _MyJobsDesktopViewState extends State<MyJobsDesktopView> {
                       )),
                       DataColumn(
                           label: Text(
-                        "Native \n Value",
+                        widget.chain == 0 ? "Ether" : "Matic",
                         style: TextStyle(color: Theme.of(context).accentColor),
                       )),
                       DataColumn(
@@ -122,21 +122,25 @@ class _MyJobsDesktopViewState extends State<MyJobsDesktopView> {
                                         color:
                                             Theme.of(context).highlightColor),
                                   )),
-                                  DataCell(Text(
-                                    (double.parse(element["value"]) /
-                                            1000000000000000000)
-                                        .toString(),
-                                    style: TextStyle(
-                                        color:
-                                            Theme.of(context).highlightColor),
+                                  DataCell(Expanded(
+                                    child: Text(
+                                      (double.parse(element["value"]) /
+                                              1000000000000000000)
+                                          .toString(),
+                                      style: TextStyle(
+                                          color:
+                                              Theme.of(context).highlightColor),
+                                    ),
                                   )),
-                                  DataCell(Text(
-                                    (double.parse(element["tokenamount"]) /
-                                            1000000000000000000)
-                                        .toString(),
-                                    style: TextStyle(
-                                        color:
-                                            Theme.of(context).highlightColor),
+                                  DataCell(Expanded(
+                                    child: Text(
+                                      (double.parse(element["tokenamount"]) /
+                                              1000000000000000000)
+                                          .toString(),
+                                      style: TextStyle(
+                                          color:
+                                              Theme.of(context).highlightColor),
+                                    ),
                                   )),
                                   DataCell(Text(
                                     element["token_symbol"],
