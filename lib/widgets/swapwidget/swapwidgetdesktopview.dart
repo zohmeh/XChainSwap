@@ -95,6 +95,7 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
                     children: [
                       Container(
                         width: 300,
+                        height: 60,
                         child: inputField(
                           ctx: context,
                           controller: widget.swapamount,
@@ -110,14 +111,13 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
                                           fromToken.elementAt(0)["decimals"]))
                                   .toString();
                             });
-                            if (fromChain == toChain) {
-                              quote = await getRate([
-                                fromToken.elementAt(0)["address"],
-                                toToken.elementAt(0)["address"],
-                                fromAmount,
-                                fromChain
-                              ]);
-                            }
+                            quote = await getExpectedReturn([
+                              fromToken.elementAt(0)["address"],
+                              toToken.elementAt(0)["address"],
+                              fromAmount,
+                              fromChain,
+                              toChain
+                            ]);
                           },
                         ),
                       ),
@@ -145,17 +145,27 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
                         ""
                       ]),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
-                          width: 300,
+                          width: 100,
+                          height: 60,
+                          child: Text(
+                            "Expected Return: ",
+                            style: TextStyle(
+                                color: Theme.of(context).highlightColor),
+                          )),
+                      SizedBox(width: 10),
+                      Container(
+                          width: 200,
+                          height: 60,
+                          padding: EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.black)),
                           child: quote != null
                               ? Text(
-                                  "Expected return: " +
-                                      (int.parse(quote["toTokenAmount"]) /
-                                              pow(10,
-                                                  quote["toToken"]["decimals"]))
-                                          .toString(),
+                                  quote,
                                   style: TextStyle(
                                       color: Theme.of(context).highlightColor),
                                 )

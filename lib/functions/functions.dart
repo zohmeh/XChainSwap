@@ -3,6 +3,7 @@ import 'dart:js_util';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:web_app_template/helpers/coinGeckoTokenList.dart';
+import 'package:web_app_template/helpers/mappedTokens.dart';
 import 'package:web_app_template/provider/blockchainprovider.dart';
 import '../../helpers/coinGeckoTokenList.dart';
 import '../widgets/javascript_controller.dart';
@@ -28,23 +29,104 @@ Future<String> getStatus(String _jobId, String _token) async {
   }
 }
 
-Future getRate(List _arguments) async {
-  String chain;
-  if (_arguments[3] == 0) {
-    chain = "1";
+Future<String> getExpectedReturn(List _arguments) async {
+  String _fromTokenAddress = _arguments[0];
+  String _toTokenAddress = _arguments[1];
+  String _fromAmount = _arguments[2];
+  int _fromChain = _arguments[3];
+  int _toChain = _arguments[4];
+  List chain = ["1", "56", "137"];
+  String expectedReturn;
+
+  //print(_fromChain);
+  //print(_toChain);
+
+  if (_fromChain == _toChain) {
+    var promise1 = getQuote(
+        _fromTokenAddress, _toTokenAddress, _fromAmount, chain[_fromChain]);
+    var quote = await promiseToFuture(promise1);
+    var quotedecoded = json.decode(quote);
+    expectedReturn = (int.parse(quotedecoded["toTokenAmount"]) /
+            pow(10, quotedecoded["toToken"]["decimals"]))
+        .toString();
+  } else if (_fromChain == 0 && _toChain == 2) {
+    if (mappedPoSTokensEth.contains(_fromTokenAddress)) {
+      var index = mappedPoSTokensEth.indexOf(_fromTokenAddress);
+      _fromTokenAddress = mappedPoSTokensPolygon[index];
+      var promise1 = getQuote(
+          _fromTokenAddress, _toTokenAddress, _fromAmount, chain[_toChain]);
+      var quote = await promiseToFuture(promise1);
+      var quotedecoded = json.decode(quote);
+      expectedReturn = (int.parse(quotedecoded["toTokenAmount"]) /
+              pow(10, quotedecoded["toToken"]["decimals"]))
+          .toString();
+    } else {
+      //getting the amount of eth
+      var promise1 = getQuote(
+          _fromTokenAddress,
+          "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE".toLowerCase(),
+          _fromAmount,
+          chain[_fromChain]);
+      var quote = await promiseToFuture(promise1);
+      var quotedecoded = json.decode(quote);
+      var ethAmount = quotedecoded["toTokenAmount"];
+
+      //with new eth amount quote on toChain
+      var promise2 = getQuote(
+          "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619".toLowerCase(),
+          _toTokenAddress,
+          ethAmount,
+          chain[_toChain]);
+      var quote2 = await promiseToFuture(promise2);
+      var quotedecoded2 = json.decode(quote2);
+      expectedReturn = (int.parse(quotedecoded2["toTokenAmount"]) /
+              pow(10, quotedecoded2["toToken"]["decimals"]))
+          .toString();
+    }
+  } else if (_fromChain == 2 && _toChain == 0) {
+    if (mappedPoSTokensPolygon.contains(_fromTokenAddress)) {
+      var index = mappedPoSTokensPolygon.indexOf(_fromTokenAddress);
+      _fromTokenAddress = mappedPoSTokensEth[index];
+      var promise1 = getQuote(
+          _fromTokenAddress, _toTokenAddress, _fromAmount, chain[_toChain]);
+      var quote = await promiseToFuture(promise1);
+      var quotedecoded = json.decode(quote);
+      expectedReturn = (int.parse(quotedecoded["toTokenAmount"]) /
+              pow(10, quotedecoded["toToken"]["decimals"]))
+          .toString();
+    } else {
+      //getting the amount of eth
+      var promise1 = getQuote(
+          _fromTokenAddress,
+          "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619".toLowerCase(),
+          _fromAmount,
+          chain[_fromChain]);
+      var quote = await promiseToFuture(promise1);
+      var quotedecoded = json.decode(quote);
+      var ethAmount = quotedecoded["toTokenAmount"];
+
+      //with new eth amount quote on toChain
+      var promise2 = getQuote(
+          "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE".toLowerCase(),
+          _toTokenAddress,
+          ethAmount,
+          chain[_toChain]);
+      var quote2 = await promiseToFuture(promise2);
+      var quotedecoded2 = json.decode(quote2);
+      expectedReturn = (int.parse(quotedecoded2["toTokenAmount"]) /
+              pow(10, quotedecoded2["toToken"]["decimals"]))
+          .toString();
+    }
   }
-  if (_arguments[3] == 1) {
-    chain = "56";
-  }
-  if (_arguments[3] == 2) {
-    chain = "137";
-  }
-  var fromAmount = BigInt.from(double.parse(_arguments[2]));
-  var promise1 =
-      getQuote(_arguments[0], _arguments[1], fromAmount.toString(), chain);
-  var quote = await promiseToFuture(promise1);
-  var quotedecoded = json.decode(quote);
-  return quotedecoded;
+
+  return expectedReturn;
+
+  //var fromAmount = BigInt.from(double.parse(_arguments[2]));
+  //var promise1 =
+  //    getQuote(_arguments[0], _arguments[1], fromAmount.toString(), chain);
+  //var quote = await promiseToFuture(promise1);
+  //var quotedecoded = json.decode(quote);
+  //return quotedecoded;
 }
 
 Future fetchTokens() async {

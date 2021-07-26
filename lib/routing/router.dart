@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:web_app_template/views/swapview/swap_view.dart';
 import '../routing/route_names.dart';
 import '../views/myportfolioview/home_view.dart';
 import '../widgets/string_extensions.dart';
@@ -10,8 +9,6 @@ Route<dynamic> generateRoute(RouteSettings settings) {
   switch (routingData.route) {
     case HomeRoute:
       return _getPageRoute(HomeView(), settings.name);
-    case SwapTokensRoute:
-      return _getPageRoute(SwapView(), settings.name);
     default:
       return _getPageRoute(HomeView(), settings.name);
   }
