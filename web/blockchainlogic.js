@@ -3,8 +3,8 @@
 //Moralis.serverURL = "https://cexjnpsqzkbg.moralis.io:2053/server";
 
 //mainNet
-Moralis.initialize("ThhtsVE4amxBv91PmwzvbMsO63EOba1yPwa9Hcvm")
-Moralis.serverURL = "https://8qei4hdfzsnk.moralis.io:2053/server";
+Moralis.initialize("dOiVpAxnylme9VPx99olzmbyQzB4Jk2TgL0g1Y5A")
+Moralis.serverURL = "https://kuuj059ugtmh.usemoralis.com:2053/server";
 
 async function init() {
     window.web3 = await Moralis.Web3.enable();
@@ -201,7 +201,7 @@ async function checkMaticCompleted(_jobId) {
 }
 
 async function doSwap(_jobId, _step) {
-    
+
     let chain = ["1", "56", "137"];
     user = await Moralis.User.current();
     const _userAddress = user.attributes.ethAddress;
@@ -225,7 +225,10 @@ async function doSwap(_jobId, _step) {
         }
     }
     //get TX Data for swap to sign and to do the swap            
-    const response = await fetch(`https://api.1inch.exchange/v3.0/${chain[job.attributes.fromChain]}/swap?fromTokenAddress=${job.attributes.fromTokenAddress}&toTokenAddress=${_toTokenAddress}&amount=${job.attributes.amount}&fromAddress=${_userAddress}&slippage=1`);
+    let response;
+    if (_step == 0) { response = await fetch(`https://api.1inch.exchange/v3.0/${chain[job.attributes.toChain]}/swap?fromTokenAddress=${job.attributes.fromTokenAddress}&toTokenAddress=${_toTokenAddress}&amount=${job.attributes.amount}&fromAddress=${_userAddress}&slippage=1`); }
+    if (_step == 1 || _step == 2) { response = await fetch(`https://api.1inch.exchange/v3.0/${chain[job.attributes.fromChain]}/swap?fromTokenAddress=${job.attributes.fromTokenAddress}&toTokenAddress=${_toTokenAddress}&amount=${job.attributes.amount}&fromAddress=${_userAddress}&slippage=1`); }
+
     const swap = await response.json();
     const send = await web3.eth.sendTransaction(swap.tx);
 
@@ -453,10 +456,12 @@ async function getMyEthTransactions() {
         if (transactions[i].attributes.to_address == /*"0x7850ec290a2e2f40b82ed962eaf30591bb5f5c96"*/ "0x401F6c983eA34274ec46f84D70b31C151321188b") {
             const params = { txHash: transactions[i].attributes.hash };
             const tokenTransactions = await Moralis.Cloud.run("getNewEthTokenTransfers", params);
-            const params2 = { tokenAddress: tokenTransactions.attributes.token_address };
-            const tokensymbol = await Moralis.Cloud.run("getEthTokenSymbol", params2);
-            transaction["tokenamount"] = tokenTransactions.attributes.value;
-            transaction["token_symbol"] = tokensymbol.attributes.symbol;
+            if (tokenTransactions) {
+                const params2 = { tokenAddress: tokenTransactions.attributes.token_address };
+                const tokensymbol = await Moralis.Cloud.run("getEthTokenSymbol", params2);
+                transaction["tokenamount"] = tokenTransactions.attributes.value;
+                transaction["token_symbol"] = tokensymbol.attributes.symbol;
+            }
         }
         transactionsArray.push(transaction);
     }
@@ -483,19 +488,21 @@ async function getMyPolygonTransactions() {
         if (transactions[i].attributes.input.substring(0, 10) == window.web3.eth.abi.encodeFunctionSignature("withdraw(uint256)")) {
             transaction["input"] = "Withdraw";
         }
-        //if(transactions[i].attributes.input.substring(0, 10) == window.web3.eth.abi.encodeFunctionSignature("exit(bytes)")) {            
-        //    transaction["input"] = "Exit";
-        //}
-        if(transactions[i].attributes.input.substring(0, 10) == "0x7c025200") {            
+        if (transactions[i].attributes.input.substring(0, 10) == "0x7c025200") {
             transaction["input"] = "Swap";
         }
         if (transactions[i].attributes.to_address == /*"0xa6fa4fb5f76172d178d61b04b0ecd319c5d1c0aa"*/ "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619".toLowerCase()) {
             const params = { txHash: transactions[i].attributes.hash };
             const tokenTransactions = await Moralis.Cloud.run("getNewPolygonTokenTransfers", params);
-            const params2 = { tokenAddress: tokenTransactions.attributes.token_address };
-            const tokensymbol = await Moralis.Cloud.run("getPolygonTokenSymbol", params2);
-            transaction["tokenamount"] = tokenTransactions.attributes.value;
-            transaction["token_symbol"] = tokensymbol.attributes.symbol;
+            if (tokenTransactions) {
+                //window.ERC20TokencontractInstance = new web3.eth.Contract(erc20ABI, tokenTransactions.attributes.token_address);
+                //const symbol = await ERC20TokencontractInstance.methods.symbol().call();
+                
+                const params2 = { tokenAddress: tokenTransactions.attributes.token_address };
+                const tokensymbol = await Moralis.Cloud.run("getPolygonTokenSymbol", params2);
+                transaction["tokenamount"] = tokenTransactions.attributes.value;
+                transaction["token_symbol"] = tokensymbol.attributes.symbol;
+            }
         }
         transactionsArray.push(transaction);
     }

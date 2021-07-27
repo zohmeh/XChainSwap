@@ -64,7 +64,8 @@ class _MyBalancesDesktopViewState extends State<MyBalancesDesktopView> {
                               Container(
                                 width: 30,
                                 child: Image.network(
-                                  'https://cors-anywhere.herokuapp.com/${element["image"]}',
+                                  /*'https://cors-anywhere.herokuapp.com/${*/ element[
+                                      "image"] /*}'*/,
                                   width: 25,
                                 ),
                               ),
@@ -80,7 +81,7 @@ class _MyBalancesDesktopViewState extends State<MyBalancesDesktopView> {
                         DataCell(Text(
                           (int.parse(element["balance"]) /
                                   pow(10, int.parse(element["decimals"])))
-                              .toStringAsFixed(5),
+                              .toStringAsFixed(10),
                           style: TextStyle(
                               color: Theme.of(context).highlightColor),
                         )),

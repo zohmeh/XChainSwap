@@ -47,6 +47,7 @@ class _MyPortfolioDesktopViewState extends State<MyPortfolioDesktopView> {
                   ),
                   SizedBox(height: 20),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       Column(
                         children: [

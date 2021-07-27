@@ -205,7 +205,7 @@ Future getBalances() async {
 
   var polygonbalance = await getMyPolygonBalance();
   Map polygon = {
-    "name": "Polygon",
+    "name": "Matic",
     "symbol": "matic",
     "balance": polygonbalance,
     "decimals": "18",
@@ -281,7 +281,6 @@ Future getAllMyPolygonTransactions() async {
   var promise = getMyPolygonTransactions();
   var transactions = await promiseToFuture(promise);
   var transactionsdecoded = json.decode(transactions);
-
   //get all my open jobs
   var promiseJobs = getMyJobs();
   var jobs = await promiseToFuture(promiseJobs);
