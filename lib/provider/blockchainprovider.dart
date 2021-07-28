@@ -50,6 +50,7 @@ class EthBlockchainInteraction with ChangeNotifier {
               continue swapping;
             swapping:
             case "ethcompleted":
+              await checkNetwork(chain[_toChain]);
               List values =
                   await PolygonBlockchainInteraction().doSwap([jobId, 0]);
               status = values[0];
@@ -75,6 +76,7 @@ class EthBlockchainInteraction with ChangeNotifier {
               continue swapping;
             swapping:
             case "maticcompleted":
+              await checkNetwork(chain[_toChain]);
               List values =
                   await PolygonBlockchainInteraction().doSwap([jobId, 0]);
               status = values[0];

@@ -99,7 +99,7 @@ async function bridgingEth(_jobId, _newFromToken) {
             maticProvider: window.web3,
         });
 
-        if (job.attributes.fromChain == 0 && jon.attributes.toChain == 2) {
+        if (job.attributes.fromChain == 0 && job.attributes.toChain == 2) {
             //Deposit Ether from Ether to Polygon
             let txHash = await maticPos.depositEtherForUser(_userAddress, job.attributes.amount, { from: _userAddress });
             //const params = { id: _jobId };
@@ -215,8 +215,6 @@ async function doSwap(_jobId, _step) {
     const params = { id: _jobId };
     let job = await Moralis.Cloud.run("getJobsById", params);
 
-    console.log(job.attributes.fromTokenAddress);
-
     let _toTokenAddress;
     //decide if there is a swap to eth before bridging
     if (_step == 0) { _toTokenAddress = job.attributes.toTokenAddress; };
@@ -226,7 +224,6 @@ async function doSwap(_jobId, _step) {
     window.ERC20TokencontractInstance = new web3.eth.Contract(erc20ABI, job.attributes.fromTokenAddress);
     //Approve 1inch to spend token
     if (job.attributes.fromTokenAddress != "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
-        console.log("approve");
         //const allowance = await ERC20TokencontractInstance.methods.allowance(_userAddress, "0x11111112542d85b3ef69ae05771c2dccff4faa26").call();
         //if (allowance < web3.utils.toBN(parseFloat(job.attributes.amount))) {
         const approve = await ERC20TokencontractInstance.methods.approve("0x11111112542d85b3ef69ae05771c2dccff4faa26", job.attributes.amount).send({ from: _userAddress });
