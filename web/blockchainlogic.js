@@ -112,9 +112,8 @@ async function bridgingEth(_jobId, _newFromToken) {
         }
         else if (job.attributes.fromChain == 2 && job.attributes.toChain == 0) {
             //Deposit Ether from Polygon to Ether
-            let burnTxHash = await maticPosEthBack.burnERC20(/*"0xA6FA4fB5f76172d178d61B04b0ecd319C5d1C0aa"*/ "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619", job.attributes.amount, { from: _userAddress });
-            //const params = { id: _jobId };
-            //let job = await Moralis.Cloud.run("getJobsById", params);
+            let burnTxHash = await maticPosEthBack.burnERC20(/*"0xA6FA4fB5f76172d178d61B04b0ecd319C5d1C0aa"*/ job.attributes.fromTokenAddress, job.attributes.amount, { from: _userAddress });
+
             job.set("txHash", burnTxHash.transactionHash);
             job.set("status", "ethbridged");
             job.set("fromTokenAddress", _newFromToken);
@@ -496,7 +495,7 @@ async function getMyPolygonTransactions() {
         if (transactions[i].attributes.input.substring(0, 10) == "0x7c025200") {
             transaction["input"] = "Swap";
         }
-        if (transactions[i].attributes.to_address == /*"0xa6fa4fb5f76172d178d61b04b0ecd319c5d1c0aa"*/ "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619".toLowerCase()) {
+        if (mappedPoSTokensPolygon.includes(transactions[i].attributes.to_address) /* == "0xa6fa4fb5f76172d178d61b04b0ecd319c5d1c0aa" "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619".toLowerCase()*/) {
             const params = { txHash: transactions[i].attributes.hash };
             const tokenTransactions = await Moralis.Cloud.run("getNewPolygonTokenTransfers", params);
             if (tokenTransactions) {
