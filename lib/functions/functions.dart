@@ -120,13 +120,6 @@ Future<String> getExpectedReturn(List _arguments) async {
   }
 
   return expectedReturn;
-
-  //var fromAmount = BigInt.from(double.parse(_arguments[2]));
-  //var promise1 =
-  //    getQuote(_arguments[0], _arguments[1], fromAmount.toString(), chain);
-  //var quote = await promiseToFuture(promise1);
-  //var quotedecoded = json.decode(quote);
-  //return quotedecoded;
 }
 
 Future fetchTokens() async {
@@ -149,31 +142,12 @@ Future fetchTokens() async {
   }
   ethertokenList.sort((a, b) => a["symbol"].compareTo(b["symbol"]));
 
-  //fetch all tokens for bscchain
-  List<Map> bsctokenList = [];
-  var bscpromise = fetch1InchTokens("56");
-  var bsctokens = await promiseToFuture(bscpromise);
-  var bsctokensdecoded = json.decode(bsctokens);
-  var bsctokensdecodedList = bsctokensdecoded.values.toList();
-
-  for (var i = 0; i < bsctokensdecodedList.length; i++) {
-    Map bsctoken = {
-      "symbol": bsctokensdecodedList[i]["symbol"],
-      "name": bsctokensdecodedList[i]["name"],
-      "address": bsctokensdecodedList[i]["address"],
-      "decimals": bsctokensdecodedList[i]["decimals"],
-      "logoURI": bsctokensdecodedList[i]["logoURI"]
-    };
-    bsctokenList.add(bsctoken);
-  }
-  bsctokenList.sort((a, b) => a["symbol"].compareTo(b["symbol"]));
-
   //fetch all tokens for polygon
   List<Map> polygontokenList = [];
   var polygonpromise = fetch1InchTokens("137");
   var polygontokens = await promiseToFuture(polygonpromise);
   var polygontokensdecoded = json.decode(polygontokens);
-  var polygontokensdecodedList = polygontokensdecoded.values.toList();
+  List polygontokensdecodedList = polygontokensdecoded.values.toList();
 
   for (var i = 0; i < polygontokensdecodedList.length; i++) {
     Map polygontoken = {
@@ -187,7 +161,7 @@ Future fetchTokens() async {
   }
   polygontokenList.sort((a, b) => a["symbol"].compareTo(b["symbol"]));
 
-  return [ethertokenList, bsctokenList, polygontokenList];
+  return [ethertokenList, "", polygontokenList];
 }
 
 //get my Balances from Moralis
@@ -360,15 +334,13 @@ Future checkNetwork(_chain) async {
   await promiseToFuture(promiseNetworkCheck);
 }
 
-Future<String> ethBridging(
-    _fromTokenAmount, _fromChain, _toChain, jobId, _newFromToken) async {
-  var promiseBridging =
-      bridgingEth(_fromTokenAmount, _fromChain, _toChain, jobId, _newFromToken);
+Future<String> ethBridging(jobId, _newFromToken) async {
+  var promiseBridging = bridgingEth(jobId, _newFromToken);
   return await promiseToFuture(promiseBridging);
 }
 
-Future<String> maticBridging(_fromTokenAmount, jobId, _newFromToken) async {
-  var promiseBridging = bridgingMatic(_fromTokenAmount, jobId, _newFromToken);
+Future<String> maticBridging(jobId, _newFromToken) async {
+  var promiseBridging = bridgingMatic(jobId, _newFromToken);
   return await promiseToFuture(promiseBridging);
 }
 

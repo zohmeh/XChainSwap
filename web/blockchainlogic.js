@@ -77,10 +77,13 @@ async function getQuote(_fromToken, _toToken, _amount, _chain) {
     } catch (error) { console.log(error); }
 }
 
-async function bridgingEth(_amount, _fromChain, _toChain, _jobId, _newFromToken) {
+async function bridgingEth(_jobId, _newFromToken) {
     try {
         user = await Moralis.User.current();
         const _userAddress = user.attributes.ethAddress;
+
+        const params = { id: _jobId };
+        let job = await Moralis.Cloud.run("getJobsById", params);
 
         const maticPos = new Matic.MaticPOSClient({
             network: "mainnet", //"testnet",
@@ -96,22 +99,22 @@ async function bridgingEth(_amount, _fromChain, _toChain, _jobId, _newFromToken)
             maticProvider: window.web3,
         });
 
-        if (_fromChain == 0 && _toChain == 2) {
+        if (job.attributes.fromChain == 0 && jon.attributes.toChain == 2) {
             //Deposit Ether from Ether to Polygon
-            let txHash = await maticPos.depositEtherForUser(_userAddress, _amount, { from: _userAddress });
-            const params = { id: _jobId };
-            let job = await Moralis.Cloud.run("getJobsById", params);
+            let txHash = await maticPos.depositEtherForUser(_userAddress, job.attributes.amount, { from: _userAddress });
+            //const params = { id: _jobId };
+            //let job = await Moralis.Cloud.run("getJobsById", params);
             job.set("txHash", txHash.transactionHash);
             job.set("status", "ethbridged");
             job.set("fromTokenAddress", _newFromToken);
             await job.save();
             return "ethbridged";
         }
-        else if (_fromChain == 2 && _toChain == 0) {
+        else if (job.attributes.fromChain == 2 && job.attributes.toChain == 0) {
             //Deposit Ether from Polygon to Ether
-            let burnTxHash = await maticPosEthBack.burnERC20(/*"0xA6FA4fB5f76172d178d61B04b0ecd319C5d1C0aa"*/ "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619", _amount, { from: _userAddress });
-            const params = { id: _jobId };
-            let job = await Moralis.Cloud.run("getJobsById", params);
+            let burnTxHash = await maticPosEthBack.burnERC20(/*"0xA6FA4fB5f76172d178d61B04b0ecd319C5d1C0aa"*/ "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619", job.attributes.amount, { from: _userAddress });
+            //const params = { id: _jobId };
+            //let job = await Moralis.Cloud.run("getJobsById", params);
             job.set("txHash", burnTxHash.transactionHash);
             job.set("status", "ethbridged");
             job.set("fromTokenAddress", _newFromToken);
@@ -138,10 +141,13 @@ async function erc20Exit(_jobId) {
     return "erc20Exit";
 }
 
-async function bridgingMatic(_amount, _jobId, _newFromToken) {
+async function bridgingMatic(_jobId, _newFromToken) {
     try {
         user = await Moralis.User.current();
         const _userAddress = user.attributes.ethAddress;
+
+        const params = { id: _jobId };
+        let job = await Moralis.Cloud.run("getJobsById", params);
 
         const maticPlasma = new Matic({
             network: "mainnet", //"testnet",
@@ -151,12 +157,10 @@ async function bridgingMatic(_amount, _jobId, _newFromToken) {
         });
 
         //Approve Polygon
-        await maticPlasma.approveERC20TokensForDeposit(/*"0x499d11E0b6eAC7c0593d8Fb292DCBbF815Fb29Ae"*/ "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0", _amount, { from: _userAddress });
+        await maticPlasma.approveERC20TokensForDeposit(/*"0x499d11E0b6eAC7c0593d8Fb292DCBbF815Fb29Ae"*/ "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0", job.attributes.amount, { from: _userAddress });
         //Deposit ERC20
-        let txHash = await maticPlasma.depositERC20ForUser(/*"0x499d11E0b6eAC7c0593d8Fb292DCBbF815Fb29Ae"*/ "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0", _userAddress, _amount, { from: _userAddress });
+        let txHash = await maticPlasma.depositERC20ForUser(/*"0x499d11E0b6eAC7c0593d8Fb292DCBbF815Fb29Ae"*/ "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0", _userAddress, job.attributes.amount, { from: _userAddress });
         //Setting transactionHash for Job
-        const params = { id: _jobId };
-        let job = await Moralis.Cloud.run("getJobsById", params);
         job.set("txHash", txHash.transactionHash);
         job.set("fromTokenAddress", _newFromToken);
         job.set("status", "maticbridged");
@@ -170,6 +174,7 @@ async function bridgingMatic(_amount, _jobId, _newFromToken) {
 async function checkForInclusion(_jobId) {
     const params = { id: _jobId };
     let job = await Moralis.Cloud.run("getJobsById", params);
+    console.log(job.attributes.txHash);
     await checkInclusion(job.attributes.txHash, /*"0x2890ba17efe978480615e330ecb65333b880928e"*/ "0x86E4Dc95c7FBdBf52e33D563BbDB00823894C287");
     job.set("status", "erc20Ethcompleted");
     await job.save();
@@ -210,6 +215,8 @@ async function doSwap(_jobId, _step) {
     const params = { id: _jobId };
     let job = await Moralis.Cloud.run("getJobsById", params);
 
+    console.log(job.attributes.fromTokenAddress);
+
     let _toTokenAddress;
     //decide if there is a swap to eth before bridging
     if (_step == 0) { _toTokenAddress = job.attributes.toTokenAddress; };
@@ -218,11 +225,12 @@ async function doSwap(_jobId, _step) {
 
     window.ERC20TokencontractInstance = new web3.eth.Contract(erc20ABI, job.attributes.fromTokenAddress);
     //Approve 1inch to spend token
-    if (job["fromTokenAddress"] != "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
-        const allowance = await ERC20TokencontractInstance.methods.allowance(_userAddress, "0x11111112542d85b3ef69ae05771c2dccff4faa26").call();
-        if (allowance < web3.utils.toBN(parseFloat(job.attributes.amount))) {
-            const approve = await ERC20TokencontractInstance.methods.approve("0x11111112542d85b3ef69ae05771c2dccff4faa26", job.attributes.amount).send({ from: _userAddress });
-        }
+    if (job.attributes.fromTokenAddress != "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
+        console.log("approve");
+        //const allowance = await ERC20TokencontractInstance.methods.allowance(_userAddress, "0x11111112542d85b3ef69ae05771c2dccff4faa26").call();
+        //if (allowance < web3.utils.toBN(parseFloat(job.attributes.amount))) {
+        const approve = await ERC20TokencontractInstance.methods.approve("0x11111112542d85b3ef69ae05771c2dccff4faa26", job.attributes.amount).send({ from: _userAddress });
+        //}
     }
     //get TX Data for swap to sign and to do the swap            
     let response;
@@ -497,7 +505,7 @@ async function getMyPolygonTransactions() {
             if (tokenTransactions) {
                 //window.ERC20TokencontractInstance = new web3.eth.Contract(erc20ABI, tokenTransactions.attributes.token_address);
                 //const symbol = await ERC20TokencontractInstance.methods.symbol().call();
-                
+
                 const params2 = { tokenAddress: tokenTransactions.attributes.token_address };
                 const tokensymbol = await Moralis.Cloud.run("getPolygonTokenSymbol", params2);
                 transaction["tokenamount"] = tokenTransactions.attributes.value;

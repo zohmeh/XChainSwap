@@ -32,9 +32,8 @@ external dynamic doSwap(
     String _amount, int _fromChain,*/
     String _jobId,
     int step);
-external bridgingEth(String _amount, int _fromChain, int _toChain,
-    String _jobId, String _newFromToken);
-external bridgingMatic(String _amount, String _jobId, String _newFromToken);
+external bridgingEth(String _jobId, String _newFromToken);
+external bridgingMatic(String _jobId, String _newFromToken);
 external checkEthCompleted(String _jobId);
 external checkMaticCompleted(String _txHash);
 external erc20Exit(String _txHash);

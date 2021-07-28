@@ -161,7 +161,7 @@ class _MyJobsDesktopViewState extends State<MyJobsDesktopView> {
                                         ? button(
                                             Theme.of(context).buttonColor,
                                             Theme.of(context).highlightColor,
-                                            "Get active",
+                                            "Action",
                                             Provider.of<EthBlockchainInteraction>(
                                                     context,
                                                     listen: false)

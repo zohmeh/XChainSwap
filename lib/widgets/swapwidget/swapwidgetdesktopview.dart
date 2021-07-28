@@ -29,6 +29,7 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
   String fromAmount;
   Future tokens;
   List tokenList = [];
+
   var quote;
 
   onChanged(String _value, int _chain, bool _isFromToken) {
@@ -68,10 +69,6 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
                     onChanged: onChanged,
                     chain: 0,
                     isFromToken: true),
-                //Dropdownlist(
-                //    tokenList: tokensnapshot.data[1],
-                //    label: "Select Token Binancechain",
-                //    onChanged: onChanged),
                 Dropdownlist(
                     tokenList: widget.tokens[2],
                     label: "Select Token Polygon",
@@ -169,10 +166,6 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
                     onChanged: onChanged,
                     chain: 0,
                     isFromToken: false),
-                //Dropdownlist(
-                //    tokenList: tokensnapshot.data[1],
-                //    label: "Select Token Binancechain",
-                //    onChanged: onChanged),
                 Dropdownlist(
                     tokenList: widget.tokens[2],
                     label: "Select Token Polygon",

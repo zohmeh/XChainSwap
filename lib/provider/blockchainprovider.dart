@@ -39,8 +39,7 @@ class EthBlockchainInteraction with ChangeNotifier {
           switch (status) {
             case "new":
               await checkNetwork(chain[_fromChain]);
-              status = await ethBridging(_fromTokenAmount, _fromChain, _toChain,
-                  jobId, mappedPoSTokensPolygon[index]);
+              status = await ethBridging(jobId, mappedPoSTokensPolygon[index]);
               notifyListeners();
               continue checking;
             checking:
@@ -51,7 +50,8 @@ class EthBlockchainInteraction with ChangeNotifier {
               continue swapping;
             swapping:
             case "ethcompleted":
-              List values = await swap(jobId, 0);
+              List values =
+                  await PolygonBlockchainInteraction().doSwap([jobId, 0]);
               status = values[0];
               await deleteJob(jobId);
               break;
@@ -63,8 +63,8 @@ class EthBlockchainInteraction with ChangeNotifier {
           switch (status) {
             case "new":
               await checkNetwork(chain[_fromChain]);
-              status = await maticBridging(_fromTokenAmount, jobId,
-                  "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
+              status = await maticBridging(
+                  jobId, "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
               notifyListeners();
               continue checking;
             checking:
@@ -75,7 +75,8 @@ class EthBlockchainInteraction with ChangeNotifier {
               continue swapping;
             swapping:
             case "maticcompleted":
-              List values = await swap(jobId, 0);
+              List values =
+                  await PolygonBlockchainInteraction().doSwap([jobId, 0]);
               status = values[0];
               await deleteJob(jobId);
               break;
@@ -89,12 +90,11 @@ class EthBlockchainInteraction with ChangeNotifier {
               //Swapping Token to ETH on Eth
               List values = await swap(jobId, 1);
               status = values[0];
-              var _ethBridgingAmount = values[1].toString();
-              status = await ethBridging(
-                  _ethBridgingAmount,
-                  _fromChain,
-                  _toChain,
-                  jobId,
+              notifyListeners();
+              continue swap;
+            swap:
+            case "swapped":
+              status = await ethBridging(jobId,
                   "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619".toLowerCase());
               notifyListeners();
               continue checking;
@@ -107,7 +107,8 @@ class EthBlockchainInteraction with ChangeNotifier {
             swapping:
             case "ethcompleted":
               await checkNetwork(chain[_toChain]);
-              List values = await swap(jobId, 0);
+              List values =
+                  await PolygonBlockchainInteraction().doSwap([jobId, 0]);
               status = values[0];
               await deleteJob(jobId);
               break;
@@ -138,6 +139,16 @@ class EthBlockchainInteraction with ChangeNotifier {
 }
 
 class PolygonBlockchainInteraction with ChangeNotifier {
+  Future doSwap(List _arguments) async {
+    String jobId = _arguments[0];
+    int step = _arguments[1];
+    String status;
+
+    List values = await swap(jobId, step);
+    status = values[0];
+    notifyListeners();
+  }
+
   Future swapTokens(List _arguments) async {
     String _fromTokenAddress = _arguments[0];
     String _toTokenAddress = _arguments[1];
@@ -148,6 +159,7 @@ class PolygonBlockchainInteraction with ChangeNotifier {
     String status = _arguments[6];
     String jobId = _arguments[7];
     List chain = [1, 56, 137];
+    List values;
 
     if (status == "new") {
       var promiseStoreJob = storeJobData(_fromTokenAddress, _toTokenAddress,
@@ -169,8 +181,7 @@ class PolygonBlockchainInteraction with ChangeNotifier {
         switch (status) {
           case "new":
             await checkNetwork(chain[_fromChain]);
-            status = await ethBridging(_fromTokenAmount, _fromChain, _toChain,
-                jobId, mappedPoSTokensEth[index]);
+            status = await ethBridging(jobId, mappedPoSTokensEth[index]);
             notifyListeners();
             continue checking;
           checking:
@@ -184,13 +195,13 @@ class PolygonBlockchainInteraction with ChangeNotifier {
         switch (status) {
           case "new":
             await checkNetwork(chain[_fromChain]);
-            List values = await swap(jobId, 2);
-            var _ethBridgingAmount = values[1].toString();
-            status = await ethBridging(
-                _ethBridgingAmount,
-                _fromChain,
-                _toChain,
-                jobId,
+            values = await swap(jobId, 2);
+            status = values[0];
+            notifyListeners();
+            continue swap;
+          swap:
+          case "swapped":
+            status = await ethBridging(jobId,
                 "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE".toLowerCase());
             notifyListeners();
             continue checking;
