@@ -430,7 +430,8 @@ async function getPolygonBalance() {
 
 async function getMyEthTransactions() {
     user = await Moralis.User.current();
-    const params = { address: user.attributes.ethAddress };
+    mappedPoSTokensEth.push("0xA0c68C638235ee32657e8f720a23ceC1bFc77C77".toLowerCase(), "0x401F6c983eA34274ec46f84D70b31C151321188b".toLowerCase(), "0x11111112542d85b3ef69ae05771c2dccff4faa26".toLowerCase());
+    const params = { address: user.attributes.ethAddress, tokens: mappedPoSTokensEth };
     const transactions = await Moralis.Cloud.run("getEthTransactions", params);
     let transactionsArray = [];
     let transaction;
@@ -457,7 +458,7 @@ async function getMyEthTransactions() {
         if (transactions[i].attributes.input.substring(0, 10) == "0x2e95b6c8") {
             transaction["input"] = "Swap";
         }
-        if (transactions[i].attributes.to_address == /*"0x7850ec290a2e2f40b82ed962eaf30591bb5f5c96"*/ "0x401F6c983eA34274ec46f84D70b31C151321188b") {
+        if (mappedPoSTokensEth.includes(transactions[i].attributes.to_address)) {
             const params = { txHash: transactions[i].attributes.hash };
             const tokenTransactions = await Moralis.Cloud.run("getNewEthTokenTransfers", params);
             if (tokenTransactions) {
@@ -474,7 +475,8 @@ async function getMyEthTransactions() {
 
 async function getMyPolygonTransactions() {
     user = await Moralis.User.current();
-    const params = { address: user.attributes.ethAddress };
+    mappedPoSTokensPolygon.push("0x11111112542d85b3ef69ae05771c2dccff4faa26");
+    const params = { address: user.attributes.ethAddress, tokens: mappedPoSTokensPolygon };
     const transactions = await Moralis.Cloud.run("getPolygonTransactions", params);
     let transactionsArray = [];
     let transaction;
@@ -483,7 +485,7 @@ async function getMyPolygonTransactions() {
             "hash": transactions[i].attributes.hash,
             "from_address": transactions[i].attributes.from_address,
             "to_address": transactions[i].attributes.to_address,
-            "value": transactions[i].attributes.value,
+           "value": transactions[i].attributes.value,
             "input": transactions[i].attributes.input.substring(0, 10),
             "confirmed": transactions[i].attributes.confirmed,
             "tokenamount": "0",
@@ -495,13 +497,10 @@ async function getMyPolygonTransactions() {
         if (transactions[i].attributes.input.substring(0, 10) == "0x7c025200") {
             transaction["input"] = "Swap";
         }
-        if (mappedPoSTokensPolygon.includes(transactions[i].attributes.to_address) /* == "0xa6fa4fb5f76172d178d61b04b0ecd319c5d1c0aa" "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619".toLowerCase()*/) {
+        if (mappedPoSTokensPolygon.includes(transactions[i].attributes.to_address)) {
             const params = { txHash: transactions[i].attributes.hash };
             const tokenTransactions = await Moralis.Cloud.run("getNewPolygonTokenTransfers", params);
             if (tokenTransactions) {
-                //window.ERC20TokencontractInstance = new web3.eth.Contract(erc20ABI, tokenTransactions.attributes.token_address);
-                //const symbol = await ERC20TokencontractInstance.methods.symbol().call();
-
                 const params2 = { tokenAddress: tokenTransactions.attributes.token_address };
                 const tokensymbol = await Moralis.Cloud.run("getPolygonTokenSymbol", params2);
                 transaction["tokenamount"] = tokenTransactions.attributes.value;
