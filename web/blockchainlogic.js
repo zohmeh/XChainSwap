@@ -58,7 +58,7 @@ async function setUserData(_file, _username) {
     } catch (error) { console.log(error); }
 }
 
-async function fetch1InchTokens(_chain) {
+/*async function fetch1InchTokens(_chain) {
     //_chain = 1 => Ethereum
     //_chain = 56 => BSC
     //fetch all tokens on 1inch eth-mainnnet
@@ -67,15 +67,15 @@ async function fetch1InchTokens(_chain) {
         const tokens = await response.json();
         return JSON.stringify(tokens["tokens"]);
     } catch (error) { console.log(error); }
-}
+}*/
 
-async function getQuote(_fromToken, _toToken, _amount, _chain) {
+/*async function getQuote(_fromToken, _toToken, _amount, _chain) {
     try {
         const response = await fetch(`https://api.1inch.exchange/v3.0/${_chain}/quote?fromTokenAddress=${_fromToken}&toTokenAddress=${_toToken}&amount=${_amount}`);
         const quote = await response.json();
         return JSON.stringify(quote);
     } catch (error) { console.log(error); }
-}
+}*/
 
 async function bridgingEth(_jobId, _newFromToken) {
     try {
@@ -173,7 +173,6 @@ async function bridgingMatic(_jobId, _newFromToken) {
 async function checkForInclusion(_jobId) {
     const params = { id: _jobId };
     let job = await Moralis.Cloud.run("getJobsById", params);
-    console.log(job.attributes.txHash);
     await checkInclusion(job.attributes.txHash, /*"0x2890ba17efe978480615e330ecb65333b880928e"*/ "0x86E4Dc95c7FBdBf52e33D563BbDB00823894C287");
     job.set("status", "erc20Ethcompleted");
     await job.save();
@@ -271,7 +270,6 @@ async function checkInclusion(txHash, rootChainAddress) {
     let txDetails = await child_web3.eth.getTransactionReceipt(txHash);
 
     block = txDetails.blockNumber;
-    console.log(block);
     return new Promise(async (resolve, reject) => {
         web3.eth.subscribe(
             "logs",
@@ -282,7 +280,6 @@ async function checkInclusion(txHash, rootChainAddress) {
                 if (error) {
                     reject(error);
                 }
-                console.log(result);
                 if (result.data) {
                     let transaction = web3.eth.abi.decodeParameters(
                         ["uint256", "uint256", "bytes32"],
@@ -374,7 +371,6 @@ async function depositCompletedEth(txHash) {
         "0x0000000000000000000000000000000000001001"
     );
     let tx = await window.web3.eth.getTransactionReceipt(txHash);
-    console.log(txHash);
     let child_counter = await contractInstance.methods.lastStateId().call();
     let root_counter = web3.utils.hexToNumberString(tx.logs[1].topics[1]);
     return child_counter >= root_counter;

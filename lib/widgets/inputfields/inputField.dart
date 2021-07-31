@@ -30,9 +30,9 @@ inputField(
       decoration: InputDecoration(
           labelText: labelText,
           labelStyle: TextStyle(fontSize: 12, color: Colors.white)),
-      //onChanged: (value) {
-      //  onSubmitted(value);
-      //},
+      onChanged: (value) {
+        onSubmitted(value);
+      },
       onFieldSubmitted: (value) {
         onSubmitted(value);
       },

@@ -15,6 +15,16 @@ class MyJobsDesktopView extends StatefulWidget {
 }
 
 class _MyJobsDesktopViewState extends State<MyJobsDesktopView> {
+  Future transactions;
+
+  @override
+  void initState() {
+    widget.chain == 0
+        ? transactions = getAllMyEthTransactions()
+        : transactions = getAllMyPolygonTransactions();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     widget.chain == 0
@@ -26,152 +36,147 @@ class _MyJobsDesktopViewState extends State<MyJobsDesktopView> {
       child: Card(
         color: Theme.of(context).primaryColor,
         child: FutureBuilder(
-            future: widget.chain == 0
-                ? getAllMyEthTransactions()
-                : getAllMyPolygonTransactions(),
-            builder: (ctx, depositsnapshot) {
-              if (depositsnapshot.connectionState == ConnectionState.waiting) {
-                return Container();
+            future: transactions,
+            builder: (ctx, transactionssnapshot) {
+              if (transactionssnapshot.connectionState ==
+                  ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
               } else {
-                List tx = depositsnapshot.data;
+                List tx = transactionssnapshot.data;
                 return DataTable2(
-                    columns: [
+                  columns: [
+                    DataColumn(
+                        label: Text(
+                      "TxHash",
+                      style: TextStyle(color: Theme.of(context).accentColor),
+                    )),
+                    DataColumn(
+                        label: Text(
+                      "Methode",
+                      style: TextStyle(color: Theme.of(context).accentColor),
+                    )),
+                    //DataColumn(
+                    //    label: Text(
+                    //  "From Address",
+                    //  style: TextStyle(color: Theme.of(context).accentColor),
+                    //)),
+                    DataColumn(
+                        label: Text(
+                      "To \n Address",
+                      style: TextStyle(color: Theme.of(context).accentColor),
+                    )),
+                    DataColumn(
+                        label: Text(
+                      widget.chain == 0 ? "Ether" : "Matic",
+                      style: TextStyle(color: Theme.of(context).accentColor),
+                    )),
+                    DataColumn(
+                        label: Text(
+                      "Token \n Amount",
+                      style: TextStyle(color: Theme.of(context).accentColor),
+                    )),
+                    DataColumn(
+                        label: Text(
+                      "Token \n Symbol",
+                      style: TextStyle(color: Theme.of(context).accentColor),
+                    )),
+                    DataColumn(
+                        label: Text(
+                      "Status",
+                      style: TextStyle(color: Theme.of(context).accentColor),
+                    )),
+                    if (widget.chain == 2)
                       DataColumn(
                           label: Text(
-                        "TxHash",
+                        "Activity",
                         style: TextStyle(color: Theme.of(context).accentColor),
                       )),
-                      DataColumn(
-                          label: Text(
-                        "Methode",
-                        style: TextStyle(color: Theme.of(context).accentColor),
-                      )),
-                      //DataColumn(
-                      //    label: Text(
-                      //  "From Address",
-                      //  style: TextStyle(color: Theme.of(context).accentColor),
-                      //)),
-                      DataColumn(
-                          label: Text(
-                        "To \n Address",
-                        style: TextStyle(color: Theme.of(context).accentColor),
-                      )),
-                      DataColumn(
-                          label: Text(
-                        widget.chain == 0 ? "Ether" : "Matic",
-                        style: TextStyle(color: Theme.of(context).accentColor),
-                      )),
-                      DataColumn(
-                          label: Text(
-                        "Token \n Amount",
-                        style: TextStyle(color: Theme.of(context).accentColor),
-                      )),
-                      DataColumn(
-                          label: Text(
-                        "Token \n Symbol",
-                        style: TextStyle(color: Theme.of(context).accentColor),
-                      )),
-                      DataColumn(
-                          label: Text(
-                        "Status",
-                        style: TextStyle(color: Theme.of(context).accentColor),
-                      )),
-                      if (widget.chain == 2)
-                        DataColumn(
-                            label: Text(
-                          "Activity",
-                          style:
-                              TextStyle(color: Theme.of(context).accentColor),
-                        )),
-                    ],
-                    rows: tx
-                        .map(
-                          ((element) => DataRow(
-                                cells: [
-                                  DataCell(
-                                    Text(
-                                      element["hash"].substring(0, 5) +
-                                          "..." +
-                                          element["hash"].substring(
-                                              element["hash"].length - 5),
-                                      style: TextStyle(
-                                          color:
-                                              Theme.of(context).highlightColor),
-                                    ),
-                                  ),
-
-                                  DataCell(Text(
-                                    element["input"],
-                                    style: TextStyle(
-                                        color:
-                                            Theme.of(context).highlightColor),
-                                  )),
-                                  //DataCell(Text(
-                                  //  element["from_address"],
-                                  //  style: TextStyle(
-                                  //      fontSize: 10,
-                                  //      color:
-                                  //          Theme.of(context).highlightColor),
-                                  //)),
-                                  DataCell(Text(
-                                    element["to_address"].substring(0, 5) +
+                  ],
+                  rows: tx
+                      .map(
+                        ((element) => DataRow(
+                              cells: [
+                                DataCell(
+                                  Text(
+                                    element["hash"].substring(0, 5) +
                                         "..." +
-                                        element["to_address"].substring(
-                                            element["to_address"].length - 5),
+                                        element["hash"].substring(
+                                            element["hash"].length - 5),
                                     style: TextStyle(
                                         color:
                                             Theme.of(context).highlightColor),
-                                  )),
-                                  DataCell(Expanded(
-                                    child: Text(
-                                      (double.parse(element["value"]) /
-                                              1000000000000000000)
-                                          .toString(),
-                                      style: TextStyle(
-                                          color:
-                                              Theme.of(context).highlightColor),
-                                    ),
-                                  )),
-                                  DataCell(Expanded(
-                                    child: Text(
-                                      (double.parse(element["tokenamount"]) /
-                                              1000000000000000000)
-                                          .toString(),
-                                      style: TextStyle(
-                                          color:
-                                              Theme.of(context).highlightColor),
-                                    ),
-                                  )),
-                                  DataCell(Text(
-                                    element["token_symbol"],
+                                  ),
+                                ),
+
+                                DataCell(Text(
+                                  element["input"],
+                                  style: TextStyle(
+                                      color: Theme.of(context).highlightColor),
+                                )),
+                                //DataCell(Text(
+                                //  element["from_address"],
+                                //  style: TextStyle(
+                                //      fontSize: 10,
+                                //      color:
+                                //          Theme.of(context).highlightColor),
+                                //)),
+                                DataCell(Text(
+                                  element["to_address"].substring(0, 5) +
+                                      "..." +
+                                      element["to_address"].substring(
+                                          element["to_address"].length - 5),
+                                  style: TextStyle(
+                                      color: Theme.of(context).highlightColor),
+                                )),
+                                DataCell(Expanded(
+                                  child: Text(
+                                    (double.parse(element["value"]) /
+                                            1000000000000000000)
+                                        .toString(),
                                     style: TextStyle(
                                         color:
                                             Theme.of(context).highlightColor),
-                                  )),
-                                  DataCell(Text(
-                                    element["confirmed"] == true
-                                        ? "confirmed"
-                                        : "pending",
+                                  ),
+                                )),
+                                DataCell(Expanded(
+                                  child: Text(
+                                    (double.parse(element["tokenamount"]) /
+                                            1000000000000000000)
+                                        .toString(),
                                     style: TextStyle(
                                         color:
                                             Theme.of(context).highlightColor),
-                                  )),
-                                  if (widget.chain == 2)
-                                    DataCell(element["openJob"] != null
-                                        ? button(
-                                            Theme.of(context).buttonColor,
-                                            Theme.of(context).highlightColor,
-                                            "Action",
-                                            Provider.of<EthBlockchainInteraction>(
-                                                    context,
-                                                    listen: false)
-                                                .openActivity,
-                                            [element["openJob"]])
-                                        : Text(""))
-                                ],
-                              )),
-                        )
-                        .toList());
+                                  ),
+                                )),
+                                DataCell(Text(
+                                  element["token_symbol"],
+                                  style: TextStyle(
+                                      color: Theme.of(context).highlightColor),
+                                )),
+                                DataCell(Text(
+                                  element["confirmed"] == true
+                                      ? "confirmed"
+                                      : "pending",
+                                  style: TextStyle(
+                                      color: Theme.of(context).highlightColor),
+                                )),
+                                if (widget.chain == 2)
+                                  DataCell(element["openJob"] != null
+                                      ? button(
+                                          Theme.of(context).buttonColor,
+                                          Theme.of(context).highlightColor,
+                                          "Action",
+                                          Provider.of<EthBlockchainInteraction>(
+                                                  context,
+                                                  listen: false)
+                                              .openActivity,
+                                          [element["openJob"]])
+                                      : Text(""))
+                              ],
+                            )),
+                      )
+                      .toList(),
+                );
               }
             }),
       ),

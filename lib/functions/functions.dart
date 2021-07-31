@@ -29,6 +29,23 @@ Future<String> getStatus(String _jobId, String _token) async {
   }
 }
 
+Future getQuote(List _arguments) async {
+  var _fromTokenAddress = _arguments[0];
+  var _toTokenAddress = _arguments[1];
+  var _amount = _arguments[2];
+  var _chain = _arguments[3];
+
+  try {
+    var url = Uri.parse(
+        "https://api.1inch.exchange/v3.0/${_chain}/quote?fromTokenAddress=${_fromTokenAddress}&toTokenAddress=${_toTokenAddress}&amount=${_amount}");
+    var response = await http.get(url);
+    var quote = json.decode(response.body);
+    return quote;
+  } catch (error) {
+    print(error);
+  }
+}
+
 Future<String> getExpectedReturn(List _arguments) async {
   String _fromTokenAddress = _arguments[0];
   String _toTokenAddress = _arguments[1];
@@ -38,83 +55,55 @@ Future<String> getExpectedReturn(List _arguments) async {
   List chain = ["1", "56", "137"];
   String expectedReturn;
 
-  //print(_fromChain);
-  //print(_toChain);
-
   if (_fromChain == _toChain) {
-    var promise1 = getQuote(
-        _fromTokenAddress, _toTokenAddress, _fromAmount, chain[_fromChain]);
-    var quote = await promiseToFuture(promise1);
-    var quotedecoded = json.decode(quote);
-    expectedReturn = (int.parse(quotedecoded["toTokenAmount"]) /
-            pow(10, quotedecoded["toToken"]["decimals"]))
+    var quote = await getQuote(
+        [_fromTokenAddress, _toTokenAddress, _fromAmount, chain[_fromChain]]);
+    expectedReturn = (int.parse(quote["toTokenAmount"]) /
+            pow(10, quote["toToken"]["decimals"]))
         .toString();
   } else if (_fromChain == 0 && _toChain == 2) {
     if (mappedPoSTokensEth.contains(_fromTokenAddress)) {
       var index = mappedPoSTokensEth.indexOf(_fromTokenAddress);
       _fromTokenAddress = mappedPoSTokensPolygon[index];
-      var promise1 = getQuote(
-          _fromTokenAddress, _toTokenAddress, _fromAmount, chain[_toChain]);
-      var quote = await promiseToFuture(promise1);
-      var quotedecoded = json.decode(quote);
-      expectedReturn = (int.parse(quotedecoded["toTokenAmount"]) /
-              pow(10, quotedecoded["toToken"]["decimals"]))
+      var quote = await getQuote(
+          [_fromTokenAddress, _toTokenAddress, _fromAmount, chain[_fromChain]]);
+
+      expectedReturn = (int.parse(quote["toTokenAmount"]) /
+              pow(10, quote["toToken"]["decimals"]))
           .toString();
     } else {
       //getting the amount of eth
-      var promise1 = getQuote(
-          _fromTokenAddress,
-          "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE".toLowerCase(),
-          _fromAmount,
-          chain[_fromChain]);
-      var quote = await promiseToFuture(promise1);
-      var quotedecoded = json.decode(quote);
-      var ethAmount = quotedecoded["toTokenAmount"];
+      var quote = await getQuote(
+          [_fromTokenAddress, _toTokenAddress, _fromAmount, chain[_fromChain]]);
+      var ethAmount = quote["toTokenAmount"];
 
       //with new eth amount quote on toChain
-      var promise2 = getQuote(
-          "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619".toLowerCase(),
-          _toTokenAddress,
-          ethAmount,
-          chain[_toChain]);
-      var quote2 = await promiseToFuture(promise2);
-      var quotedecoded2 = json.decode(quote2);
-      expectedReturn = (int.parse(quotedecoded2["toTokenAmount"]) /
-              pow(10, quotedecoded2["toToken"]["decimals"]))
+      quote = await getQuote(
+          [_fromTokenAddress, _toTokenAddress, ethAmount, chain[_fromChain]]);
+      expectedReturn = (int.parse(quote["toTokenAmount"]) /
+              pow(10, quote["toToken"]["decimals"]))
           .toString();
     }
   } else if (_fromChain == 2 && _toChain == 0) {
     if (mappedPoSTokensPolygon.contains(_fromTokenAddress)) {
       var index = mappedPoSTokensPolygon.indexOf(_fromTokenAddress);
       _fromTokenAddress = mappedPoSTokensEth[index];
-      var promise1 = getQuote(
-          _fromTokenAddress, _toTokenAddress, _fromAmount, chain[_toChain]);
-      var quote = await promiseToFuture(promise1);
-      var quotedecoded = json.decode(quote);
-      expectedReturn = (int.parse(quotedecoded["toTokenAmount"]) /
-              pow(10, quotedecoded["toToken"]["decimals"]))
+      var quote = await getQuote(
+          [_fromTokenAddress, _toTokenAddress, _fromAmount, chain[_fromChain]]);
+      expectedReturn = (int.parse(quote["toTokenAmount"]) /
+              pow(10, quote["toToken"]["decimals"]))
           .toString();
     } else {
       //getting the amount of eth
-      var promise1 = getQuote(
-          _fromTokenAddress,
-          "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619".toLowerCase(),
-          _fromAmount,
-          chain[_fromChain]);
-      var quote = await promiseToFuture(promise1);
-      var quotedecoded = json.decode(quote);
-      var ethAmount = quotedecoded["toTokenAmount"];
+      var quote = await getQuote(
+          [_fromTokenAddress, _toTokenAddress, _fromAmount, chain[_fromChain]]);
+      var ethAmount = quote["toTokenAmount"];
 
       //with new eth amount quote on toChain
-      var promise2 = getQuote(
-          "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE".toLowerCase(),
-          _toTokenAddress,
-          ethAmount,
-          chain[_toChain]);
-      var quote2 = await promiseToFuture(promise2);
-      var quotedecoded2 = json.decode(quote2);
-      expectedReturn = (int.parse(quotedecoded2["toTokenAmount"]) /
-              pow(10, quotedecoded2["toToken"]["decimals"]))
+      quote = await getQuote(
+          [_fromTokenAddress, _toTokenAddress, ethAmount, chain[_fromChain]]);
+      expectedReturn = (int.parse(quote["toTokenAmount"]) /
+              pow(10, quote["toToken"]["decimals"]))
           .toString();
     }
   }
@@ -123,45 +112,30 @@ Future<String> getExpectedReturn(List _arguments) async {
 }
 
 Future fetchTokens() async {
-  //fetch all tokens for ethereumchain
-  List<Map> ethertokenList = [];
-  var etherpromise = fetch1InchTokens("1");
-  var ethertokens = await promiseToFuture(etherpromise);
-  var ethertokensdecoded = json.decode(ethertokens);
-  var ethertokensdecodedList = ethertokensdecoded.values.toList();
+  try {
+    var url = Uri.parse("https://api.1inch.exchange/v3.0/1/tokens");
+    var response = await http.get(url);
+    var ethertokensdecoded = json.decode(response.body);
+    List<dynamic> ethertokensdecodedList =
+        ethertokensdecoded["tokens"].values.toList();
+    ethertokensdecodedList.sort((a, b) => a["symbol"].compareTo(b["symbol"]));
+    List eth =
+        ethertokensdecodedList.map((e) => e as Map<dynamic, dynamic>)?.toList();
 
-  for (var i = 0; i < ethertokensdecodedList.length; i++) {
-    Map ethertoken = {
-      "symbol": ethertokensdecodedList[i]["symbol"],
-      "name": ethertokensdecodedList[i]["name"],
-      "address": ethertokensdecodedList[i]["address"],
-      "decimals": ethertokensdecodedList[i]["decimals"],
-      "logoURI": ethertokensdecodedList[i]["logoURI"]
-    };
-    ethertokenList.add(ethertoken);
+    url = Uri.parse("https://api.1inch.exchange/v3.0/137/tokens");
+    response = await http.get(url);
+    var polygontokensdecoded = json.decode(response.body);
+    List<dynamic> polygontokensdecodedList =
+        polygontokensdecoded["tokens"].values.toList();
+    polygontokensdecodedList.sort((a, b) => a["symbol"].compareTo(b["symbol"]));
+    List poly = polygontokensdecodedList
+        .map((e) => e as Map<dynamic, dynamic>)
+        ?.toList();
+
+    return [eth, [], poly];
+  } catch (error) {
+    print(error);
   }
-  ethertokenList.sort((a, b) => a["symbol"].compareTo(b["symbol"]));
-
-  //fetch all tokens for polygon
-  List<Map> polygontokenList = [];
-  var polygonpromise = fetch1InchTokens("137");
-  var polygontokens = await promiseToFuture(polygonpromise);
-  var polygontokensdecoded = json.decode(polygontokens);
-  List polygontokensdecodedList = polygontokensdecoded.values.toList();
-
-  for (var i = 0; i < polygontokensdecodedList.length; i++) {
-    Map polygontoken = {
-      "symbol": polygontokensdecodedList[i]["symbol"],
-      "name": polygontokensdecodedList[i]["name"],
-      "address": polygontokensdecodedList[i]["address"],
-      "decimals": polygontokensdecodedList[i]["decimals"],
-      "logoURI": polygontokensdecodedList[i]["logoURI"]
-    };
-    polygontokenList.add(polygontoken);
-  }
-  polygontokenList.sort((a, b) => a["symbol"].compareTo(b["symbol"]));
-
-  return [ethertokenList, "", polygontokenList];
 }
 
 //get my Balances from Moralis
@@ -361,5 +335,7 @@ Future getJobWithId(_jobId) async {
 Future loadAtStart() async {
   var balances = await getBalances();
   var tokens = await fetchTokens();
-  return [balances, tokens];
+  var ethTransactions = await getAllMyEthTransactions();
+  var polygonTransactions = await getAllMyPolygonTransactions();
+  return [balances, tokens, ethTransactions, polygonTransactions];
 }
