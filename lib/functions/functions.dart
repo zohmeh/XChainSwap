@@ -141,13 +141,15 @@ Future fetchTokens() async {
 //get my Balances from Moralis
 Future getBalances() async {
   var myBalances = [];
-  var ethbalance = await getMyEthBalance();
+
+  /*var ethbalance = await getMyEthBalance();
   Map eth = {
     "name": "Ether",
     "symbol": "Eth",
     "balance": ethbalance,
     "decimals": "18",
-    "chain": "Ethereum"
+    "chain": "polygon-pos",
+    "token_address": "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"
   };
   myBalances.add(eth);
 
@@ -157,42 +159,128 @@ Future getBalances() async {
     "symbol": "matic",
     "balance": polygonbalance,
     "decimals": "18",
-    "chain": "Polygon"
+    "chain": "polygon-pos",
+    "token_address": "0x0000000000000000000000000000000000001010"
   };
-  myBalances.add(polygon);
-  //Eth Tokens
-  var promise = getEthTokenBalances();
-  var balance = await promiseToFuture(promise);
-  for (var i = 0; i < balance.length; i++) {
-    var myBalance = json.decode(balance[i]);
-    myBalance["chain"] = "Ethereum";
-    myBalances.add(myBalance);
+  myBalances.add(polygon); */
+
+  var promiseEth = getEthTokenBalances();
+  var promisePolygon = getPolygonTokenBalances();
+
+  try {
+    final results = await Future.wait([
+      promiseToFuture(promiseEth),
+      promiseToFuture(promisePolygon),
+      getMyEthBalance(),
+      getMyPolygonBalance()
+    ]);
+
+    Map eth = {
+      "name": "Ether",
+      "symbol": "Eth",
+      "balance": results[2],
+      "decimals": "18",
+      "chain": "polygon-pos",
+      "token_address": "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"
+    };
+    myBalances.add(eth);
+
+    Map polygon = {
+      "name": "Matic",
+      "symbol": "matic",
+      "balance": results[3],
+      "decimals": "18",
+      "chain": "polygon-pos",
+      "token_address": "0x0000000000000000000000000000000000001010"
+    };
+    myBalances.add(polygon);
+
+    var ethTokens = results[0];
+    var polygonTokens = results[1];
+
+    for (var token in ethTokens) {
+      var myBalance = json.decode(token);
+      myBalance["chain"] = "ethereum";
+      myBalances.add(myBalance);
+    }
+
+    for (var token in polygonTokens) {
+      var myBalance = json.decode(token);
+      myBalance["chain"] = "polygon-pos";
+      myBalances.add(myBalance);
+    }
+  } catch (error) {
+    print(error);
   }
-  //Polygon Tokens
-  promise = getPolygonTokenBalances();
-  balance = await promiseToFuture(promise);
-  for (var i = 0; i < balance.length; i++) {
-    var myBalance = json.decode(balance[i]);
-    myBalance["chain"] = "Polygon";
-    myBalances.add(myBalance);
+
+  //Fetching Coingecko API for Tokenprices in USD
+  //creating string for eth tokens
+  var coingeckoAPIEthString = "";
+  var coingeckoAPIPolyString = "";
+  for (var balance in myBalances) {
+    if (balance["chain"] == "ethereum") {
+      coingeckoAPIEthString =
+          coingeckoAPIEthString + balance["token_address"] + "%2C";
+    } else if (balance["chain"] == "polygon-pos") {
+      coingeckoAPIPolyString =
+          coingeckoAPIPolyString + balance["token_address"] + "%2C";
+    }
   }
-  for (var i = 0; i < myBalances.length; i++) {
-    var coinGeckoId =
-        coinGeckoTokens[myBalances[i]["symbol"].toLowerCase()]["id"];
-    //coinGecko for price
-    var response = await http.get(Uri.parse(
-        'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coinGeckoId}&order=market_cap_desc&per_page=100&page=1&sparkline=false'));
-    var jsonData = json.decode(response.body);
-    var currentPrice = jsonData[0]["current_price"];
-    currentPrice == null
-        ? myBalances[i]["current_price"] = 0
-        : myBalances[i]["current_price"] = currentPrice;
-    //coinGecko for image
-    var responseImage = await http.get(
-        Uri.parse('https://api.coingecko.com/api/v3/coins/${coinGeckoId}'));
-    var jsonDataImage = json.decode(responseImage.body);
-    myBalances[i]["image"] = jsonDataImage["image"]["thumb"];
+
+  coingeckoAPIEthString =
+      coingeckoAPIEthString.substring(0, coingeckoAPIEthString.length - 3);
+  coingeckoAPIPolyString =
+      coingeckoAPIPolyString.substring(0, coingeckoAPIPolyString.length - 3);
+
+  try {
+    final results = await Future.wait([
+      http.get(Uri.parse(
+          "https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=${coingeckoAPIEthString}&vs_currencies=usd")),
+      http.get(Uri.parse(
+          "https://api.coingecko.com/api/v3/simple/token_price/polygon-pos?contract_addresses=${coingeckoAPIPolyString}&vs_currencies=usd")),
+    ]);
+    var ethTokenUsd = json.decode(results[0].body);
+    var polygonTokenUsd = json.decode(results[1].body);
+
+    for (var balance in myBalances) {
+      if (balance["chain"] == "ethereum") {
+        balance["current_price"] =
+            ethTokenUsd[balance["token_address"].toLowerCase()]["usd"];
+      } else if (balance["chain"] == "polygon-pos") {
+        balance["current_price"] =
+            polygonTokenUsd[balance["token_address"].toLowerCase()]["usd"];
+      }
+    }
+  } catch (error) {
+    print(error);
   }
+
+  //print("Hallo1");
+  //for (var balance in myBalances) {
+  //  print(balance);
+  //  tokenPricesFutures.add(getTokenPrices(
+  //      balance["chain"], balance["token_address"].toLowerCase()));
+
+  //var coinGeckoId = coinGeckoTokens[balance["symbol"].toLowerCase()]["id"];
+  //coinGecko for price
+  //var response = await http.get(Uri.parse(
+  //    'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coinGeckoId}&order=market_cap_desc&per_page=100&page=1&sparkline=false'));
+
+  //var response = await http.get(Uri.parse(
+  //    'https://api.coingecko.com/api/v3/simple/token_price/${balance["chain"]}?contract_addresses=${balance["token_address"]}&vs_currencies=usd&include_market_cap=false&include_24hr_vol=false&include_24hr_change=false&include_last_updated_at=false'));
+
+  //var jsonData = json.decode(response.body);
+  //var currentPrice = jsonData[balance["token_address"].toLowerCase()]["usd"];
+  //currentPrice == null
+  //    ? balance["current_price"] = 0
+  //    : balance["current_price"] = currentPrice;
+  //coinGecko for image
+  //var responseImage = await http.get(
+  //    Uri.parse('https://api.coingecko.com/api/v3/coins/${coinGeckoId}'));
+  //var jsonDataImage = json.decode(responseImage.body);
+  //balance["image"] = jsonDataImage["image"]["thumb"];
+  //}
+  //print(myBalances);
   return myBalances;
 }
 

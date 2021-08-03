@@ -34,7 +34,7 @@ class _MyPortfolioDesktopViewState extends State<MyPortfolioDesktopView> {
                     Column(
                       children: [
                         Text(
-                          "Follow Transactions on Ethereum",
+                          "Follow your XChainSwaps on Ethereum",
                           style: TextStyle(color: Colors.white, fontSize: 20),
                         ),
                         MyJobsDesktopView(chain: 0),
@@ -43,7 +43,7 @@ class _MyPortfolioDesktopViewState extends State<MyPortfolioDesktopView> {
                     Column(
                       children: [
                         Text(
-                          "Follow Transactions on Polygon",
+                          "Follow your XChainSwaps on Polygon",
                           style: TextStyle(color: Colors.white, fontSize: 20),
                         ),
                         MyJobsDesktopView(chain: 2),

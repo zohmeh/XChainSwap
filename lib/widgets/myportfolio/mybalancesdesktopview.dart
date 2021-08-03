@@ -24,20 +24,22 @@ class _MyBalancesDesktopViewState extends State<MyBalancesDesktopView> {
     return Container(
       height: 500,
       width: cardWith,
-      child: Card(
-        color: Theme.of(context).primaryColor,
-        child: FutureBuilder(
-          future: balances,
-          builder: (ctx, balancessnapshot) {
-            if (balancessnapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            } else {
-              List mybalances = balancessnapshot.data;
-              return Row(
-                children: [
-                  Container(
-                    height: 500,
-                    width: cardWith * (2 / 3),
+      child: FutureBuilder(
+        future: balances,
+        builder: (ctx, balancessnapshot) {
+          if (balancessnapshot.connectionState == ConnectionState.waiting) {
+            return Card(
+                color: Theme.of(context).primaryColor,
+                child: Center(child: CircularProgressIndicator()));
+          } else {
+            List mybalances = balancessnapshot.data;
+            return Row(
+              children: [
+                Container(
+                  height: 500,
+                  width: cardWith * (2 / 3),
+                  child: Card(
+                    color: Theme.of(context).primaryColor,
                     child: DataTable2(
                         columns: [
                           DataColumn(
@@ -82,25 +84,25 @@ class _MyBalancesDesktopViewState extends State<MyBalancesDesktopView> {
                                                 .highlightColor),
                                       )),
                                       DataCell(
-                                        Row(
-                                          children: [
-                                            Container(
-                                              width: 30,
-                                              child: Image.network(
-                                                /*'https://cors-anywhere.herokuapp.com/${*/ element[
-                                                    "image"] /*}'*/,
-                                                width: 25,
-                                              ),
-                                            ),
-                                            SizedBox(width: 5),
-                                            Text(
-                                              element["symbol"],
-                                              style: TextStyle(
-                                                  color: Theme.of(context)
-                                                      .highlightColor),
-                                            ),
-                                          ],
+                                        //Row(
+                                        //  children: [
+                                        //    Container(
+                                        //      width: 30,
+                                        //      child: Image.network(
+                                        //        /*'https://cors-anywhere.herokuapp.com/${*/ element[
+                                        //            "image"] /*}'*/,
+                                        //        width: 25,
+                                        //      ),
+                                        //    ),
+                                        //    SizedBox(width: 5),
+                                        Text(
+                                          element["symbol"],
+                                          style: TextStyle(
+                                              color: Theme.of(context)
+                                                  .highlightColor),
                                         ),
+                                        //  ],
+                                        //),
                                       ),
                                       DataCell(Text(
                                         (int.parse(element["balance"]) /
@@ -136,15 +138,18 @@ class _MyBalancesDesktopViewState extends State<MyBalancesDesktopView> {
                             )
                             .toList()),
                   ),
-                  Container(
-                      height: 500,
-                      width: cardWith * (1 / 3) - 8,
-                      child: PieChartWidget(mybalances)),
-                ],
-              );
-            }
-          },
-        ),
+                ),
+                SizedBox(width: 10),
+                Container(
+                    height: 500,
+                    width: cardWith * (1 / 3) - 18,
+                    child: Card(
+                        color: Theme.of(context).primaryColor,
+                        child: PieChartWidget(mybalances))),
+              ],
+            );
+          }
+        },
       ),
     );
   }
