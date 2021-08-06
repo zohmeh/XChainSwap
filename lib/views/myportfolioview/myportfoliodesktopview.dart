@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:web_app_template/provider/loginprovider.dart';
+import 'package:web_app_template/widgets/swapwidget/swapwidgetdesktopview2.dart';
 import '../../widgets/charts/piechart.dart';
 import '../../widgets/myJobs/myJobs.dart';
 import '../../widgets/swapwidget/swapwidgetdesktopview.dart';
@@ -24,7 +25,7 @@ class _MyPortfolioDesktopViewState extends State<MyPortfolioDesktopView> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     MyBalancesDesktopView(),
-                    SwapWidgetDesktopview(),
+                    SwapWidgetDesktopview2(),
                   ],
                 ),
                 SizedBox(height: 20),

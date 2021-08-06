@@ -53,7 +53,6 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
 
   @override
   Widget build(BuildContext context) {
-    //tokenList = widget.tokens;
     return Container(
       padding: EdgeInsets.all(30),
       height: (MediaQuery.of(context).size.height) / 3,
@@ -67,6 +66,7 @@ class _SwapWidgetDesktopviewState extends State<SwapWidgetDesktopview> {
               if (tokenssnapshot.connectionState == ConnectionState.waiting) {
                 return Center(child: CircularProgressIndicator());
               } else {
+                tokenList = tokenssnapshot.data;
                 return Column(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [

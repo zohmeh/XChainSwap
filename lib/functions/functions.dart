@@ -113,25 +113,24 @@ Future<String> getExpectedReturn(List _arguments) async {
 
 Future fetchTokens() async {
   try {
-    var url = Uri.parse("https://api.1inch.exchange/v3.0/1/tokens");
-    var response = await http.get(url);
-    var ethertokensdecoded = json.decode(response.body);
+    final results = await Future.wait([
+      http.get(Uri.parse("https://api.1inch.exchange/v3.0/1/tokens")),
+      http.get(Uri.parse("https://api.1inch.exchange/v3.0/137/tokens")),
+    ]);
+    var ethertokensdecoded = json.decode(results[0].body);
     List<dynamic> ethertokensdecodedList =
         ethertokensdecoded["tokens"].values.toList();
     ethertokensdecodedList.sort((a, b) => a["symbol"].compareTo(b["symbol"]));
     List eth =
         ethertokensdecodedList.map((e) => e as Map<dynamic, dynamic>)?.toList();
 
-    url = Uri.parse("https://api.1inch.exchange/v3.0/137/tokens");
-    response = await http.get(url);
-    var polygontokensdecoded = json.decode(response.body);
+    var polygontokensdecoded = json.decode(results[1].body);
     List<dynamic> polygontokensdecodedList =
         polygontokensdecoded["tokens"].values.toList();
     polygontokensdecodedList.sort((a, b) => a["symbol"].compareTo(b["symbol"]));
     List poly = polygontokensdecodedList
         .map((e) => e as Map<dynamic, dynamic>)
         ?.toList();
-
     return [eth, [], poly];
   } catch (error) {
     print(error);
@@ -141,29 +140,6 @@ Future fetchTokens() async {
 //get my Balances from Moralis
 Future getBalances() async {
   var myBalances = [];
-
-  /*var ethbalance = await getMyEthBalance();
-  Map eth = {
-    "name": "Ether",
-    "symbol": "Eth",
-    "balance": ethbalance,
-    "decimals": "18",
-    "chain": "polygon-pos",
-    "token_address": "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"
-  };
-  myBalances.add(eth);
-
-  var polygonbalance = await getMyPolygonBalance();
-  Map polygon = {
-    "name": "Matic",
-    "symbol": "matic",
-    "balance": polygonbalance,
-    "decimals": "18",
-    "chain": "polygon-pos",
-    "token_address": "0x0000000000000000000000000000000000001010"
-  };
-  myBalances.add(polygon); */
-
   var promiseEth = getEthTokenBalances();
   var promisePolygon = getPolygonTokenBalances();
 
@@ -313,14 +289,14 @@ Future getAllMyEthTransactions() async {
 }
 
 Future getAllMyPolygonTransactions() async {
-  //get all my transactions on polygon
-  var promise = getMyPolygonTransactions();
-  var transactions = await promiseToFuture(promise);
-  var transactionsdecoded = json.decode(transactions);
-  //get all my open jobs
+  var promiseTransactions = getMyPolygonTransactions();
   var promiseJobs = getMyJobs();
-  var jobs = await promiseToFuture(promiseJobs);
-  var jobsdecoded = json.decode(jobs);
+
+  final results = await Future.wait(
+      [promiseToFuture(promiseTransactions), promiseToFuture(promiseJobs)]);
+
+  var transactionsdecoded = json.decode(results[0]);
+  var jobsdecoded = json.decode(results[1]);
 
   for (var i = 0; i < transactionsdecoded.length; i++) {
     for (var j = 0; j < jobsdecoded.length; j++) {
@@ -418,12 +394,4 @@ Future getJobWithId(_jobId) async {
   var job = await promiseToFuture(promiseJob);
   var jobdecoded = json.decode(job);
   return jobdecoded;
-}
-
-Future loadAtStart() async {
-  var balances = await getBalances();
-  var tokens = await fetchTokens();
-  var ethTransactions = await getAllMyEthTransactions();
-  var polygonTransactions = await getAllMyPolygonTransactions();
-  return [balances, tokens, ethTransactions, polygonTransactions];
 }
