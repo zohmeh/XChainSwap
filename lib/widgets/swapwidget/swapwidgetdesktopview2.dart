@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:web_app_template/provider/blockchainprovider.dart';
-import 'package:web_app_template/widgets/dropdownlist/drowpdownlist.dart';
 import '../../functions/functions.dart';
 import '../../widgets/buttons/button.dart';
 import '../../widgets/inputfields/inputField.dart';
@@ -32,8 +31,13 @@ class _SwapWidgetDesktopviewState2 extends State<SwapWidgetDesktopview2> {
   List tokenList;
   var quote;
 
-  onChanged(String _value, int _chain, bool _isFromToken) {
+  onChanged(String _value, int _chain, bool _isFromToken, int _id) {
     setState(() {
+      var token =
+          tokenList[_chain].where((element) => element["address"] == _value);
+      var tokenName = token.elementAt(0)["name"];
+      initialText[_id] = tokenName;
+
       if (_isFromToken) {
         fromToken =
             tokenList[_chain].where((element) => element["address"] == _value);
@@ -46,55 +50,18 @@ class _SwapWidgetDesktopviewState2 extends State<SwapWidgetDesktopview2> {
     });
   }
 
-  onButtonClick(List _arguments) {
-    BuildContext _context = _arguments[0];
-    var _tokens = _arguments[1];
-
-    return showDialog(
-      barrierColor: Color(0x00000000),
-      context: _context,
-      builder: (context) {
-        return Stack(children: [
-          Positioned(
-            bottom: 50,
-            right: 25,
-            child: Container(
-              height: 300,
-              width: 200,
-              color: Colors.red,
-              child: ListView.separated(
-                  separatorBuilder: (context, idx) {
-                    return Divider();
-                  },
-                  itemCount: _tokens.length,
-                  itemBuilder: (ctx, idx) {
-                    return FlatButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: Row(
-                          children: [
-                            Image.network(_tokens[idx]["logoURI"], width: 35),
-                            SizedBox(width: 10),
-                            Text(_tokens[idx]["symbol"])
-                          ],
-                        ));
-                  }),
-            ),
-          ),
-        ]);
-      },
-    );
-  }
-
   @override
   void initState() {
     tokens = fetchTokens();
     super.initState();
   }
 
-  final button1Key = GlobalKey();
-  final button2Key = GlobalKey();
+  List initialText = [
+    "Select Token Ethereum",
+    "Select Token Polygon",
+    "Select Token Ethereum",
+    "Select Token Polygon"
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -111,21 +78,6 @@ class _SwapWidgetDesktopviewState2 extends State<SwapWidgetDesktopview2> {
               if (tokenssnapshot.connectionState == ConnectionState.waiting) {
                 return Center(child: CircularProgressIndicator());
               } else {
-                /*RenderBox box1 = button1Key.currentContext.findRenderObject();
-                Offset position1 =
-                    box1.localToGlobal(Offset.zero); //this is global position
-                RenderBox box2 = button2Key.currentContext.findRenderObject();
-                Offset position2 =
-                    box2.localToGlobal(Offset.zero); //this is global position
-
-                double y1 = position1.dy;
-                double x1 = position1.dx;
-                print(y1);
-                print(x1);
-                double y2 = position2.dy;
-                double x2 = position2.dx;
-                print(y2);
-                print(x2);*/
                 tokenList = tokenssnapshot.data;
                 return Column(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -135,16 +87,15 @@ class _SwapWidgetDesktopviewState2 extends State<SwapWidgetDesktopview2> {
                           children: [
                             PopupMenuButton(
                                 child: Text(
-                                  "Select Token Ethereum",
+                                  initialText[0],
                                   style: TextStyle(
                                       color: Theme.of(context).accentColor),
                                 ),
                                 itemBuilder: (context) => [
                                       PopupMenuItem(
                                         child: Container(
-                                          height: 300,
-                                          width: 200,
-                                          color: Colors.red,
+                                          height: 500,
+                                          width: 500,
                                           child: ListView.separated(
                                               separatorBuilder: (context, idx) {
                                                 return Divider();
@@ -153,6 +104,12 @@ class _SwapWidgetDesktopviewState2 extends State<SwapWidgetDesktopview2> {
                                               itemBuilder: (ctx, idx) {
                                                 return FlatButton(
                                                     onPressed: () {
+                                                      onChanged(
+                                                          tokenList[0][idx]
+                                                              ["address"],
+                                                          0,
+                                                          true,
+                                                          0);
                                                       Navigator.of(context)
                                                           .pop();
                                                     },
@@ -180,16 +137,15 @@ class _SwapWidgetDesktopviewState2 extends State<SwapWidgetDesktopview2> {
                                 [context, tokenList[0]]),*/
                             PopupMenuButton(
                                 child: Text(
-                                  "Select Token Polygon",
+                                  initialText[1],
                                   style: TextStyle(
                                       color: Theme.of(context).accentColor),
                                 ),
                                 itemBuilder: (context) => [
                                       PopupMenuItem(
                                         child: Container(
-                                          height: 300,
-                                          width: 200,
-                                          color: Colors.red,
+                                          height: 500,
+                                          width: 500,
                                           child: ListView.separated(
                                               separatorBuilder: (context, idx) {
                                                 return Divider();
@@ -198,6 +154,12 @@ class _SwapWidgetDesktopviewState2 extends State<SwapWidgetDesktopview2> {
                                               itemBuilder: (ctx, idx) {
                                                 return FlatButton(
                                                     onPressed: () {
+                                                      onChanged(
+                                                          tokenList[2][idx]
+                                                              ["address"],
+                                                          2,
+                                                          true,
+                                                          1);
                                                       Navigator.of(context)
                                                           .pop();
                                                     },
@@ -324,16 +286,15 @@ class _SwapWidgetDesktopviewState2 extends State<SwapWidgetDesktopview2> {
                           children: [
                             PopupMenuButton(
                                 child: Text(
-                                  "Select Token Ethereum",
+                                  initialText[2],
                                   style: TextStyle(
                                       color: Theme.of(context).accentColor),
                                 ),
                                 itemBuilder: (context) => [
                                       PopupMenuItem(
                                         child: Container(
-                                          height: 300,
-                                          width: 200,
-                                          color: Colors.red,
+                                          height: 500,
+                                          width: 500,
                                           child: ListView.separated(
                                               separatorBuilder: (context, idx) {
                                                 return Divider();
@@ -342,6 +303,12 @@ class _SwapWidgetDesktopviewState2 extends State<SwapWidgetDesktopview2> {
                                               itemBuilder: (ctx, idx) {
                                                 return FlatButton(
                                                     onPressed: () {
+                                                      onChanged(
+                                                          tokenList[0][idx]
+                                                              ["address"],
+                                                          0,
+                                                          false,
+                                                          2);
                                                       Navigator.of(context)
                                                           .pop();
                                                     },
@@ -369,16 +336,15 @@ class _SwapWidgetDesktopviewState2 extends State<SwapWidgetDesktopview2> {
                                 [context, tokenList[0]]),*/
                             PopupMenuButton(
                                 child: Text(
-                                  "Select Token Polygon",
+                                  initialText[3],
                                   style: TextStyle(
                                       color: Theme.of(context).accentColor),
                                 ),
                                 itemBuilder: (context) => [
                                       PopupMenuItem(
                                         child: Container(
-                                          height: 300,
-                                          width: 200,
-                                          color: Colors.red,
+                                          height: 500,
+                                          width: 500,
                                           child: ListView.separated(
                                               separatorBuilder: (context, idx) {
                                                 return Divider();
@@ -387,6 +353,12 @@ class _SwapWidgetDesktopviewState2 extends State<SwapWidgetDesktopview2> {
                                               itemBuilder: (ctx, idx) {
                                                 return FlatButton(
                                                     onPressed: () {
+                                                      onChanged(
+                                                          tokenList[2][idx]
+                                                              ["address"],
+                                                          2,
+                                                          false,
+                                                          3);
                                                       Navigator.of(context)
                                                           .pop();
                                                     },
