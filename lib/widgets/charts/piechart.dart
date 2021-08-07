@@ -41,7 +41,7 @@ class PieChartWidget extends StatelessWidget {
       Colors.brown,
     ];
     for (var i = 0; i < balances.length; i++) {
-      var balance = balances[i]["current_price"] *
+      var balance = balances[i]["price"] *
           (int.parse(balances[i]["balance"]) /
               pow(10, int.parse(balances[i]["decimals"])));
       totalBalance = totalBalance + balance;

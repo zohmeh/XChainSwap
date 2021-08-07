@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:provider/provider.dart';
+import 'package:web_app_template/helpers/tokenAmountConverter.dart';
 import '../../functions/functions.dart';
 import '../../provider/blockchainprovider.dart';
 import '../../widgets/buttons/button.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class MyJobsDesktopView extends StatefulWidget {
   final chain;
@@ -24,6 +26,10 @@ class _MyJobsDesktopViewState extends State<MyJobsDesktopView> {
         : transactions = getAllMyPolygonTransactions();
     super.initState();
   }
+
+  void _launchURL(String _url) async => await canLaunch(_url)
+      ? await launch(_url)
+      : throw 'Could not launch $_url';
 
   @override
   Widget build(BuildContext context) {
@@ -97,19 +103,25 @@ class _MyJobsDesktopViewState extends State<MyJobsDesktopView> {
                         ((element) => DataRow(
                               cells: [
                                 DataCell(
-                                  Text(
-                                    element["hash"].substring(0, 5) +
-                                        "..." +
-                                        element["hash"].substring(
-                                            element["hash"].length - 5),
-                                    style: TextStyle(
-                                        color:
-                                            Theme.of(context).highlightColor),
+                                  InkWell(
+                                    child: Text(
+                                      element["hash"].substring(0, 5) +
+                                          "..." +
+                                          element["hash"].substring(
+                                              element["hash"].length - 5),
+                                      style: TextStyle(
+                                          color: Theme.of(context).buttonColor),
+                                    ),
+                                    onTap: () => widget.chain == 0
+                                        ? _launchURL(
+                                            'https://etherscan.io/tx/${element["hash"]}')
+                                        : _launchURL(
+                                            'https://polygonscan.com/tx/${element["hash"]}'),
                                   ),
                                 ),
 
                                 DataCell(Text(
-                                  element["input"],
+                                  element["method"],
                                   style: TextStyle(
                                       color: Theme.of(context).highlightColor),
                                 )),
@@ -121,47 +133,56 @@ class _MyJobsDesktopViewState extends State<MyJobsDesktopView> {
                                 //          Theme.of(context).highlightColor),
                                 //)),
                                 DataCell(Text(
-                                  element["to_address"].substring(0, 5) +
+                                  element["toAddress"].substring(0, 5) +
                                       "..." +
-                                      element["to_address"].substring(
-                                          element["to_address"].length - 5),
+                                      element["toAddress"].substring(
+                                          element["toAddress"].length - 5),
                                   style: TextStyle(
                                       color: Theme.of(context).highlightColor),
                                 )),
                                 DataCell(Expanded(
                                   child: Text(
-                                    (double.parse(element["value"]) /
-                                            1000000000000000000)
-                                        .toString(),
+                                    convertTokenAmount(
+                                      element["value"],
+                                      element["tokenDecimals"],
+                                    ),
                                     style: TextStyle(
                                         color:
                                             Theme.of(context).highlightColor),
                                   ),
                                 )),
-                                DataCell(Expanded(
-                                  child: Text(
-                                    (double.parse(element["tokenamount"]) /
-                                            1000000000000000000)
-                                        .toString(),
-                                    style: TextStyle(
-                                        color:
-                                            Theme.of(context).highlightColor),
+                                DataCell(
+                                  Expanded(
+                                    child: element["tokenAmount"] == false
+                                        ? Text("")
+                                        : Text(
+                                            convertTokenAmount(
+                                              element["tokenAmount"],
+                                              element["tokenDecimals"],
+                                            ),
+                                            style: TextStyle(
+                                                color: Theme.of(context)
+                                                    .highlightColor),
+                                          ),
                                   ),
-                                )),
+                                ),
+                                DataCell(element["tokenSymbol"] == false
+                                    ? Text("")
+                                    : Text(
+                                        element["tokenSymbol"],
+                                        style: TextStyle(
+                                            color: Theme.of(context)
+                                                .highlightColor),
+                                      )),
                                 DataCell(Text(
-                                  element["token_symbol"],
-                                  style: TextStyle(
-                                      color: Theme.of(context).highlightColor),
-                                )),
-                                DataCell(Text(
-                                  element["confirmed"] == true
+                                  element["status"] == true
                                       ? "confirmed"
                                       : "pending",
                                   style: TextStyle(
                                       color: Theme.of(context).highlightColor),
                                 )),
                                 if (widget.chain == 2)
-                                  DataCell(element["openJob"] != null
+                                  DataCell(element["activity"] != false
                                       ? button(
                                           Theme.of(context).buttonColor,
                                           Theme.of(context).highlightColor,
@@ -170,7 +191,7 @@ class _MyJobsDesktopViewState extends State<MyJobsDesktopView> {
                                                   context,
                                                   listen: false)
                                               .openActivity,
-                                          [element["openJob"]])
+                                          [element["activity"]])
                                       : Text(""))
                               ],
                             )),

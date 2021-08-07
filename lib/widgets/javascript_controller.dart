@@ -14,11 +14,7 @@ external dynamic getTokenPairRate(
     String fromToken, String toToken, String amount);
 external dynamic storeJobData(String fromToken, String toToken, String amount,
     int fromchain, int tochain);
-external dynamic getEthTokenBalances();
-external dynamic getPolygonTokenBalances();
-external dynamic getEthBalance();
-external dynamic getBscBalance();
-external dynamic getPolygonBalance();
+external dynamic getMyBalances();
 external dynamic getMyEthTransactions();
 external dynamic getMyPolygonTransactions();
 external dynamic getSwaps();

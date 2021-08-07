@@ -84,25 +84,25 @@ class _MyBalancesDesktopViewState extends State<MyBalancesDesktopView> {
                                                 .highlightColor),
                                       )),
                                       DataCell(
-                                        //Row(
-                                        //  children: [
-                                        //    Container(
-                                        //      width: 30,
-                                        //      child: Image.network(
-                                        //        /*'https://cors-anywhere.herokuapp.com/${*/ element[
-                                        //            "image"] /*}'*/,
-                                        //        width: 25,
-                                        //      ),
-                                        //    ),
-                                        //    SizedBox(width: 5),
-                                        Text(
-                                          element["symbol"],
-                                          style: TextStyle(
-                                              color: Theme.of(context)
-                                                  .highlightColor),
+                                        Row(
+                                          children: [
+                                            Container(
+                                              width: 30,
+                                              child: Image.network(
+                                                /*'https://cors-anywhere.herokuapp.com/${*/ element[
+                                                    "image"] /*}'*/,
+                                                width: 25,
+                                              ),
+                                            ),
+                                            SizedBox(width: 5),
+                                            Text(
+                                              element["symbol"],
+                                              style: TextStyle(
+                                                  color: Theme.of(context)
+                                                      .highlightColor),
+                                            ),
+                                          ],
                                         ),
-                                        //  ],
-                                        //),
                                       ),
                                       DataCell(Text(
                                         (int.parse(element["balance"]) /
@@ -115,14 +115,17 @@ class _MyBalancesDesktopViewState extends State<MyBalancesDesktopView> {
                                             color: Theme.of(context)
                                                 .highlightColor),
                                       )),
+                                      DataCell(
+                                        Container(
+                                          width: 30,
+                                          child: Image.network(
+                                            'https://cors-anywhere.herokuapp.com/${element["chain"]}',
+                                            width: 25,
+                                          ),
+                                        ),
+                                      ),
                                       DataCell(Text(
-                                        element["chain"],
-                                        style: TextStyle(
-                                            color: Theme.of(context)
-                                                .highlightColor),
-                                      )),
-                                      DataCell(Text(
-                                        (element["current_price"] *
+                                        (element["price"] *
                                                 (int.parse(element["balance"]) /
                                                     pow(
                                                         10,
