@@ -173,6 +173,7 @@ Future getAllMyPolygonTransactions() async {
     var transaction = json.decode(i);
     transactions.add(transaction);
   }
+  print(transactions);
   return transactions;
 }
 

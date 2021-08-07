@@ -182,7 +182,8 @@ class _MyJobsDesktopViewState extends State<MyJobsDesktopView> {
                                       color: Theme.of(context).highlightColor),
                                 )),
                                 if (widget.chain == 2)
-                                  DataCell(element["activity"] != false
+                                  DataCell(element["activity"] ==
+                                          "erc20Ethcompleted"
                                       ? button(
                                           Theme.of(context).buttonColor,
                                           Theme.of(context).highlightColor,
@@ -191,7 +192,7 @@ class _MyJobsDesktopViewState extends State<MyJobsDesktopView> {
                                                   context,
                                                   listen: false)
                                               .openActivity,
-                                          [element["activity"]])
+                                          [element["activityId"]])
                                       : Text(""))
                               ],
                             )),
