@@ -35,3 +35,4 @@ external getMyJobs();
 external getJobById(String _jobId);
 external deleteJobById(String _jobId);
 external returnTokens(String _chain);
+external getBalancesByAddress(String _tokenAddress, int _chain);

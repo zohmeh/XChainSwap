@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:web_app_template/functions/functions.dart';
 import 'package:web_app_template/provider/loginprovider.dart';
 import 'package:web_app_template/widgets/swapwidget/swapwidgetdesktopview2.dart';
-import '../../widgets/charts/piechart.dart';
 import '../../widgets/myJobs/myJobs.dart';
-import '../../widgets/swapwidget/swapwidgetdesktopview.dart';
 import '../../widgets/myportfolio/mybalancesdesktopview.dart';
-import '../../functions/functions.dart';
+
+var initialUser;
 
 class MyPortfolioDesktopView extends StatefulWidget {
   @override
@@ -15,9 +15,20 @@ class MyPortfolioDesktopView extends StatefulWidget {
 
 class _MyPortfolioDesktopViewState extends State<MyPortfolioDesktopView> {
   @override
+  void initState() {
+    super.initState();
+    checkforloggedIn().then((value) {
+      setState(() {
+        initialUser = value;
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final user = Provider.of<LoginModel>(context).user;
-    return user != null
+    Provider.of<LoginModel>(context).user;
+
+    return initialUser != null
         ? SingleChildScrollView(
             child: Column(
               children: [

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:web_app_template/helpers/coinGeckoTokenList.dart';
 import 'package:web_app_template/helpers/mappedTokens.dart';
 import 'package:web_app_template/provider/blockchainprovider.dart';
+import 'package:web_app_template/provider/loginprovider.dart';
 import '../../helpers/coinGeckoTokenList.dart';
 import '../widgets/javascript_controller.dart';
 import 'package:http/http.dart' as http;
@@ -39,7 +40,9 @@ Future getQuote(List _arguments) async {
     var url = Uri.parse(
         "https://api.1inch.exchange/v3.0/${_chain}/quote?fromTokenAddress=${_fromTokenAddress}&toTokenAddress=${_toTokenAddress}&amount=${_amount}");
     var response = await http.get(url);
+    print(response);
     var quote = json.decode(response.body);
+    print(quote);
     return quote;
   } catch (error) {
     print(error);
@@ -173,7 +176,6 @@ Future getAllMyPolygonTransactions() async {
     var transaction = json.decode(i);
     transactions.add(transaction);
   }
-  print(transactions);
   return transactions;
 }
 
@@ -262,4 +264,11 @@ Future getJobWithId(_jobId) async {
   var job = await promiseToFuture(promiseJob);
   var jobdecoded = json.decode(job);
   return jobdecoded;
+}
+
+Future checkforloggedIn() async {
+  var promise = loggedIn();
+  var loggedin = await promiseToFuture(promise);
+  var user = loggedin;
+  return user;
 }

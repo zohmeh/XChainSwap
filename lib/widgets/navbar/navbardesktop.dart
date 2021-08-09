@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:web_app_template/functions/functions.dart';
+import 'package:web_app_template/views/myportfolioview/myportfoliodesktopview.dart';
 import '../tokensymbols.dart';
 import '../../provider/loginprovider.dart';
 import '../buttons/button.dart';
@@ -13,9 +14,19 @@ class Navbardesktop extends StatefulWidget {
 
 class _NavbardesktopState extends State<Navbardesktop> {
   @override
+  void initState() {
+    super.initState();
+    checkforloggedIn().then((value) {
+      setState(() {
+        initialUser = value;
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final user = Provider.of<LoginModel>(context).user;
-    final image = Provider.of<LoginModel>(context).image;
+    Provider.of<LoginModel>(context).user;
+    //final image = Provider.of<LoginModel>(context).image;
     return Container(
       height: 75,
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -39,13 +50,13 @@ class _NavbardesktopState extends State<Navbardesktop> {
             style: TextStyle(
                 color: Theme.of(context).highlightColor, fontSize: 30),
           ),
-          user != null
+          initialUser != null
               ? Row(
                   children: [
                     SizedBox(width: 15),
                     Container(
                       child: Text(
-                        user.toString(),
+                        initialUser.toString(),
                         style: TextStyle(
                             color: Theme.of(context).highlightColor,
                             fontSize: 15),

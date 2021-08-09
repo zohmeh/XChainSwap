@@ -95,11 +95,13 @@ class _MyBalancesDesktopViewState extends State<MyBalancesDesktopView> {
                                               ),
                                             ),
                                             SizedBox(width: 5),
-                                            Text(
-                                              element["symbol"],
-                                              style: TextStyle(
-                                                  color: Theme.of(context)
-                                                      .highlightColor),
+                                            Expanded(
+                                              child: Text(
+                                                element["symbol"],
+                                                style: TextStyle(
+                                                    color: Theme.of(context)
+                                                        .highlightColor),
+                                              ),
                                             ),
                                           ],
                                         ),
@@ -119,7 +121,8 @@ class _MyBalancesDesktopViewState extends State<MyBalancesDesktopView> {
                                         Container(
                                           width: 30,
                                           child: Image.network(
-                                            'https://cors-anywhere.herokuapp.com/${element["chain"]}',
+                                            /*'https://cors-anywhere.herokuapp.com/${*/ element[
+                                                "chain"] /*}'*/,
                                             width: 25,
                                           ),
                                         ),

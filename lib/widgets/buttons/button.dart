@@ -9,7 +9,7 @@ button(Color _buttoncolor, Color _textcolor, String _text,
       color: _buttoncolor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.all(
-          Radius.circular(15),
+          Radius.circular(10),
         ),
       ),
       onPressed: () {

@@ -18,9 +18,9 @@ init()
 async function loggedIn() {
     try {
         user = await Moralis.User.current();
-        let name = user.get("username");
-        let avatar = user.get("avatar");
-        return [name, avatar];
+        //let name = user.get("username");
+        //let avatar = user.get("avatar");
+        return user.attributes.username;
     } catch (error) { console.log(error); }
 }
 
@@ -233,13 +233,15 @@ async function doSwap(_jobId, _step) {
     if (_step == 1 || _step == 2) { response = await fetch(`https://api.1inch.exchange/v3.0/${chain[job.attributes.fromChain]}/swap?fromTokenAddress=${job.attributes.fromTokenAddress}&toTokenAddress=${_toTokenAddress}&amount=${job.attributes.amount}&fromAddress=${_userAddress}&slippage=1`); }
 
     const swap = await response.json();
-    const send = await web3.eth.sendTransaction(swap.tx);
+    console.log(swap);
+    
+    //const send = await web3.eth.sendTransaction(swap.tx);
 
-    job.set("txHash", send.transactionHash);
-    job.set("status", "swapped");
-    job.set("amount", swap["toTokenAmount"]);
-    await job.save();
-    return ["swapped", swap["toTokenAmount"]];
+    //job.set("txHash", send.transactionHash);
+    //job.set("status", "swapped");
+    //job.set("amount", swap["toTokenAmount"]);
+    //await job.save();
+    //return ["swapped", swap["toTokenAmount"]];
 }
 
 async function networkCheck(_networkId) {
@@ -571,4 +573,39 @@ async function deleteJobById(_jobId) {
     const params = { id: _jobId };
     let job = await Moralis.Cloud.run("getJobsById", params);
     await job.destroy();
+}
+
+async function getBalancesByAddress(_tokenAddress, _chain) {
+    try {
+        let amount;
+        let balance;
+        user = await Moralis.User.current();
+        const params = { tokenAddress: _tokenAddress, address: user.attributes.ethAddress };
+    
+        if(_chain == 0 && _tokenAddress == "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
+            let token = await Moralis.Cloud.run("getEthBalance", params);
+            balance = parseInt(token) / Math.pow(10, 18);
+            amount = token;
+        }
+        
+        else if(_chain == 0 && _tokenAddress != "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
+            let token = await Moralis.Cloud.run("getEthTokenBalance", params);
+            balance = parseInt(token.attributes.balance) / Math.pow(10, parseInt(token.attributes.decimals));
+            amount = token.attributes.balance;
+        }
+    
+        else if(_chain == 2 && _tokenAddress == "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
+            let token = await Moralis.Cloud.run("getPolygonBalance", params);
+            balance = parseInt(token) / Math.pow(10, 18);
+            amount = token;
+        }
+        
+        else if(_chain == 2 && _tokenAddress != "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
+            let token = await Moralis.Cloud.run("getPolygonTokenBalance", params);
+            balance = parseInt(token.attributes.balance) / Math.pow(10, parseInt(token.attributes.decimals));
+            amount = token.attributes.balance;
+        }
+        return ([balance.toString(), amount]);
+
+    } catch (error) { console.log(error); }
 }
