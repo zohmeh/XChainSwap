@@ -61,11 +61,9 @@ class _SwapWidgetDesktopviewState2 extends State<SwapWidgetDesktopview2> {
     int _chain = _arguments[1];
     var promise = getBalancesByAddress(_tokenAddress, _chain);
     var amount = await promiseToFuture(promise);
-    print(amount);
     setState(() {
       fromAmount = amount[1];
       widget.swapamount.text = amount[0];
-      print(fromAmount);
     });
   }
 

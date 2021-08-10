@@ -40,9 +40,7 @@ Future getQuote(List _arguments) async {
     var url = Uri.parse(
         "https://api.1inch.exchange/v3.0/${_chain}/quote?fromTokenAddress=${_fromTokenAddress}&toTokenAddress=${_toTokenAddress}&amount=${_amount}");
     var response = await http.get(url);
-    print(response);
     var quote = json.decode(response.body);
-    print(quote);
     return quote;
   } catch (error) {
     print(error);
@@ -69,7 +67,7 @@ Future<String> getExpectedReturn(List _arguments) async {
       var index = mappedPoSTokensEth.indexOf(_fromTokenAddress);
       _fromTokenAddress = mappedPoSTokensPolygon[index];
       var quote = await getQuote(
-          [_fromTokenAddress, _toTokenAddress, _fromAmount, chain[_fromChain]]);
+          [_fromTokenAddress, _toTokenAddress, _fromAmount, chain[_toChain]]);
 
       expectedReturn = (int.parse(quote["toTokenAmount"]) /
               pow(10, quote["toToken"]["decimals"]))
@@ -92,7 +90,7 @@ Future<String> getExpectedReturn(List _arguments) async {
       var index = mappedPoSTokensPolygon.indexOf(_fromTokenAddress);
       _fromTokenAddress = mappedPoSTokensEth[index];
       var quote = await getQuote(
-          [_fromTokenAddress, _toTokenAddress, _fromAmount, chain[_fromChain]]);
+          [_fromTokenAddress, _toTokenAddress, _fromAmount, chain[_toChain]]);
       expectedReturn = (int.parse(quote["toTokenAmount"]) /
               pow(10, quote["toToken"]["decimals"]))
           .toString();

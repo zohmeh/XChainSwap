@@ -18,8 +18,6 @@ class EthBlockchainInteraction with ChangeNotifier {
     String jobId = _arguments[7];
     List chain = [1, 56, 137];
 
-    print(_fromTokenAmount);
-
     if (status == "new") {
       var promiseStoreJob = storeJobData(_fromTokenAddress, _toTokenAddress,
           _fromTokenAmount, _fromChain, _toChain);

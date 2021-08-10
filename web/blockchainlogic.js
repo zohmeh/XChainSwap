@@ -203,6 +203,32 @@ async function checkMaticCompleted(_jobId) {
     return "maticcompleted";
 }
 
+async function _checkSwapAmount(_jobId, _chain, _fromTokenAddress, _toTokenAddress, _amount, _userAddress) {
+  if(_fromTokenAddress == "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
+    try {
+          let chain = ["1", "56", "137"];
+          //find job by id
+          const params = { id: _jobId };
+          let job = await Moralis.Cloud.run("getJobsById", params);
+
+          //getting the balance of native currency
+          let balanceResponse = await getBalancesByAddress(_fromTokenAddress, _chain);
+          let balance = balanceResponse[1];
+          //calculation Tx cost => gas * gasprice
+          let txResponse = await fetch(`https://api.1inch.exchange/v3.0/${chain[_chain]}/swap?fromTokenAddress=${_fromTokenAddress}&toTokenAddress=${_toTokenAddress}&amount=${(parseInt(_amount) * 0.75).toString()}&fromAddress=${_userAddress}&slippage=1`)
+          let txData = await txResponse.json();
+          let gas = txData.tx.gas;
+          let gasPrice = txData.tx.gasPrice;
+
+          if(parseInt(_amount) + (gas * gasPrice * 1.25) > parseInt(balance)) {
+              let newAmount = parseInt(_amount) - (gas * gasPrice * 1.25);
+              job.set("amount", newAmount);
+          }
+    } catch (error) { console.log(error); }
+  }   
+}
+
+
 async function doSwap(_jobId, _step) {
 
     let chain = ["1", "56", "137"];
@@ -222,26 +248,25 @@ async function doSwap(_jobId, _step) {
     window.ERC20TokencontractInstance = new web3.eth.Contract(erc20ABI, job.attributes.fromTokenAddress);
     //Approve 1inch to spend token
     if (job.attributes.fromTokenAddress != "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
-        //const allowance = await ERC20TokencontractInstance.methods.allowance(_userAddress, "0x11111112542d85b3ef69ae05771c2dccff4faa26").call();
-        //if (allowance < web3.utils.toBN(parseFloat(job.attributes.amount))) {
         const approve = await ERC20TokencontractInstance.methods.approve("0x11111112542d85b3ef69ae05771c2dccff4faa26", job.attributes.amount).send({ from: _userAddress });
-        //}
     }
     //get TX Data for swap to sign and to do the swap            
     let response;
-    if (_step == 0) { response = await fetch(`https://api.1inch.exchange/v3.0/${chain[job.attributes.toChain]}/swap?fromTokenAddress=${job.attributes.fromTokenAddress}&toTokenAddress=${_toTokenAddress}&amount=${job.attributes.amount}&fromAddress=${_userAddress}&slippage=1`); }
-    if (_step == 1 || _step == 2) { response = await fetch(`https://api.1inch.exchange/v3.0/${chain[job.attributes.fromChain]}/swap?fromTokenAddress=${job.attributes.fromTokenAddress}&toTokenAddress=${_toTokenAddress}&amount=${job.attributes.amount}&fromAddress=${_userAddress}&slippage=1`); }
+    if (_step == 0) { 
+      await _checkSwapAmount(_jobId, job.attributes.toChain, job.attributes.fromTokenAddress, _toTokenAddress, job.attributes.amount, _userAddress);
+      response = await fetch(`https://api.1inch.exchange/v3.0/${chain[job.attributes.toChain]}/swap?fromTokenAddress=${job.attributes.fromTokenAddress}&toTokenAddress=${_toTokenAddress}&amount=${job.attributes.amount}&fromAddress=${_userAddress}&slippage=1`); }
+    if (_step == 1 || _step == 2) { 
+      await _checkSwapAmount(_jobId, chainjob.attributes.fromChain, job.attributes.fromTokenAddress, _toTokenAddress, job.attributes.amount, _userAddress);
+      response = await fetch(`https://api.1inch.exchange/v3.0/${chain[job.attributes.fromChain]}/swap?fromTokenAddress=${job.attributes.fromTokenAddress}&toTokenAddress=${_toTokenAddress}&amount=${job.attributes.amount}&fromAddress=${_userAddress}&slippage=1`); }
 
     const swap = await response.json();
-    console.log(swap);
-    
-    //const send = await web3.eth.sendTransaction(swap.tx);
+    const send = await web3.eth.sendTransaction(swap.tx);
 
-    //job.set("txHash", send.transactionHash);
-    //job.set("status", "swapped");
-    //job.set("amount", swap["toTokenAmount"]);
-    //await job.save();
-    //return ["swapped", swap["toTokenAmount"]];
+    job.set("txHash", send.transactionHash);
+    job.set("status", "swapped");
+    job.set("amount", swap["toTokenAmount"]);
+    await job.save();
+    return ["swapped", swap["toTokenAmount"]];
 }
 
 async function networkCheck(_networkId) {
