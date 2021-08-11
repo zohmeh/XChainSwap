@@ -34,6 +34,9 @@ class _SwapWidgetDesktopviewState2 extends State<SwapWidgetDesktopview2> {
   var newQuote;
   List tokenList;
   var quote;
+  String slippage = "1";
+  List slippageList = ["0.1", "0.5", "1", "3"];
+  int _radioValue = 2;
 
   onChanged(String _value, int _chain, bool _isFromToken, int _id) {
     setState(() {
@@ -85,8 +88,8 @@ class _SwapWidgetDesktopviewState2 extends State<SwapWidgetDesktopview2> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(30),
-      height: (MediaQuery.of(context).size.height) / 3 + 20,
+      //padding: EdgeInsets.all(100),
+      height: (MediaQuery.of(context).size.height) / 3 + 35,
       width: (MediaQuery.of(context).size.width) / 3,
       child: Card(
         color: Theme.of(context).primaryColor,
@@ -198,6 +201,98 @@ class _SwapWidgetDesktopviewState2 extends State<SwapWidgetDesktopview2> {
                               )),
                         ],
                       ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Container(
+                            child: Text(
+                              "Max Slippage",
+                              style: TextStyle(
+                                  color: Theme.of(context).accentColor),
+                            ),
+                          ),
+                          Container(
+                            height: 60,
+                            width: 120,
+                            child: RadioListTile(
+                              title: Text(
+                                "0.1%",
+                                style: TextStyle(
+                                    color: Theme.of(context).accentColor),
+                              ),
+                              value: 0,
+                              groupValue: _radioValue,
+                              onChanged: (value) {
+                                setState(() {
+                                  _radioValue = value;
+                                  slippage = slippageList[value];
+                                });
+                              },
+                              activeColor: Theme.of(context).accentColor,
+                            ),
+                          ),
+                          Container(
+                            height: 60,
+                            width: 120,
+                            child: RadioListTile(
+                              title: Text(
+                                "0.5%",
+                                style: TextStyle(
+                                    color: Theme.of(context).accentColor),
+                              ),
+                              value: 1,
+                              groupValue: _radioValue,
+                              onChanged: (value) {
+                                setState(() {
+                                  _radioValue = value;
+                                  slippage = slippageList[value];
+                                });
+                              },
+                              activeColor: Theme.of(context).accentColor,
+                            ),
+                          ),
+                          Container(
+                            height: 60,
+                            width: 120,
+                            child: RadioListTile(
+                              title: Text(
+                                "1.0%",
+                                style: TextStyle(
+                                    color: Theme.of(context).accentColor),
+                              ),
+                              value: 2,
+                              groupValue: _radioValue,
+                              onChanged: (value) {
+                                setState(() {
+                                  _radioValue = value;
+                                  slippage = slippageList[value];
+                                });
+                              },
+                              activeColor: Theme.of(context).accentColor,
+                            ),
+                          ),
+                          Container(
+                            height: 60,
+                            width: 120,
+                            child: RadioListTile(
+                              title: Text(
+                                "3.0%",
+                                style: TextStyle(
+                                    color: Theme.of(context).accentColor),
+                              ),
+                              value: 3,
+                              groupValue: _radioValue,
+                              onChanged: (value) {
+                                setState(() {
+                                  _radioValue = value;
+                                  slippage = slippageList[value];
+                                });
+                              },
+                              activeColor: Theme.of(context).accentColor,
+                            ),
+                          ),
+                        ],
+                      ),
                       button(
                           Theme.of(context).buttonColor,
                           Theme.of(context).highlightColor,
@@ -218,7 +313,8 @@ class _SwapWidgetDesktopviewState2 extends State<SwapWidgetDesktopview2> {
                             toChain,
                             "",
                             "new",
-                            ""
+                            "",
+                            slippage
                           ]),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,

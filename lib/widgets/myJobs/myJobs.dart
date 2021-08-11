@@ -61,11 +61,6 @@ class _MyJobsDesktopViewState extends State<MyJobsDesktopView> {
                       "Methode",
                       style: TextStyle(color: Theme.of(context).accentColor),
                     )),
-                    //DataColumn(
-                    //    label: Text(
-                    //  "From Address",
-                    //  style: TextStyle(color: Theme.of(context).accentColor),
-                    //)),
                     DataColumn(
                         label: Text(
                       "To \n Address",
@@ -119,19 +114,11 @@ class _MyJobsDesktopViewState extends State<MyJobsDesktopView> {
                                             'https://polygonscan.com/tx/${element["hash"]}'),
                                   ),
                                 ),
-
                                 DataCell(Text(
                                   element["method"],
                                   style: TextStyle(
                                       color: Theme.of(context).highlightColor),
                                 )),
-                                //DataCell(Text(
-                                //  element["from_address"],
-                                //  style: TextStyle(
-                                //      fontSize: 10,
-                                //      color:
-                                //          Theme.of(context).highlightColor),
-                                //)),
                                 DataCell(Text(
                                   element["toAddress"].substring(0, 5) +
                                       "..." +

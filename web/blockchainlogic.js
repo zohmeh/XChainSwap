@@ -1,7 +1,7 @@
 //goerli Testnet
 //Moralis.initialize("x0ful1XMWL36Q4W8hD45fkTBo9t645QJWfpoNRo0")
 //Moralis.serverURL = "https://cexjnpsqzkbg.moralis.io:2053/server";
-
+//const Moralis = require('moralis');
 //mainNet
 Moralis.initialize("dOiVpAxnylme9VPx99olzmbyQzB4Jk2TgL0g1Y5A")
 Moralis.serverURL = "https://kuuj059ugtmh.usemoralis.com:2053/server";
@@ -102,8 +102,6 @@ async function bridgingEth(_jobId, _newFromToken) {
         if (job.attributes.fromChain == 0 && job.attributes.toChain == 2) {
             //Deposit Ether from Ether to Polygon
             let txHash = await maticPos.depositEtherForUser(_userAddress, job.attributes.amount, { from: _userAddress });
-            //const params = { id: _jobId };
-            //let job = await Moralis.Cloud.run("getJobsById", params);
             job.set("txHash", txHash.transactionHash);
             job.set("status", "ethbridged");
             job.set("fromTokenAddress", _newFromToken);
@@ -112,7 +110,7 @@ async function bridgingEth(_jobId, _newFromToken) {
         }
         else if (job.attributes.fromChain == 2 && job.attributes.toChain == 0) {
             //Deposit Ether from Polygon to Ether
-            let burnTxHash = await maticPosEthBack.burnERC20(/*"0xA6FA4fB5f76172d178d61B04b0ecd319C5d1C0aa"*/ job.attributes.fromTokenAddress, job.attributes.amount, { from: _userAddress });
+            let burnTxHash = await maticPosEthBack.burnERC20(job.attributes.fromTokenAddress, job.attributes.amount, { from: _userAddress });
 
             job.set("txHash", burnTxHash.transactionHash);
             job.set("status", "ethbridged");
@@ -203,7 +201,7 @@ async function checkMaticCompleted(_jobId) {
     return "maticcompleted";
 }
 
-async function _checkSwapAmount(_jobId, _chain, _fromTokenAddress, _toTokenAddress, _amount, _userAddress) {
+async function _checkSwapAmount(_jobId, _chain, _fromTokenAddress, _toTokenAddress, _amount, _userAddress, _slippage) {
   if(_fromTokenAddress == "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
     try {
           let chain = ["1", "56", "137"];
@@ -215,7 +213,7 @@ async function _checkSwapAmount(_jobId, _chain, _fromTokenAddress, _toTokenAddre
           let balanceResponse = await getBalancesByAddress(_fromTokenAddress, _chain);
           let balance = balanceResponse[1];
           //calculation Tx cost => gas * gasprice
-          let txResponse = await fetch(`https://api.1inch.exchange/v3.0/${chain[_chain]}/swap?fromTokenAddress=${_fromTokenAddress}&toTokenAddress=${_toTokenAddress}&amount=${(parseInt(_amount) * 0.75).toString()}&fromAddress=${_userAddress}&slippage=1`)
+          let txResponse = await fetch(`https://api.1inch.exchange/v3.0/${chain[_chain]}/swap?fromTokenAddress=${_fromTokenAddress}&toTokenAddress=${_toTokenAddress}&amount=${(parseInt(_amount) * 0.75).toString()}&fromAddress=${_userAddress}&slippage=${_slippage}`);
           let txData = await txResponse.json();
           let gas = txData.tx.gas;
           let gasPrice = txData.tx.gasPrice;
@@ -254,10 +252,10 @@ async function doSwap(_jobId, _step) {
     let response;
     if (_step == 0) { 
       await _checkSwapAmount(_jobId, job.attributes.toChain, job.attributes.fromTokenAddress, _toTokenAddress, job.attributes.amount, _userAddress);
-      response = await fetch(`https://api.1inch.exchange/v3.0/${chain[job.attributes.toChain]}/swap?fromTokenAddress=${job.attributes.fromTokenAddress}&toTokenAddress=${_toTokenAddress}&amount=${job.attributes.amount}&fromAddress=${_userAddress}&slippage=1`); }
+      response = await fetch(`https://api.1inch.exchange/v3.0/${chain[job.attributes.toChain]}/swap?fromTokenAddress=${job.attributes.fromTokenAddress}&toTokenAddress=${_toTokenAddress}&amount=${job.attributes.amount}&fromAddress=${_userAddress}&slippage=${job.attributes.slippage}`); }
     if (_step == 1 || _step == 2) { 
-      await _checkSwapAmount(_jobId, chainjob.attributes.fromChain, job.attributes.fromTokenAddress, _toTokenAddress, job.attributes.amount, _userAddress);
-      response = await fetch(`https://api.1inch.exchange/v3.0/${chain[job.attributes.fromChain]}/swap?fromTokenAddress=${job.attributes.fromTokenAddress}&toTokenAddress=${_toTokenAddress}&amount=${job.attributes.amount}&fromAddress=${_userAddress}&slippage=1`); }
+      await _checkSwapAmount(_jobId, job.attributes.fromChain, job.attributes.fromTokenAddress, _toTokenAddress, job.attributes.amount, _userAddress, job.attributes.slippage);
+      response = await fetch(`https://api.1inch.exchange/v3.0/${chain[job.attributes.fromChain]}/swap?fromTokenAddress=${job.attributes.fromTokenAddress}&toTokenAddress=${_toTokenAddress}&amount=${job.attributes.amount}&fromAddress=${_userAddress}&slippage=${job.attributes.slippage}`); }
 
     const swap = await response.json();
     const send = await web3.eth.sendTransaction(swap.tx);
@@ -465,7 +463,6 @@ async function getMyBalances() {
         const returnBalances = balances.map(function(value) {
           return JSON.stringify(value); 
         });        
-        //console.log(balances);
         return returnBalances;
       } catch (error) {
         console.log(error);
@@ -561,7 +558,7 @@ async function getMyPolygonTransactions() {
   }
 }
 
-async function storeJobData(_fromTokenAddress, _toTokenAddress, _amount, _fromChain, _toChain) {
+async function storeJobData(_fromTokenAddress, _toTokenAddress, _amount, _fromChain, _toChain, _slippage) {
     user = await Moralis.User.current();
     const _userAddress = user.attributes.ethAddress;
     const Jobs = Moralis.Object.extend("Jobs");
@@ -575,6 +572,7 @@ async function storeJobData(_fromTokenAddress, _toTokenAddress, _amount, _fromCh
     job.set("toChain", _toChain);
     job.set("txHash", "");
     job.set("status", "open");
+    job.set("slippage", _slippage);
 
     await job.save();
 

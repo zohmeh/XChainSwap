@@ -12,14 +12,14 @@ popUpButton(
     child: Row(
       children: [
         imgSource != ""
-            ? Image.network(imgSource, width: 35)
+            ? Image.network(imgSource, width: 60)
             : SizedBox(
                 width: 0,
                 height: 0,
               ),
         Text(
           text,
-          style: TextStyle(color: color),
+          style: TextStyle(color: color, fontSize: 18),
         ),
       ],
     ),

@@ -16,11 +16,12 @@ class EthBlockchainInteraction with ChangeNotifier {
     String txHash = _arguments[5];
     String status = _arguments[6];
     String jobId = _arguments[7];
+    String _slippage = _arguments[8];
     List chain = [1, 56, 137];
 
     if (status == "new") {
       var promiseStoreJob = storeJobData(_fromTokenAddress, _toTokenAddress,
-          _fromTokenAmount, _fromChain, _toChain);
+          _fromTokenAmount, _fromChain, _toChain, _slippage);
       jobId = await promiseToFuture(promiseStoreJob);
     }
 
@@ -162,12 +163,13 @@ class PolygonBlockchainInteraction with ChangeNotifier {
     String txHash = _arguments[5];
     String status = _arguments[6];
     String jobId = _arguments[7];
+    String _slippage = _arguments[8];
     List chain = [1, 56, 137];
     List values;
 
     if (status == "new") {
       var promiseStoreJob = storeJobData(_fromTokenAddress, _toTokenAddress,
-          _fromTokenAmount, _fromChain, _toChain);
+          _fromTokenAmount, _fromChain, _toChain, _slippage);
       jobId = await promiseToFuture(promiseStoreJob);
     }
 

@@ -1,12 +1,8 @@
 import 'dart:convert';
 import 'dart:js_util';
 import 'dart:math';
-import 'package:flutter/material.dart';
-import 'package:web_app_template/helpers/coinGeckoTokenList.dart';
 import 'package:web_app_template/helpers/mappedTokens.dart';
 import 'package:web_app_template/provider/blockchainprovider.dart';
-import 'package:web_app_template/provider/loginprovider.dart';
-import '../../helpers/coinGeckoTokenList.dart';
 import '../widgets/javascript_controller.dart';
 import 'package:http/http.dart' as http;
 import 'package:queue/queue.dart';

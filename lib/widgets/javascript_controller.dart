@@ -13,7 +13,7 @@ external dynamic setUserData(var _file, String _username);
 external dynamic getTokenPairRate(
     String fromToken, String toToken, String amount);
 external dynamic storeJobData(String fromToken, String toToken, String amount,
-    int fromchain, int tochain);
+    int fromchain, int tochain, String slippage);
 external dynamic getMyBalances();
 external dynamic getMyEthTransactions();
 external dynamic getMyPolygonTransactions();
