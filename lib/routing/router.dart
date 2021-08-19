@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import '../../views/myXJobs/myjobs_view.dart';
 import '../routing/route_names.dart';
 import '../views/myportfolioview/home_view.dart';
 import '../widgets/string_extensions.dart';
@@ -9,6 +10,8 @@ Route<dynamic> generateRoute(RouteSettings settings) {
   switch (routingData.route) {
     case HomeRoute:
       return _getPageRoute(HomeView(), settings.name);
+    case JobRoute:
+      return _getPageRoute(MyJobsView(), settings.name);
     default:
       return _getPageRoute(HomeView(), settings.name);
   }

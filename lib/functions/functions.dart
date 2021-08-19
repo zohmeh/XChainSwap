@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:js_util';
 import 'dart:math';
-import 'package:web_app_template/helpers/mappedTokens.dart';
-import 'package:web_app_template/provider/blockchainprovider.dart';
+import '../../helpers/mappedTokens.dart';
+import '../../provider/blockchainprovider.dart';
 import '../widgets/javascript_controller.dart';
 import 'package:http/http.dart' as http;
 import 'package:queue/queue.dart';

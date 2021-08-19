@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:web_app_template/functions/functions.dart';
-import 'package:web_app_template/provider/loginprovider.dart';
-import 'package:web_app_template/widgets/swapwidget/swapwidgetdesktopview2.dart';
-import '../../widgets/myJobs/myJobs.dart';
+import '../../functions/functions.dart';
+import '../../provider/loginprovider.dart';
+import '../../widgets/swapwidget/swapwidgetdesktopview2.dart';
 import '../../widgets/myportfolio/mybalancesdesktopview.dart';
 
 var initialUser;
@@ -27,42 +26,13 @@ class _MyPortfolioDesktopViewState extends State<MyPortfolioDesktopView> {
   @override
   Widget build(BuildContext context) {
     Provider.of<LoginModel>(context).user;
-
     return initialUser != null
-        ? SingleChildScrollView(
-            child: Column(
+        ? Center(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    MyBalancesDesktopView(),
-                    SwapWidgetDesktopview2(),
-                  ],
-                ),
-                SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Column(
-                      children: [
-                        Text(
-                          "Follow your XChainSwaps on Ethereum",
-                          style: TextStyle(color: Colors.white, fontSize: 20),
-                        ),
-                        MyJobsDesktopView(chain: 0),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        Text(
-                          "Follow your XChainSwaps on Polygon",
-                          style: TextStyle(color: Colors.white, fontSize: 20),
-                        ),
-                        MyJobsDesktopView(chain: 2),
-                      ],
-                    ),
-                  ],
-                )
+                MyBalancesDesktopView(),
+                SwapWidgetDesktopview2(),
               ],
             ),
           )

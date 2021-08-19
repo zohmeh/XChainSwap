@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:web_app_template/widgets/sidebar/sidebardesktop.dart';
+import '../widgets/navbar/navbardesktop2.dart';
 import '../responsive.dart';
 import '../widgets/navbar/navbardesktop.dart';
 
@@ -21,11 +21,8 @@ class _LayoutTemplateState extends State<LayoutTemplate> {
         desktop: Column(
           children: [
             Navbardesktop(),
-            Expanded(
-              child: Row(
-                children: [Expanded(child: widget.child)],
-              ),
-            )
+            Navbardesktop2(),
+            Expanded(child: widget.child),
           ],
         ),
       ),

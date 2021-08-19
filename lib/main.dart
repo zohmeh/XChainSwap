@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:web_app_template/functions/functions.dart';
-import 'package:web_app_template/provider/blockchainprovider.dart';
+import '../../provider/blockchainprovider.dart';
 import '../provider/loginprovider.dart';
 import 'package:provider/provider.dart';
 import '../routing/router.dart';
@@ -30,7 +29,7 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-        title: 'XChainSwap',
+        title: 'XSwap',
         theme: ThemeData(
             errorColor: Colors.red,
             buttonColor: Colors.blueAccent,
