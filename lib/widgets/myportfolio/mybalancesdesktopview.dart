@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:web_app_template/functions/functions.dart';
 import 'package:web_app_template/widgets/charts/piechart.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 
 class MyBalancesDesktopView extends StatefulWidget {
   @override
@@ -43,46 +44,53 @@ class _MyBalancesDesktopViewState extends State<MyBalancesDesktopView> {
                     child: DataTable2(
                         columns: [
                           DataColumn(
-                              label: Text(
-                            "Name",
-                            style:
-                                TextStyle(color: Theme.of(context).accentColor),
-                          )),
+                            label: AutoSizeText(
+                              "Name",
+                              style: TextStyle(
+                                  color: Theme.of(context).accentColor),
+                            ),
+                          ),
                           DataColumn(
-                              label: Text(
-                            "Symbol",
-                            style:
-                                TextStyle(color: Theme.of(context).accentColor),
-                          )),
+                            label: AutoSizeText(
+                              "Symbol",
+                              style: TextStyle(
+                                  color: Theme.of(context).accentColor),
+                            ),
+                          ),
                           DataColumn(
-                              label: Text(
-                            "Balance",
-                            style:
-                                TextStyle(color: Theme.of(context).accentColor),
-                          )),
+                            label: AutoSizeText(
+                              "Balance",
+                              style: TextStyle(
+                                  color: Theme.of(context).accentColor),
+                            ),
+                          ),
                           DataColumn(
-                              label: Text(
-                            "Chain",
-                            style:
-                                TextStyle(color: Theme.of(context).accentColor),
-                          )),
+                            label: AutoSizeText(
+                              "Chain",
+                              style: TextStyle(
+                                  color: Theme.of(context).accentColor),
+                            ),
+                          ),
                           DataColumn(
-                              label: Text(
-                            "Value in US Dollar",
-                            style:
-                                TextStyle(color: Theme.of(context).accentColor),
-                          )),
+                            label: AutoSizeText(
+                              "Value in US Dollar",
+                              style: TextStyle(
+                                  color: Theme.of(context).accentColor),
+                            ),
+                          ),
                         ],
                         rows: mybalances
                             .map(
                               ((element) => DataRow(
                                     cells: [
-                                      DataCell(Text(
-                                        element["name"],
-                                        style: TextStyle(
-                                            color: Theme.of(context)
-                                                .highlightColor),
-                                      )),
+                                      DataCell(
+                                        AutoSizeText(
+                                          element["name"],
+                                          style: TextStyle(
+                                              color: Theme.of(context)
+                                                  .highlightColor),
+                                        ),
+                                      ),
                                       DataCell(
                                         Row(
                                           children: [
@@ -94,29 +102,35 @@ class _MyBalancesDesktopViewState extends State<MyBalancesDesktopView> {
                                                 width: 25,
                                               ),
                                             ),
-                                            SizedBox(width: 5),
-                                            Expanded(
-                                              child: Text(
-                                                element["symbol"],
-                                                style: TextStyle(
-                                                    color: Theme.of(context)
-                                                        .highlightColor),
+                                            /*SizedBox(width: 5),
+                                            Container(
+                                              width: 30,
+                                              child: FittedBox(
+                                                fit: BoxFit.fitWidth,
+                                                child: Text(
+                                                  element["symbol"],
+                                                  style: TextStyle(
+                                                      color: Theme.of(context)
+                                                          .highlightColor),
+                                                ),
                                               ),
-                                            ),
+                                            ),*/
                                           ],
                                         ),
                                       ),
-                                      DataCell(Text(
-                                        (int.parse(element["balance"]) /
-                                                pow(
-                                                    10,
-                                                    int.parse(
-                                                        element["decimals"])))
-                                            .toStringAsFixed(10),
-                                        style: TextStyle(
-                                            color: Theme.of(context)
-                                                .highlightColor),
-                                      )),
+                                      DataCell(
+                                        AutoSizeText(
+                                          (int.parse(element["balance"]) /
+                                                  pow(
+                                                      10,
+                                                      int.parse(
+                                                          element["decimals"])))
+                                              .toStringAsFixed(10),
+                                          style: TextStyle(
+                                              color: Theme.of(context)
+                                                  .highlightColor),
+                                        ),
+                                      ),
                                       DataCell(
                                         Container(
                                           width: 30,
@@ -127,18 +141,21 @@ class _MyBalancesDesktopViewState extends State<MyBalancesDesktopView> {
                                           ),
                                         ),
                                       ),
-                                      DataCell(Text(
-                                        (element["price"] *
-                                                (int.parse(element["balance"]) /
-                                                    pow(
-                                                        10,
-                                                        int.parse(element[
-                                                            "decimals"]))))
-                                            .toStringAsFixed(2),
-                                        style: TextStyle(
-                                            color: Theme.of(context)
-                                                .highlightColor),
-                                      )),
+                                      DataCell(
+                                        AutoSizeText(
+                                          (element["price"] *
+                                                  (int.parse(
+                                                          element["balance"]) /
+                                                      pow(
+                                                          10,
+                                                          int.parse(element[
+                                                              "decimals"]))))
+                                              .toStringAsFixed(2),
+                                          style: TextStyle(
+                                              color: Theme.of(context)
+                                                  .highlightColor),
+                                        ),
+                                      ),
                                     ],
                                   )),
                             )

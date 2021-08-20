@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:provider/provider.dart';
@@ -52,46 +53,55 @@ class _MyJobsDesktopViewState extends State<MyJobsDesktopView> {
                 return DataTable2(
                   columns: [
                     DataColumn(
-                        label: Text(
-                      "TxHash",
-                      style: TextStyle(color: Theme.of(context).accentColor),
-                    )),
+                      label: AutoSizeText(
+                        "TxHash",
+                        style: TextStyle(color: Theme.of(context).accentColor),
+                      ),
+                    ),
                     DataColumn(
-                        label: Text(
-                      "Methode",
-                      style: TextStyle(color: Theme.of(context).accentColor),
-                    )),
+                      label: AutoSizeText(
+                        "Methode",
+                        style: TextStyle(color: Theme.of(context).accentColor),
+                      ),
+                    ),
                     DataColumn(
-                        label: Text(
-                      "To \n Address",
-                      style: TextStyle(color: Theme.of(context).accentColor),
-                    )),
+                      label: AutoSizeText(
+                        "To \n Address",
+                        style: TextStyle(color: Theme.of(context).accentColor),
+                      ),
+                    ),
                     DataColumn(
-                        label: Text(
-                      widget.chain == 0 ? "Ether" : "Matic",
-                      style: TextStyle(color: Theme.of(context).accentColor),
-                    )),
+                      label: AutoSizeText(
+                        widget.chain == 0 ? "Ether" : "Matic",
+                        style: TextStyle(color: Theme.of(context).accentColor),
+                      ),
+                    ),
                     DataColumn(
-                        label: Text(
-                      "Token \n Amount",
-                      style: TextStyle(color: Theme.of(context).accentColor),
-                    )),
+                      label: AutoSizeText(
+                        "Token \n Amount",
+                        style: TextStyle(color: Theme.of(context).accentColor),
+                      ),
+                    ),
                     DataColumn(
-                        label: Text(
-                      "Token \n Symbol",
-                      style: TextStyle(color: Theme.of(context).accentColor),
-                    )),
+                      label: AutoSizeText(
+                        "Token \n Symbol",
+                        style: TextStyle(color: Theme.of(context).accentColor),
+                      ),
+                    ),
                     DataColumn(
-                        label: Text(
-                      "Status",
-                      style: TextStyle(color: Theme.of(context).accentColor),
-                    )),
+                      label: AutoSizeText(
+                        "Status",
+                        style: TextStyle(color: Theme.of(context).accentColor),
+                      ),
+                    ),
                     if (widget.chain == 2)
                       DataColumn(
-                          label: Text(
-                        "Activity",
-                        style: TextStyle(color: Theme.of(context).accentColor),
-                      )),
+                        label: AutoSizeText(
+                          "Activity",
+                          style:
+                              TextStyle(color: Theme.of(context).accentColor),
+                        ),
+                      ),
                   ],
                   rows: tx
                       .map(
@@ -99,7 +109,7 @@ class _MyJobsDesktopViewState extends State<MyJobsDesktopView> {
                               cells: [
                                 DataCell(
                                   InkWell(
-                                    child: Text(
+                                    child: AutoSizeText(
                                       element["hash"].substring(0, 5) +
                                           "..." +
                                           element["hash"].substring(
@@ -107,28 +117,34 @@ class _MyJobsDesktopViewState extends State<MyJobsDesktopView> {
                                       style: TextStyle(
                                           color: Theme.of(context).buttonColor),
                                     ),
-                                    onTap: () => widget.chain == 0
-                                        ? _launchURL(
-                                            'https://etherscan.io/tx/${element["hash"]}')
-                                        : _launchURL(
-                                            'https://polygonscan.com/tx/${element["hash"]}'),
+                                  ),
+                                  onTap: () => widget.chain == 0
+                                      ? _launchURL(
+                                          'https://etherscan.io/tx/${element["hash"]}')
+                                      : _launchURL(
+                                          'https://polygonscan.com/tx/${element["hash"]}'),
+                                ),
+                                DataCell(
+                                  AutoSizeText(
+                                    element["method"],
+                                    style: TextStyle(
+                                        color:
+                                            Theme.of(context).highlightColor),
                                   ),
                                 ),
-                                DataCell(Text(
-                                  element["method"],
-                                  style: TextStyle(
-                                      color: Theme.of(context).highlightColor),
-                                )),
-                                DataCell(Text(
-                                  element["toAddress"].substring(0, 5) +
-                                      "..." +
-                                      element["toAddress"].substring(
-                                          element["toAddress"].length - 5),
-                                  style: TextStyle(
-                                      color: Theme.of(context).highlightColor),
-                                )),
-                                DataCell(Expanded(
-                                  child: Text(
+                                DataCell(
+                                  AutoSizeText(
+                                    element["toAddress"].substring(0, 5) +
+                                        "..." +
+                                        element["toAddress"].substring(
+                                            element["toAddress"].length - 5),
+                                    style: TextStyle(
+                                        color:
+                                            Theme.of(context).highlightColor),
+                                  ),
+                                ),
+                                DataCell(
+                                  AutoSizeText(
                                     convertTokenAmount(
                                       element["value"],
                                       element["tokenDecimals"],
@@ -137,37 +153,40 @@ class _MyJobsDesktopViewState extends State<MyJobsDesktopView> {
                                         color:
                                             Theme.of(context).highlightColor),
                                   ),
-                                )),
+                                ),
                                 DataCell(
-                                  Expanded(
-                                    child: element["tokenAmount"] == false
-                                        ? Text("")
-                                        : Text(
-                                            convertTokenAmount(
-                                              element["tokenAmount"],
-                                              element["tokenDecimals"],
-                                            ),
-                                            style: TextStyle(
-                                                color: Theme.of(context)
-                                                    .highlightColor),
+                                  element["tokenAmount"] == false
+                                      ? AutoSizeText("")
+                                      : AutoSizeText(
+                                          convertTokenAmount(
+                                            element["tokenAmount"],
+                                            element["tokenDecimals"],
                                           ),
+                                          style: TextStyle(
+                                              color: Theme.of(context)
+                                                  .highlightColor),
+                                        ),
+                                ),
+                                DataCell(
+                                  element["tokenSymbol"] == false
+                                      ? AutoSizeText("")
+                                      : AutoSizeText(
+                                          element["tokenSymbol"],
+                                          style: TextStyle(
+                                              color: Theme.of(context)
+                                                  .highlightColor),
+                                        ),
+                                ),
+                                DataCell(
+                                  AutoSizeText(
+                                    element["status"] == true
+                                        ? "confirmed"
+                                        : "pending",
+                                    style: TextStyle(
+                                        color:
+                                            Theme.of(context).highlightColor),
                                   ),
                                 ),
-                                DataCell(element["tokenSymbol"] == false
-                                    ? Text("")
-                                    : Text(
-                                        element["tokenSymbol"],
-                                        style: TextStyle(
-                                            color: Theme.of(context)
-                                                .highlightColor),
-                                      )),
-                                DataCell(Text(
-                                  element["status"] == true
-                                      ? "confirmed"
-                                      : "pending",
-                                  style: TextStyle(
-                                      color: Theme.of(context).highlightColor),
-                                )),
                                 if (widget.chain == 2)
                                   DataCell(element["activity"] ==
                                           "erc20Ethcompleted"

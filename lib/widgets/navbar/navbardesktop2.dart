@@ -15,10 +15,10 @@ class _Navbardesktop2State extends State<Navbardesktop2> {
 
   _changeSide(List _arguments) {
     locator<NavigationService>().navigateTo(_arguments[0]);
-    setState(() {
-      buttonColors = [Colors.white, Colors.white];
-      buttonColors[_arguments[1]] = Colors.purpleAccent;
-    });
+    //setState(() {
+    //  buttonColors = [Colors.white, Colors.white];
+    //  buttonColors[_arguments[1]] = Colors.purpleAccent;
+    //});
   }
 
   @override
@@ -35,6 +35,7 @@ class _Navbardesktop2State extends State<Navbardesktop2> {
         children: [
           ibutton("swap.png", Theme.of(context).backgroundColor,
               buttonColors[0], "Swap", _changeSide, [HomeRoute, 0]),
+          SizedBox(width: 20),
           ibutton(
             "bill.png",
             Theme.of(context).backgroundColor,

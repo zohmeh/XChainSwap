@@ -1,5 +1,6 @@
 import 'dart:html';
 import 'package:flutter/material.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 
 ibutton(String image, Color _buttoncolor, Color _textcolor, String _text,
     [Function _toDo, List _arguments]) {
@@ -17,8 +18,8 @@ ibutton(String image, Color _buttoncolor, Color _textcolor, String _text,
           size: 35,
           color: _textcolor,
         ),*/
-        SizedBox(height: 10),
-        Text(
+        SizedBox(height: 7),
+        AutoSizeText(
           _text,
           style: TextStyle(color: _textcolor),
         ),

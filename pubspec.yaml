@@ -32,6 +32,7 @@ dependencies:
   flip_card: ^0.5.0
   fl_chart: ^0.35.0
   data_table_2: ^2.0.3
+  auto_size_text: ^2.1.0
   queue: ^3.1.0
   flutter:
     sdk: flutter
@@ -58,8 +59,8 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - images/swap.png
-    - images/bill.png
+    - assets/images/swap.png
+    - assets/images/bill.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
