@@ -1,5 +1,4 @@
 import 'dart:js_util';
-import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -66,6 +65,7 @@ class _SwapWidgetDesktopviewState2 extends State<SwapWidgetDesktopview2> {
     var amount = await promiseToFuture(promise);
     setState(() {
       fromAmount = amount[1];
+      print(fromAmount);
       widget.swapamount.text = amount[0];
     });
   }
@@ -148,12 +148,6 @@ class _SwapWidgetDesktopviewState2 extends State<SwapWidgetDesktopview2> {
                                       rightMargin: 0,
                                       bottomMargin: 0,
                                       onChanged: (value) async {
-                                        fromAmount = (double.parse(value) *
-                                                pow(
-                                                    10,
-                                                    fromToken.elementAt(
-                                                        0)["decimals"]))
-                                            .toString();
                                         newQuote = await getExpectedReturn([
                                           fromToken.elementAt(0)["address"],
                                           toToken.elementAt(0)["address"],
@@ -166,12 +160,6 @@ class _SwapWidgetDesktopviewState2 extends State<SwapWidgetDesktopview2> {
                                         });
                                       },
                                       onSubmitted: (value) async {
-                                        fromAmount = (double.parse(value) *
-                                                pow(
-                                                    10,
-                                                    fromToken.elementAt(
-                                                        0)["decimals"]))
-                                            .toString();
                                         newQuote = await getExpectedReturn([
                                           fromToken.elementAt(0)["address"],
                                           toToken.elementAt(0)["address"],

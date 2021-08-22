@@ -13,7 +13,7 @@ class EthBlockchainInteraction with ChangeNotifier {
     String _fromTokenAmount = _arguments[2];
     int _fromChain = _arguments[3];
     int _toChain = _arguments[4];
-    String txHash = _arguments[5];
+    //String txHash = _arguments[5];
     String status = _arguments[6];
     String jobId = _arguments[7];
     String _slippage = _arguments[8];
@@ -160,7 +160,7 @@ class PolygonBlockchainInteraction with ChangeNotifier {
     String _fromTokenAmount = _arguments[2];
     int _fromChain = _arguments[3];
     int _toChain = _arguments[4];
-    String txHash = _arguments[5];
+    //String txHash = _arguments[5];
     String status = _arguments[6];
     String jobId = _arguments[7];
     String _slippage = _arguments[8];

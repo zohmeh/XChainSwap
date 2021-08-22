@@ -34,7 +34,7 @@ popUpButton(
             },
             itemCount: tokenList.length,
             itemBuilder: (ctx, idx) {
-              return FlatButton(
+              return TextButton(
                 onPressed: () {
                   toDo(tokenList[idx]["address"], arguments[0], arguments[1],
                       arguments[2]);

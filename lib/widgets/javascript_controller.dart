@@ -1,8 +1,6 @@
 @JS()
 library blockchainlogic.js;
 
-import 'dart:js';
-
 import 'package:js/js.dart';
 
 @JS()
@@ -20,11 +18,7 @@ external dynamic getMyPolygonTransactions();
 external dynamic getSwaps();
 external dynamic getTransactionStatus(String _txHash);
 external dynamic networkCheck(int _networkId);
-external dynamic doSwap(
-    /*String _fromTokenAddress, String _toTokenAddress,
-    String _amount, int _fromChain,*/
-    String _jobId,
-    int step);
+external dynamic doSwap(String _jobId, int step);
 external bridgingEth(String _jobId, String _newFromToken);
 external bridgingMatic(String _jobId, String _newFromToken);
 external checkEthCompleted(String _jobId);

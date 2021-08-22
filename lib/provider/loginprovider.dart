@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:js/js_util.dart';
-import 'package:web_app_template/functions/functions.dart';
 import 'package:web_app_template/views/myportfolioview/myportfoliodesktopview.dart';
 import '../widgets/javascript_controller.dart';
 
